@@ -2,6 +2,9 @@ import Image, { type ImageProps } from "next/image";
 import { Button } from "@repo/ui/button";
 import styles from "./page.module.css";
 
+/** Evita prerender estático en build (Prisma necesita DB en runtime, no en CI sin Postgres). */
+export const dynamic = "force-dynamic";
+
 type Props = Omit<ImageProps, "src"> & {
   srcLight: string;
   srcDark: string;
