@@ -11,9 +11,6 @@ importers:
       prettier:
         specifier: ^3.7.4
         version: 3.7.4
-      turbo:
-        specifier: ^2.9.10
-        version: 2.9.10
       typescript:
         specifier: 5.9.2
         version: 5.9.2
