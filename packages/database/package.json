@@ -11,10 +11,10 @@
     }
   },
   "scripts": {
-    "build": "prisma generate && tsc",
+    "build": "npx prisma generate && tsc",
     "lint": "eslint src --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "db:generate": "prisma generate",
+    "db:generate": "npx prisma generate",
     "build:local": "prisma generate && tsc",
     "db:generate:local": "dotenv -e .env.development -- prisma generate",
     "db:generate:staging": "dotenv -e .env.staging -- prisma generate",
