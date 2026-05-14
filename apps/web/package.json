@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000",
+    "dev:staging": "cross-env APP_ENV=staging next dev --port 3000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
@@ -23,6 +24,8 @@
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.7",
     "eslint": "^9.39.1",
     "typescript": "5.9.2"
   }

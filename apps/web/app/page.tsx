@@ -1,5 +1,6 @@
 import Image, { type ImageProps } from "next/image";
 import { Button } from "@repo/ui/button";
+import { UsersTester } from "./users-tester";
 import styles from "./page.module.css";
 
 /** Evita prerender estático en build (Prisma necesita DB en runtime, no en CI sin Postgres). */
@@ -69,6 +70,8 @@ export default function Home() {
         <Button appName="web" className={styles.secondary}>
           Open alert
         </Button>
+
+        <UsersTester />
       </main>
       <footer className={styles.footer}>
         <a

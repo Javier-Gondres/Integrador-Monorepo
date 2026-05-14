@@ -39,3 +39,14 @@ yarn-error.log*
 
 # Prisma
 packages/database/generated/prisma
+
+# Ambientes (URLs reales; no subir)
+packages/database/.env.staging
+packages/database/.env.production
+packages/database/.env.development
+
+# Next / Nest: entornos locales (ver docs/environments.md)
+apps/web/.env.development
+apps/web/.env.staging
+apps/api/.env.development
+apps/api/.env.staging

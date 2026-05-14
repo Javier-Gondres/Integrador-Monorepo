@@ -5,7 +5,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -25,4 +25,9 @@ model Post {
   published Boolean @default(false) 
   author    User    @relation(fields: [authorId], references: [id]) 
   authorId  Int
+} 
+
+model Prueba { 
+  id        Int     @id @default(autoincrement()) 
+  title     String
 } 
