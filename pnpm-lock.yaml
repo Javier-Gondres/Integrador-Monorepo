@@ -8,9 +8,6 @@ importers:
 
   .:
     devDependencies:
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       prettier:
         specifier: ^3.7.4
         version: 3.7.4
