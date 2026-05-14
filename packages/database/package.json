@@ -12,6 +12,8 @@
   },
   "scripts": {
     "build": "dotenv -e .env.development -- prisma generate && tsc",
+    "lint": "eslint src --max-warnings 0",
+    "check-types": "tsc --noEmit",
     "db:generate": "dotenv -e .env.development -- prisma generate",
     "db:migrate": "dotenv -e .env.development -- prisma migrate dev",
     "db:deploy": "dotenv -e .env.development -- prisma migrate deploy",
@@ -19,9 +21,12 @@
     "db:deploy:production": "dotenv -e .env.production -- prisma migrate deploy"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "dotenv": "^17.4.2",
     "dotenv-cli": "^8.0.0",
-    "prisma": "^7.8.0"
+    "eslint": "^9.39.1",
+    "prisma": "^7.8.0",
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

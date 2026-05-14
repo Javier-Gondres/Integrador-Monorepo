@@ -9,7 +9,10 @@ function corsOrigin(config: ConfigService) {
     .map((s) => s.trim())
     .filter(Boolean);
   const previews = config.get<string>('CORS_ALLOW_VERCEL_PREVIEWS') === 'true';
-  return (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {
+  return (
+    origin: string | undefined,
+    cb: (err: Error | null, allow?: boolean) => void,
+  ) => {
     if (!origin) {
       cb(null, true);
       return;
@@ -42,4 +45,8 @@ async function bootstrap() {
   });
   await app.listen(process.env.PORT ?? 3001);
 }
-bootstrap();
+
+bootstrap().catch((err: unknown) => {
+  console.error(err);
+  process.exit(1);
+});

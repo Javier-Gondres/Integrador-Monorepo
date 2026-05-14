@@ -69,6 +69,21 @@
 
     "db:deploy": {
       "cache": false
+    },
+
+    "lint": {
+      "dependsOn": ["^lint"],
+      "outputs": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".eslintrc*",
+        "eslint.config.*"
+      ]
+    },
+
+    "check-types": {
+      "dependsOn": ["^check-types"],
+      "outputs": []
     }
   }
 }

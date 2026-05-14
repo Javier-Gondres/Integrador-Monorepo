@@ -6,11 +6,11 @@ Guía paso a paso para **desarrollo local** vs **producción** (y opcional **sta
 
 ## Resumen de responsabilidades
 
-| Dónde | Qué guardas |
-|--------|----------------|
-| **Supabase** | Postgres: dos proyectos si quieres *dev* y *prod* separados. |
-| **DigitalOcean** | Contenedor o Droplet con Nest: `DATABASE_URL`, `CORS_*`, `PORT`. |
-| **Vercel** | Next: `NEXT_PUBLIC_API_URL` (y `DATABASE_URL` **solo** si Prisma vive en Next). |
+| Dónde            | Qué guardas                                                                     |
+| ---------------- | ------------------------------------------------------------------------------- |
+| **Supabase**     | Postgres: dos proyectos si quieres _dev_ y _prod_ separados.                    |
+| **DigitalOcean** | Contenedor o Droplet con Nest: `DATABASE_URL`, `CORS_*`, `PORT`.                |
+| **Vercel**       | Next: `NEXT_PUBLIC_API_URL` (y `DATABASE_URL` **solo** si Prisma vive en Next). |
 
 ---
 
@@ -63,13 +63,13 @@ Para **solo** tu máquina contra la base de desarrollo, `pnpm db:deploy` usa **`
 
 3. **Variables de entorno** en DO (producción):
 
-   | Variable | Valor |
-   |----------|--------|
-   | `NODE_ENV` | `production` |
-   | `PORT` | `3001` (o el que use tu proxy) |
-   | `DATABASE_URL` | URI de Supabase **producción** |
-   | `CORS_ORIGINS` | `https://TU-DOMINIO-VERCEL.vercel.app` (sin barra final) |
-   | `CORS_ALLOW_VERCEL_PREVIEWS` | `true` si quieres aceptar previews `*.vercel.app` |
+   | Variable                     | Valor                                                    |
+   | ---------------------------- | -------------------------------------------------------- |
+   | `NODE_ENV`                   | `production`                                             |
+   | `PORT`                       | `3001` (o el que use tu proxy)                           |
+   | `DATABASE_URL`               | URI de Supabase **producción**                           |
+   | `CORS_ORIGINS`               | `https://TU-DOMINIO-VERCEL.vercel.app` (sin barra final) |
+   | `CORS_ALLOW_VERCEL_PREVIEWS` | `true` si quieres aceptar previews `*.vercel.app`        |
 
 4. HTTPS: en App Platform suele venir solo; en Droplet usa Caddy o Nginx + Let’s Encrypt.
 5. Anota la URL pública del API (`https://api.tudominio.com`).
@@ -86,9 +86,9 @@ Para **solo** tu máquina contra la base de desarrollo, `pnpm db:deploy` usa **`
 
 5. **Environment variables** en Vercel:
 
-   | Entorno | Variables |
-   |---------|-----------|
-   | **Production** | `NEXT_PUBLIC_API_URL` = URL HTTPS del API en DO (producción). |
+   | Entorno                        | Variables                                                                                                                                  |
+   | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+   | **Production**                 | `NEXT_PUBLIC_API_URL` = URL HTTPS del API en DO (producción).                                                                              |
    | **Preview** (opcional staging) | `NEXT_PUBLIC_API_URL` = URL del API de **staging** o la misma API con CORS que permita `*.vercel.app` (`CORS_ALLOW_VERCEL_PREVIEWS=true`). |
 
 6. No subas secretos en `NEXT_PUBLIC_*`. La `DATABASE_URL` en Vercel **solo** si Next sigue usando Prisma en servidor; si todo pasa por Nest, **no** la pongas en Vercel.

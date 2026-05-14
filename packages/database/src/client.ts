@@ -8,7 +8,7 @@ if (!connectionString) {
 }
 
 const pool = new Pool({
-  connectionString
+  connectionString,
 });
 
 const adapter = new PrismaPg(pool);

@@ -14,12 +14,12 @@ Así nunca “inventas” SQL en prod: solo aplicas lo versionado.
 
 ## Archivos de variables en el repo
 
-| Archivo | Uso | ¿En Git? |
-|---------|-----|----------|
+| Archivo                              | Uso                                                                                                                                                                | ¿En Git?      |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
 | `packages/database/.env.development` | **Local**: Prisma CLI (`db:generate`, `db:migrate`, `db:deploy` en la raíz) lo cargan con `dotenv-cli`. Incluye **`DATABASE_URL`** y **`DIRECT_URL`** (ver abajo). | No (ignorado) |
-| `packages/database/.env.staging` | Solo al ejecutar **`pnpm db:deploy:staging`**. URL del proyecto **Supabase staging**. | No |
-| `packages/database/.env.production` | Solo al ejecutar **`pnpm db:deploy:production`**. URL **Supabase producción**. | No |
-| `*.env*.example` | Plantillas sin secretos. | Sí |
+| `packages/database/.env.staging`     | Solo al ejecutar **`pnpm db:deploy:staging`**. URL del proyecto **Supabase staging**.                                                                              | No            |
+| `packages/database/.env.production`  | Solo al ejecutar **`pnpm db:deploy:production`**. URL **Supabase producción**.                                                                                     | No            |
+| `*.env*.example`                     | Plantillas sin secretos.                                                                                                                                           | Sí            |
 
 Copia los `.example` a los archivos reales en tu máquina (no los subas).
 
@@ -36,13 +36,13 @@ Estas variables deben existir en **`packages/database/.env.development`** (y en 
 
 ## Comandos (desde la raíz del monorepo)
 
-| Comando | Cuándo | Base que usa |
-|---------|--------|----------------|
-| `pnpm db:migrate` | Cambias el modelo en **local** | **`packages/database/.env.development`** → Docker (recomendado) |
-| `pnpm db:generate` | Tras migrar o clonar el repo | Lee **`packages/database/.env.development`** (URLs deben existir; generate no abre sesión larga de migrate) |
-| `pnpm db:deploy` | Aplica migraciones en **local/dev** | Mismo archivo **`.env.development`** (misma convención que staging/prod con otros nombres) |
-| `pnpm db:deploy:staging` | Después de validar en local | Lee **`.env.staging`** |
-| `pnpm db:deploy:production` | Release a prod | Lee **`.env.production`** |
+| Comando                     | Cuándo                              | Base que usa                                                                                                |
+| --------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `pnpm db:migrate`           | Cambias el modelo en **local**      | **`packages/database/.env.development`** → Docker (recomendado)                                             |
+| `pnpm db:generate`          | Tras migrar o clonar el repo        | Lee **`packages/database/.env.development`** (URLs deben existir; generate no abre sesión larga de migrate) |
+| `pnpm db:deploy`            | Aplica migraciones en **local/dev** | Mismo archivo **`.env.development`** (misma convención que staging/prod con otros nombres)                  |
+| `pnpm db:deploy:staging`    | Después de validar en local         | Lee **`.env.staging`**                                                                                      |
+| `pnpm db:deploy:production` | Release a prod                      | Lee **`.env.production`**                                                                                   |
 
 `db:generate`, `db:migrate` y `db:deploy` usan **`.env.development`**; los de staging/prod usan **`dotenv-cli`** con su archivo correspondiente.
 
@@ -54,11 +54,11 @@ No hay un único “interruptor” global: **cada capa** elige variables según 
 
 ### 1) Tu PC — Prisma (migraciones / generate)
 
-| Objetivo | Qué haces |
-|----------|-----------|
-| **Base local (Docker)** | `packages/database/.env.development` con URL de Docker. `pnpm db:migrate`, `pnpm db:generate`, `pnpm db:deploy` cargan **ese** archivo explícitamente. |
-| **Solo aplicar migraciones a Supabase staging** | Archivo `packages/database/.env.staging` → `pnpm db:deploy:staging`. |
-| **Solo aplicar migraciones a Supabase producción** | Archivo `packages/database/.env.production` → `pnpm db:deploy:production`. |
+| Objetivo                                           | Qué haces                                                                                                                                              |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Base local (Docker)**                            | `packages/database/.env.development` con URL de Docker. `pnpm db:migrate`, `pnpm db:generate`, `pnpm db:deploy` cargan **ese** archivo explícitamente. |
+| **Solo aplicar migraciones a Supabase staging**    | Archivo `packages/database/.env.staging` → `pnpm db:deploy:staging`.                                                                                   |
+| **Solo aplicar migraciones a Supabase producción** | Archivo `packages/database/.env.production` → `pnpm db:deploy:production`.                                                                             |
 
 Migraciones **no** arrancan Next ni Nest: solo conectan a la URL que indiques.
 
@@ -66,15 +66,15 @@ Migraciones **no** arrancan Next ni Nest: solo conectan a la URL que indiques.
 
 Cada app tiene **sus propios** archivos (sin `.env` compartido en la raíz del monorepo):
 
-| App | Desarrollo local | Staging en tu máquina |
-|-----|------------------|------------------------|
-| **web** | `apps/web/.env.development` (Next lo carga en `next dev`) | `apps/web/.env.staging` + script `dev:staging` que pone `APP_ENV=staging`; `next.config.js` carga ese archivo con `dotenv` |
-| **api** | `apps/api/.env.development` (`@nestjs/config` en `AppModule`) | `apps/api/.env.staging` cuando corres `dev:staging` (`APP_ENV=staging`) |
+| App     | Desarrollo local                                              | Staging en tu máquina                                                                                                      |
+| ------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **web** | `apps/web/.env.development` (Next lo carga en `next dev`)     | `apps/web/.env.staging` + script `dev:staging` que pone `APP_ENV=staging`; `next.config.js` carga ese archivo con `dotenv` |
+| **api** | `apps/api/.env.development` (`@nestjs/config` en `AppModule`) | `apps/api/.env.staging` cuando corres `dev:staging` (`APP_ENV=staging`)                                                    |
 
-| Objetivo | Comando / archivos |
-|----------|---------------------|
-| **Desarrollo normal (Docker + localhost)** | `pnpm dev` en la raíz (`turbo run dev`) o `pnpm --filter web dev` / `api dev`. Copia los `*.example` a `.env.development` en cada app. |
-| **Contra Supabase staging desde tu PC** | `pnpm dev:staging` (ambas apps con Turbo) o `pnpm dev:web:staging` / `pnpm dev:api:staging`. Crea **`apps/web/.env.staging`** y **`apps/api/.env.staging`** a partir de los `.example`. |
+| Objetivo                                   | Comando / archivos                                                                                                                                                                      |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Desarrollo normal (Docker + localhost)** | `pnpm dev` en la raíz (`turbo run dev`) o `pnpm --filter web dev` / `api dev`. Copia los `*.example` a `.env.development` en cada app.                                                  |
+| **Contra Supabase staging desde tu PC**    | `pnpm dev:staging` (ambas apps con Turbo) o `pnpm dev:web:staging` / `pnpm dev:api:staging`. Crea **`apps/web/.env.staging`** y **`apps/api/.env.staging`** a partir de los `.example`. |
 
 **Turbo** en la raíz solo orquesta tareas y rastrea variables/`inputs` para caché; **no** inyecta `.env`. **Next**, **Nest** (`@nestjs/config`) y **Prisma** (en `packages/database`) cargan variables cada uno en su proceso.
 
@@ -82,10 +82,10 @@ Cada app tiene **sus propios** archivos (sin `.env` compartido en la raíz del m
 
 ### 3) Vercel — Preview vs Production (no lo eliges con un comando)
 
-| Despliegue | Variables que usa |
-|------------|---------------------|
-| **Preview** (rama/PR) | Las del entorno **Preview** en el panel de Vercel → suele ser **staging** (Supabase staging, URL API staging). |
-| **Production** (`main` o producción) | Las del entorno **Production** → **producción** real. |
+| Despliegue                           | Variables que usa                                                                                              |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Preview** (rama/PR)                | Las del entorno **Preview** en el panel de Vercel → suele ser **staging** (Supabase staging, URL API staging). |
+| **Production** (`main` o producción) | Las del entorno **Production** → **producción** real.                                                          |
 
 Tú no “corres” la app en Vercel con un flag: **la URL del deploy** (preview vs producción) decide qué build y qué env inyectó Vercel.
 

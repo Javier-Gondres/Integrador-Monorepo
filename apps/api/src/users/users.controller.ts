@@ -17,13 +17,9 @@ export class UsersController {
   }
 
   @Post()
-  create(
-    @Body() body: { email?: unknown; name?: unknown },
-  ) {
-    const email =
-      typeof body.email === 'string' ? body.email.trim() : '';
-    const nameRaw =
-      typeof body.name === 'string' ? body.name.trim() : '';
+  create(@Body() body: { email?: unknown; name?: unknown }) {
+    const email = typeof body.email === 'string' ? body.email.trim() : '';
+    const nameRaw = typeof body.name === 'string' ? body.name.trim() : '';
     if (!email) {
       throw new BadRequestException('El email es obligatorio');
     }
