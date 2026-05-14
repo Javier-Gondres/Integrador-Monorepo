@@ -15,10 +15,10 @@
     "db:deploy:production": "pnpm --filter @repo/db run db:deploy:production",
     "dev:web:staging": "pnpm --filter web run dev:staging",
     "dev:api:staging": "pnpm --filter api run dev:staging",
-    "dev:staging": "turbo run dev:staging",
-    "turbo": "^2.9.10"
+    "dev:staging": "turbo run dev:staging"
   },
   "devDependencies": {
+    "turbo": "^2.9.10",
     "prettier": "^3.7.4",
     "typescript": "5.9.2"
   },
