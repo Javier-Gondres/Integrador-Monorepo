@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "build:api": "pnpm --filter api run build",
+    "build:api": "turbo run build --filter=api",
+    "build:api:deploy": "cross-env NODE_ENV=development CI=true pnpm install --frozen-lockfile && cross-env NODE_ENV=development pnpm exec turbo run build --filter=api",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -18,6 +19,7 @@
     "dev:staging": "turbo run dev:staging"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "turbo": "^2.9.10",
     "prettier": "^3.7.4",
     "typescript": "5.9.2"
