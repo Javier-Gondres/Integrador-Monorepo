@@ -12,10 +12,6 @@ export class UsersService {
 
   async create(email: string, name: string | null) {
     try {
-      console.log({
-        databaseUrl: process.env.DATABASE_URL,
-        appenv: process.env.APP_ENV,
-      });
       return await prisma.user.create({
         data: { email, name },
         select: { id: true, name: true, email: true },
