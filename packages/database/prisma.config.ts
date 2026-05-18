@@ -1,13 +1,32 @@
-import { defineConfig, env } from "prisma/config";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { config as loadEnv } from "dotenv";
+import { defineConfig } from "prisma/config";
 
-// Variables vienen de `dotenv-cli` en los scripts (p. ej. `.env.development`) o del entorno (CI). No cargar `.env` aquí para no duplicar criterios.
-// CLI = DIRECT_URL (migrate). Runtime = DATABASE_URL en client.ts. Supabase: :6543 transaction vs :5432 session/direct; no migrate en :6543.
+const pkgRoot = dirname(fileURLToPath(import.meta.url));
+
+for (const file of [".env.development", ".env"]) {
+  const path = resolve(pkgRoot, file);
+  if (existsSync(path)) {
+    loadEnv({ path });
+    break;
+  }
+}
+
+const datasourceUrl = process.env.DIRECT_URL;
+if (!datasourceUrl) {
+  throw new Error(
+    "Define DIRECT_URL en packages/database/.env.development o en el entorno.",
+  );
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: env("DIRECT_URL"),
+    url: datasourceUrl,
   },
 });

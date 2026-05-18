@@ -57,13 +57,15 @@
     },
 
     "lint": {
-      "dependsOn": ["^lint"],
+      "dependsOn": ["^lint", "^build"],
+      "env": ["DATABASE_URL", "DIRECT_URL"],
       "outputs": [],
       "inputs": ["$TURBO_DEFAULT$", ".eslintrc*", "eslint.config.*"]
     },
 
     "check-types": {
-      "dependsOn": ["^check-types"],
+      "dependsOn": ["^check-types", "^build"],
+      "env": ["DATABASE_URL", "DIRECT_URL", "NEXT_PUBLIC_*"],
       "outputs": []
     }
   }
