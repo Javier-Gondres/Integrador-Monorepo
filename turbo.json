@@ -6,23 +6,11 @@
     "build": {
       "dependsOn": ["^build", "^db:generate"],
 
-      "env": [
-        "NODE_ENV",
-        "DATABASE_URL",
-        "DIRECT_URL",
-        "NEXT_PUBLIC_*"
-      ],
+      "env": ["NODE_ENV", "DATABASE_URL", "DIRECT_URL", "NEXT_PUBLIC_*"],
 
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
 
-      "outputs": [
-        ".next/**",
-        "dist/**",
-        "!.next/cache/**"
-      ]
+      "outputs": [".next/**", "dist/**", "!.next/cache/**"]
     },
 
     "dev": {
@@ -36,10 +24,7 @@
         "NEXT_PUBLIC_*"
       ],
 
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
 
       "cache": false,
       "persistent": true
@@ -74,11 +59,7 @@
     "lint": {
       "dependsOn": ["^lint"],
       "outputs": [],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".eslintrc*",
-        "eslint.config.*"
-      ]
+      "inputs": ["$TURBO_DEFAULT$", ".eslintrc*", "eslint.config.*"]
     },
 
     "check-types": {

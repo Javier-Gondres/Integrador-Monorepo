@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "build:api": "turbo run build --filter=api",
+    "dev": "dotenv -e packages/database/.env.development -- turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
@@ -14,15 +15,21 @@
     "db:deploy:production": "pnpm --filter @repo/db run db:deploy:production",
     "dev:web:staging": "pnpm --filter web run dev:staging",
     "dev:api:staging": "pnpm --filter api run dev:staging",
-    "dev:staging": "turbo run dev:staging"
+    "dev:staging": "dotenv -e packages/database/.env.development -- turbo run dev:staging"
   },
   "devDependencies": {
-    "prettier": "^3.7.4",
+    "dotenv-cli": "^8.0.0",
     "turbo": "^2.9.10",
+    "prettier": "^3.7.4",
     "typescript": "5.9.2"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
-    "node": ">=18"
+    "node": "24.x"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/node": "^24.0.0"
+    }
   }
 }
