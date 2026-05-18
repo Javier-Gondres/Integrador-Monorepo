@@ -11,15 +11,17 @@
     }
   },
   "scripts": {
-    "build": "npx prisma generate && tsc",
+    "build": "prisma generate && tsc",
     "lint": "eslint src --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "db:generate": "npx prisma generate",
-    "build:local": "prisma generate && tsc",
-    "db:generate:local": "dotenv -e .env.development -- prisma generate",
+    "build:dev": "dotenv -e .env.development -- prisma generate && tsc",
+    "db:generate:dev": "dotenv -e .env.development -- prisma generate",
     "db:generate:staging": "dotenv -e .env.staging -- prisma generate",
-    "db:migrate": "dotenv -e .env.development -- prisma migrate dev",
-    "db:deploy": "dotenv -e .env.development -- prisma migrate deploy",
+    "db:generate:production": "dotenv -e .env.production -- prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:deploy:dev": "dotenv -e .env.development -- prisma migrate deploy",
     "db:deploy:staging": "dotenv -e .env.staging -- prisma migrate deploy",
     "db:deploy:production": "dotenv -e .env.production -- prisma migrate deploy"
   },
