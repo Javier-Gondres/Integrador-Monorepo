@@ -11,16 +11,16 @@
     }
   },
   "scripts": {
-    "build": "npx prisma generate && tsc",
+    "build": "prisma generate && tsc",
     "lint": "eslint src --max-warnings 0",
     "check-types": "tsc --noEmit",
     "build:dev": "dotenv -e .env.development -- prisma generate && tsc",
     "db:generate:dev": "dotenv -e .env.development -- prisma generate",
     "db:generate:staging": "dotenv -e .env.staging -- prisma generate",
     "db:generate:production": "dotenv -e .env.production -- prisma generate",
-    "db:migrate": "npx prisma migrate dev",
+    "db:migrate": "prisma migrate dev",
     "db:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
-    "db:deploy": "npx prisma migrate deploy",
+    "db:deploy": "prisma migrate deploy",
     "db:deploy:dev": "dotenv -e .env.development -- prisma migrate deploy",
     "db:deploy:staging": "dotenv -e .env.staging -- prisma migrate deploy",
     "db:deploy:production": "dotenv -e .env.production -- prisma migrate deploy"
@@ -30,13 +30,13 @@
     "dotenv": "^17.4.2",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.39.1",
-    "prisma": "^7.8.0",
     "typescript": "^5.9.2"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/pg": "^8.20.0",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "prisma": "^7.8.0"
   }
 }
