@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+
 import { config } from 'dotenv';
 
 /** Debe importarse antes que `AppModule` para que `process.env` exista al cargar `@repo/db`. */
