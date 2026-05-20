@@ -26,7 +26,12 @@ model Post {
   author    User    @relation(fields: [authorId], references: [id]) 
   authorId  Int
 } 
-
+model Category { 
+  id    Int     @id @default(autoincrement()) 
+  name  String  @unique
+  description String?
+  state Boolean @default(true)
+}
 model Prueba { 
   id        Int     @id @default(autoincrement()) 
   title     String
