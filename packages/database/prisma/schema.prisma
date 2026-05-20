@@ -31,3 +31,10 @@ model Prueba {
   id        Int     @id @default(autoincrement()) 
   title     String
 } 
+
+model Enterprise {
+  id String @id @default(uuid())
+  rnc String @unique
+  name String
+
+}
