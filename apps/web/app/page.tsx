@@ -1,7 +1,8 @@
-import Image, { type ImageProps } from "next/image";
 import { Button } from "@repo/ui/button";
-import { UsersTester } from "./users-tester";
+import Image, { type ImageProps } from "next/image";
+
 import styles from "./page.module.css";
+import { UsersTester } from "./users-tester";
 
 /** Evita prerender estático en build (Prisma necesita DB en runtime, no en CI sin Postgres). */
 export const dynamic = "force-dynamic";

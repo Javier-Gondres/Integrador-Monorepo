@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+
 import styles from "./page.module.css";
 
 type UserRow = { id: number; name: string | null; email: string };
@@ -22,7 +23,6 @@ export function UsersTester() {
   const loadUsers = useCallback(async () => {
     setMessage(null);
     try {
-      console.log({ apiBase: apiBase() });
       const res = await fetch(`${apiBase()}/users`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setUsers((await res.json()) as UserRow[]);
