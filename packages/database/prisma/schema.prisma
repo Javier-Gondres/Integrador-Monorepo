@@ -46,6 +46,8 @@ model Branch {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([companyId])
 }
 
 model User {
@@ -58,6 +60,8 @@ model User {
   lastName        String
 
   isActive        Boolean  @default(true)
+
+  lastLoginAt     DateTime?
 
   memberships     UserCompany[]
 
@@ -90,24 +94,38 @@ model UserCompany {
   role            Role     @relation(fields: [roleId], references: [id])
 
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@unique([userId, companyId])
+
+  @@index([userId])
+  @@index([companyId])
 }
 
 model RefreshToken {
-  id            String   @id @default(cuid())
+  id                String   @id @default(cuid())
 
-  userId        String
+  userId            String
 
-  token         String   @unique
+  hashedToken       String
 
-  expiresAt     DateTime
+  expiresAt         DateTime
 
-  revoked       Boolean  @default(false)
+  revoked           Boolean  @default(false)
+  revokedAt         DateTime?
 
-  user          User     @relation(fields: [userId], references: [id])
+  createdByIp       String?
+  revokedByIp       String?
 
-  createdAt     DateTime @default(now())
+  userAgent         String?
+
+  replacedByTokenId String?
+
+  user              User     @relation(fields: [userId], references: [id])
+
+  createdAt         DateTime @default(now())
+
+  @@index([userId])
 }
 
 model AuditLog {
