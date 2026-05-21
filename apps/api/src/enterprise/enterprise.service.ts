@@ -1,26 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEnterpriseDto } from './dto/create-enterprise.dto';
 import { UpdateEnterpriseDto } from './dto/update-enterprise.dto';
+import { prisma } from '@repo/db';
+import type { Enterprise } from '@repo/db';
 
 @Injectable()
 export class EnterpriseService {
-  create(createEnterpriseDto: CreateEnterpriseDto) {
-    return 'This action adds a new enterprise';
+  async create(createEnterpriseDto: CreateEnterpriseDto): Promise<Enterprise> {
+    return await prisma.enterprise.create({
+      data: {
+        name: createEnterpriseDto.name,
+        rnc: createEnterpriseDto.rnc,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all enterprise`;
+  async findAll() {
+    return await prisma.enterprise.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} enterprise`;
+  async findOne(id: string) {
+    const enterprise = await prisma.enterprise.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!enterprise) {
+      throw new NotFoundException(`Empresa ID: ${id} no encontrada`);
+    }
+
+    return enterprise;
   }
 
-  update(id: number, updateEnterpriseDto: UpdateEnterpriseDto) {
-    return `This action updates a #${id} enterprise`;
+  async update(id: string, updateEnterpriseDto: UpdateEnterpriseDto) {
+    const enterprise = await this.findOne(id);
+
+    return await prisma.enterprise.update({
+      select: { name: true, rnc: true },
+      where: { id: enterprise.id },
+      data: {
+        name: updateEnterpriseDto.name,
+        rnc: updateEnterpriseDto.rnc,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} enterprise`;
+  async remove(id: string) {
+    const enterprise = await this.findOne(id);
+
+    return await prisma.enterprise.delete({
+      where: { id: enterprise.id },
+    });
   }
 }
