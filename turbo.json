@@ -43,7 +43,8 @@
         "APP_ENV",
         "DATABASE_URL",
         "DIRECT_URL",
-        "NEXT_PUBLIC_*"
+        "NEXT_PUBLIC_*",
+        "JWT_SECRET"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "cache": false,
