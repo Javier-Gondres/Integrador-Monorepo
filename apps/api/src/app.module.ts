@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { EnterpriseModule } from './enterprise/enterprise.module';
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { CompanyModule } from "./company/company.module";
+import { UsersModule } from "./users/users.module";
 
 const envFilePath =
-  process.env.APP_ENV === 'staging' ? '.env.staging' : '.env.development';
+  process.env.APP_ENV === "staging" ? ".env.staging" : ".env.development";
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ const envFilePath =
       envFilePath,
     }),
     UsersModule,
-    EnterpriseModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
