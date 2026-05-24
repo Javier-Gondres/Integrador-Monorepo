@@ -50,7 +50,7 @@ const C = {
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
@@ -77,10 +77,14 @@ export default function CategoriesPage() {
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const data = await res.json();
       setCategories(Array.isArray(data) ? data : []);
-    } catch (e: any) {
-      if (e.name === "AbortError") return;
-      console.error("Error real de la API:", e);
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        if (e.name === "AbortError") return;
+        console.error("Error real de la API:", e.message);
+      } else {
+        console.error("Error desconocido de la API:", e);
+      }
+      alert("No se pudieron cargar las categorías. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -135,8 +139,12 @@ export default function CategoriesPage() {
           cat.id === id ? { ...cat, deleted: newDeleteStatus } : cat,
         ),
       );
-    } catch (error: any) {
-      console.error("Error en el borrado lógico:", error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error en el borrado lógico:", error.message);
+      } else {
+        console.error("Error desconocido en el borrado lógico:", error);
+      }
       alert("No se pudo procesar la solicitud de borrado");
     }
   };
@@ -145,7 +153,6 @@ export default function CategoriesPage() {
   const guardarCategoria = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Si estamos editando usamos PUT a /categories/:id, si no, POST a /categories
     const url = editingCategory
       ? `${API_URL}/categories/${editingCategory.id}`
       : `${API_URL}/categories`;
