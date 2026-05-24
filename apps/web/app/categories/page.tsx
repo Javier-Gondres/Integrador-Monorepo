@@ -17,6 +17,7 @@ interface Category {
   name: string;
   description: string | null;
   state: boolean;
+  deleted: boolean;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -49,6 +50,7 @@ const C = {
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
@@ -60,8 +62,8 @@ export default function CategoriesPage() {
     state: true,
   });
 
-  // Fetch
-  const fetchCategories = async (signal?: AbortSignal) => {
+  // Fetch Principal
+  const cargarCategorias = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/categories`, {
@@ -70,7 +72,6 @@ export default function CategoriesPage() {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          Connection: "close",
         },
       });
       if (!res.ok) throw new Error(`Error: ${res.status}`);
@@ -78,20 +79,23 @@ export default function CategoriesPage() {
       setCategories(Array.isArray(data) ? data : []);
     } catch (e: any) {
       if (e.name === "AbortError") return;
-      console.error(e);
+      console.error("Error real de la API:", e);
+      setError(e.message);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const c = new AbortController();
-    fetchCategories(c.signal);
-    return () => c.abort();
+    const controller = new AbortController();
+    cargarCategorias(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
-  // Estado
-  const toggleState = async (id: number, cur: boolean) => {
+  const cambiarEstado = async (id: number, cur: boolean) => {
     const next = !cur;
     try {
       const res = await fetch(`${API_URL}/categories/${id}/state/${next}`, {
@@ -107,22 +111,38 @@ export default function CategoriesPage() {
     }
   };
 
-  // Borrar
-  const handleDelete = async (id: number) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar esta categoría?"))
-      return;
+  // Borrado lógico
+  const borradoLogico = async (id: number, currentDeleteStatus: boolean) => {
+    const newDeleteStatus = !currentDeleteStatus;
+
     try {
-      const res = await fetch(`${API_URL}/categories/${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) setCategories((prev) => prev.filter((c) => c.id !== id));
-    } catch (e) {
-      console.error(e);
+      const res = await fetch(
+        `${API_URL}/categories/${id}/state/${newDeleteStatus}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error("No se pudo modificar el estado de borrado lógico");
+      }
+
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) =>
+          cat.id === id ? { ...cat, deleted: newDeleteStatus } : cat,
+        ),
+      );
+    } catch (error: any) {
+      console.error("Error en el borrado lógico:", error.message);
+      alert("No se pudo procesar la solicitud de borrado");
     }
   };
 
-  // Guardar
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Guardar (Crear o Editar)
+  const crearCategoria = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = editingCategory
       ? `${API_URL}/categories/${editingCategory.id}`
@@ -138,7 +158,7 @@ export default function CategoriesPage() {
         setIsModalOpen(false);
         setEditingCategory(null);
         setFormData({ name: "", description: "", state: true });
-        fetchCategories();
+        cargarCategorias();
       }
     } catch (e) {
       console.error(e);
@@ -150,6 +170,7 @@ export default function CategoriesPage() {
     setFormData({ name: "", description: "", state: true });
     setIsModalOpen(true);
   };
+
   const openEditModal = (cat: Category) => {
     setEditingCategory(cat);
     setFormData({
@@ -160,15 +181,17 @@ export default function CategoriesPage() {
     setIsModalOpen(true);
   };
 
-  // Paginacion
+  // Paginacion y Filtros
   const filtered = useMemo(
     () =>
-      categories.filter(
-        (c) =>
-          c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (c.description &&
-            c.description.toLowerCase().includes(searchTerm.toLowerCase())),
-      ),
+      categories
+        .filter((c) => !c.deleted)
+        .filter(
+          (c) =>
+            c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (c.description &&
+              c.description.toLowerCase().includes(searchTerm.toLowerCase())),
+        ),
     [categories, searchTerm],
   );
 
@@ -261,7 +284,7 @@ export default function CategoriesPage() {
           {/* Botones de accion */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <button
-              onClick={() => fetchCategories()}
+              onClick={() => cargarCategorias()}
               title="Refrescar"
               style={{
                 width: "40px",
@@ -444,7 +467,7 @@ export default function CategoriesPage() {
                       {/* Estado */}
                       <td style={{ padding: "14px 20px", textAlign: "center" }}>
                         <button
-                          onClick={() => toggleState(cat.id, cat.state)}
+                          onClick={() => cambiarEstado(cat.id, cat.state)}
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -519,7 +542,7 @@ export default function CategoriesPage() {
                             <Pencil style={{ width: "14px", height: "14px" }} />
                           </button>
                           <button
-                            onClick={() => handleDelete(cat.id)}
+                            onClick={() => borradoLogico(cat.id, cat.deleted)}
                             title="Eliminar"
                             style={{
                               width: "34px",
@@ -546,7 +569,7 @@ export default function CategoriesPage() {
             </table>
           </div>
 
-          {/* Fooder de paginacion */}
+          {/* Footer de paginacion */}
           <div
             style={{
               padding: "14px 24px",
@@ -716,7 +739,7 @@ export default function CategoriesPage() {
 
             {/* Modal body */}
             <form
-              onSubmit={handleSubmit}
+              onSubmit={crearCategoria}
               style={{
                 padding: "24px",
                 display: "flex",
@@ -830,7 +853,7 @@ export default function CategoriesPage() {
                 </label>
               </div>
 
-              {/* Buttons */}
+              {/* Botones */}
               <div
                 style={{
                   display: "flex",
