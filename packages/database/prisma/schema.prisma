@@ -31,6 +31,7 @@ model Category {
   name  String  @unique
   description String?
   state Boolean @default(true)
+  deleted Boolean @default(false)
 }
 model Prueba { 
   id        Int     @id @default(autoincrement()) 
