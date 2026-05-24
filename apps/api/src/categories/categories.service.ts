@@ -60,7 +60,39 @@ export class CategoriesService {
       throw e;
     }
   }
+  async update(id: number, data: { name?: string; description?: string }) {
+    const category = await prisma.category.findUnique({
+      where: { id },
+    });
 
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    try {
+      return await prisma.category.update({
+        where: { id },
+        data,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          state: true,
+        },
+      });
+    } catch (e: unknown) {
+      if (
+        typeof e === 'object' &&
+        e !== null &&
+        'code' in e &&
+        (e as { code: string }).code === 'P2002'
+      ) {
+        throw new ConflictException('Category name already exists');
+      }
+
+      throw e;
+    }
+  }
   async changeState(id: number, state: boolean) {
     const category = await prisma.category.findUnique({
       where: {

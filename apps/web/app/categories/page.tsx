@@ -142,26 +142,35 @@ export default function CategoriesPage() {
   };
 
   // Guardar (Crear o Editar)
-  const crearCategoria = async (e: React.FormEvent) => {
+  const guardarCategoria = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Si estamos editando usamos PUT a /categories/:id, si no, POST a /categories
     const url = editingCategory
       ? `${API_URL}/categories/${editingCategory.id}`
       : `${API_URL}/categories`;
+
     const method = editingCategory ? "PUT" : "POST";
+
     try {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
       if (res.ok) {
         setIsModalOpen(false);
         setEditingCategory(null);
         setFormData({ name: "", description: "", state: true });
         cargarCategorias();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(`Error al guardar: ${errData.message || res.statusText}`);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Error al guardar la categoría:", e);
+      alert("Ocurrió un error de red al intentar guardar.");
     }
   };
 
@@ -739,7 +748,7 @@ export default function CategoriesPage() {
 
             {/* Modal body */}
             <form
-              onSubmit={crearCategoria}
+              onSubmit={guardarCategoria}
               style={{
                 padding: "24px",
                 display: "flex",

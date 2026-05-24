@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
 } from '@nestjs/common';
 
 import { CategoriesService } from './categories.service';
@@ -35,7 +36,13 @@ export class CategoriesController {
   ) {
     return this.categoriesService.create(body.name, body.description);
   }
-
+  @Put(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { name?: string; description?: string },
+  ) {
+    return this.categoriesService.update(id, body);
+  }
   @Patch(':id/state/:state')
   changeState(
     @Param('id', ParseIntPipe) id: number,
