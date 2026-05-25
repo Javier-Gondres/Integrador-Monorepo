@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import CompanyPageClient from "../../components/CompanyPageClient";
+import CompanyPageClient from "../../components/company/CompanyPageClient";
 import { CompanyResponseSchema } from "../../src/schemas";
 
 async function getCompanies() {

@@ -1,6 +1,5 @@
+import { Company } from "@repo/db";
 import { Dispatch, SetStateAction } from "react";
-
-import { Company } from "../../../packages/database/dist";
 
 type CompanyListProps = {
   companies: Company[];

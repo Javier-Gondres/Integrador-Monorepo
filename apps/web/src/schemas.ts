@@ -5,5 +5,9 @@ export const CompanySchema = z.object({
   name: z.string(),
   rnc: z.string(),
 });
+export const CompanyDraftSchema = z.object({
+  name: z.string(),
+  rnc: z.string(),
+});
 
 export const CompanyResponseSchema = z.array(CompanySchema);
