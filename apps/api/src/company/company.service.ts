@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import type { Company } from "@repo/db";
 import { prisma } from "@repo/db";
+import slug from "slug";
 
 import { CreateCompanyDto } from "./dto/create-company.dto";
 import { UpdateCompanyDto } from "./dto/update-company.dto";
@@ -12,6 +13,7 @@ export class CompanyService {
       data: {
         name: createCompanyDto.name,
         rnc: createCompanyDto.rnc,
+        slug: slug(createCompanyDto.name),
       },
     });
   }

@@ -4,13 +4,7 @@ import { Dispatch, SetStateAction } from "react";
 type CompanyListProps = {
   companies: Company[];
   selectedId: string | null;
-  onSelect: Dispatch<
-    SetStateAction<{
-      name: string;
-      id: string;
-      rnc: string;
-    } | null>
-  >;
+  onSelect: Dispatch<SetStateAction<Company | null>>;
 };
 
 export default function CompanyList({
