@@ -1,3 +1,5 @@
+import { RoleName } from '@repo/db';
+
 export type AccessTokenPayload = { sub: string };
 
 export type RefreshTokenPayload = {
@@ -14,7 +16,8 @@ export type AuthContext = {
   userId: string;
   companyId: string | null;
   branchId: string | null;
-  role: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  role: RoleName | null;
   // TODO: cargar permisos dinámicos aquí (ej. permissions: string[])
 };
 
@@ -25,7 +28,7 @@ export type UserAuthContext = {
   membership: {
     companyId: string;
     defaultBranchId: string | null;
-    role: { name: string };
+    role: { name: RoleName };
   } | null;
 };
 
@@ -40,7 +43,7 @@ export type AuthUser = {
   membership: {
     companyId: string;
     defaultBranchId: string | null;
-    role: { name: string };
+    role: { name: RoleName };
   } | null;
 };
 

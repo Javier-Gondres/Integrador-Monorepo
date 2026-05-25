@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import type { RoleName } from '@repo/db';
 import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
@@ -35,7 +36,7 @@ export type UserMembership = {
   companyId: string;
   roleId: string;
   defaultBranchId: string | null;
-  role: { id: string; name: string };
+  role: { id: string; name: RoleName };
   company: { id: string; name: string; slug: string };
 };
 
