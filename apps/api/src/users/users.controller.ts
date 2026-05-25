@@ -1,11 +1,6 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 
+import { CreateUserDto } from './dto/createUser.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -17,13 +12,23 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('email/:email')
+  findByEmail(@Param('email') email: string) {
+    return this.usersService.findByEmail(email);
+  }
+
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.usersService.findById(id);
+  }
+
   @Post()
-  create(@Body() body: { email?: unknown; name?: unknown }) {
-    const email = typeof body.email === 'string' ? body.email.trim() : '';
-    const nameRaw = typeof body.name === 'string' ? body.name.trim() : '';
-    if (!email) {
-      throw new BadRequestException('El email es obligatorio');
-    }
-    return this.usersService.create(email, nameRaw || null);
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
+
+  @Patch(':id/last-login')
+  updateLastLogin(@Param('id') id: string) {
+    return this.usersService.updateLastLogin(id);
   }
 }

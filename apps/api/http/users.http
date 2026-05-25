@@ -1,0 +1,65 @@
+# Users API — REST Client (VS Code / Cursor extension "REST Client")
+# Requisitos: API en marcha → pnpm --filter api run dev
+# Copia el `id` de la respuesta de "Crear usuario" en @userId para las demás peticiones.
+
+@baseUrl = http://localhost:3001
+@userId = pegar-id-cuid-aqui
+@email = prueba@ejemplo.com
+
+### Listar usuarios
+GET {{baseUrl}}/users
+
+###
+
+### Crear usuario
+# @name createUser
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "Password123",
+  "firstName": "Juan",
+  "lastName": "Pérez"
+}
+
+###
+
+### Crear usuario (email duplicado — debe responder 409)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "Password123",
+  "firstName": "Otro",
+  "lastName": "Usuario"
+}
+
+###
+
+### Obtener usuario por id
+GET {{baseUrl}}/users/{{userId}}
+
+###
+
+### Buscar por email (incluye passwordHash — solo para depuración)
+GET {{baseUrl}}/users/email/{{email}}
+
+###
+
+### Actualizar lastLoginAt
+PATCH {{baseUrl}}/users/{{userId}}/last-login
+
+###
+
+### Crear usuario (validación — contraseña corta, debe fallar si hay ValidationPipe global)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "invalido@test.com",
+  "password": "corta",
+  "firstName": "",
+  "lastName": ""
+}
