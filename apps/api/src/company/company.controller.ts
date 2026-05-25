@@ -27,21 +27,21 @@ export class CompanyController {
     return this.companyService.findAll();
   }
 
-  @Get(":id")
-  findOne(@Param("id", ValidationPipe) id: string) {
-    return this.companyService.findOne(id);
+  @Get(":slug")
+  findOne(@Param("slug", ValidationPipe) slug: string) {
+    return this.companyService.findOne(slug);
   }
 
-  @Patch(":id")
+  @Patch(":slug")
   update(
-    @Param("id", ValidationPipe) id: string,
+    @Param("slug", ValidationPipe) slug: string,
     @Body() updateCompanyDto: UpdateCompanyDto,
   ) {
-    return this.companyService.update(id, updateCompanyDto);
+    return this.companyService.update(slug, updateCompanyDto);
   }
 
-  @Delete(":id")
-  remove(@Param("id", ValidationPipe) id: string) {
-    return this.companyService.remove(id);
+  @Delete(":slug")
+  remove(@Param("slug", ValidationPipe) slug: string) {
+    return this.companyService.remove(slug);
   }
 }

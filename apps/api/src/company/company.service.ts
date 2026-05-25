@@ -19,29 +19,32 @@ export class CompanyService {
   }
 
   async findAll() {
-    return await prisma.company.findMany();
+    return await prisma.company.findMany({
+      where: { isActive: true },
+    });
   }
 
-  async findOne(id: string) {
+  async findOne(slug: string) {
     const company = await prisma.company.findUnique({
       where: {
-        id,
+        slug,
+        isActive: true,
       },
     });
 
     if (!company) {
-      throw new NotFoundException(`Empresa ID: ${id} no encontrada`);
+      throw new NotFoundException(`Empresa ID: ${slug} no encontrada`);
     }
 
     return company;
   }
 
-  async update(id: string, updateCompanyDto: UpdateCompanyDto) {
-    const company = await this.findOne(id);
+  async update(slug: string, updateCompanyDto: UpdateCompanyDto) {
+    const company = await this.findOne(slug);
 
     return await prisma.company.update({
       select: { name: true, rnc: true },
-      where: { id: company.id },
+      where: { slug: company.slug },
       data: {
         name: updateCompanyDto.name,
         rnc: updateCompanyDto.rnc,
@@ -49,11 +52,12 @@ export class CompanyService {
     });
   }
 
-  async remove(id: string) {
-    const company = await this.findOne(id);
+  async remove(slug: string) {
+    const company = await this.findOne(slug);
 
-    return await prisma.company.delete({
-      where: { id: company.id },
+    return await prisma.company.update({
+      where: { slug: company.slug },
+      data: { isActive: false },
     });
   }
 }

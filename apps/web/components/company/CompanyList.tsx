@@ -20,34 +20,36 @@ export default function CompanyList({
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               {/* rounded border div below */}
               <div className="overflow-hidden rounded-lg border border-gray-300 bg-white">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead>
-                    <tr>
-                      <th
-                        scope="col"
-                        className="py-3.5 px-3 text-left text-sm font-semibold text-gray-900"
-                      >
-                        id
-                      </th>
-                      <th
-                        scope="col"
-                        className="py-3.5 px-3 text-left text-sm font-semibold text-gray-900 "
-                      >
-                        nombre
-                      </th>
-                      <th
-                        scope="col"
-                        className="py-3.5 px-3 text-left text-sm font-semibold text-gray-900 "
-                      >
-                        rnc
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {companies.length === 0 ? (
-                      <p>No hay empresas registradas</p>
-                    ) : (
-                      companies.map((company) => (
+                {companies.length === 0 ? (
+                  <p className="font-bold p-2 text-2xl text-center">
+                    No hay registros
+                  </p>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-300">
+                    <thead>
+                      <tr>
+                        <th
+                          scope="col"
+                          className="py-3.5 px-3 text-left text-sm font-semibold text-gray-900"
+                        >
+                          id
+                        </th>
+                        <th
+                          scope="col"
+                          className="py-3.5 px-3 text-left text-sm font-semibold text-gray-900 "
+                        >
+                          nombre
+                        </th>
+                        <th
+                          scope="col"
+                          className="py-3.5 px-3 text-left text-sm font-semibold text-gray-900 "
+                        >
+                          rnc
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {companies.map((company) => (
                         <tr
                           key={company.id}
                           onClick={() => onSelect(company)}
@@ -63,10 +65,10 @@ export default function CompanyList({
                             {company.rnc}
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           </div>

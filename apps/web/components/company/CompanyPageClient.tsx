@@ -34,6 +34,7 @@ export default function CompanyPageClient({
             className="border rounded-lg border-gray-200 py-2 px-2 bg-gray-50 disabled:text-gray-300"
             // onClick={() => setMode("edit")}
             disabled={!hasSelection}
+            onClick={() => setFormOpen(true)}
           >
             Modificar
           </button>
@@ -50,7 +51,11 @@ export default function CompanyPageClient({
           selectedId={selected?.id ?? null}
           onSelect={setSelected}
         />
-        <AddCompanyForm open={formOpen} onOpenChange={setFormOpen} />
+        <AddCompanyForm
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          company={selected ? selected : null}
+        />
         {/* later: <CompanyFormDialog mode={mode} company={selected} onClose={() => setMode(null)} /> */}
       </div>
       <ToastContainer

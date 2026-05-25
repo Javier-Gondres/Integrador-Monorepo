@@ -7,22 +7,26 @@ import {
   Input,
   Label,
 } from "@headlessui/react";
+import { Company } from "@repo/db";
 import { Dispatch, SetStateAction } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import { createCompany } from "../../actions/create-company-action";
+import { updateCompany as updateAction } from "../../actions/update-company-action";
 import { DraftCompany } from "../../src/types";
 import Error from "../ui/Error";
 
 type AddCompanyFormProps = {
   open: boolean;
   onOpenChange: Dispatch<SetStateAction<boolean>>;
+  company: Company | null;
 };
 
 export default function AddCompanyForm({
   open,
   onOpenChange,
+  company,
 }: AddCompanyFormProps) {
   const {
     register,
@@ -36,6 +40,15 @@ export default function AddCompanyForm({
     reset();
     onOpenChange(false);
     toast.success("Empresa creada exitosamente");
+  };
+
+  const updateCompany = (data: DraftCompany) => {
+    if (company) {
+      updateAction(data, company?.slug);
+      reset();
+      onOpenChange(false);
+      toast.success("Empresa actualizada exitosamente");
+    }
   };
 
   const handleClose = () => {
@@ -68,13 +81,21 @@ export default function AddCompanyForm({
                 Registrar Empresa
               </DialogTitle>
 
-              <form onSubmit={handleSubmit(registerCompany)} noValidate>
+              <form
+                onSubmit={
+                  company !== null
+                    ? handleSubmit(updateCompany)
+                    : handleSubmit(registerCompany)
+                }
+                noValidate
+              >
                 <Field className={"mt-5"}>
                   <Label>Nombre</Label>
                   <Input
                     type="text"
                     placeholder="Nombre de la empresa"
                     id="name"
+                    defaultValue={company ? company.name : ""}
                     className={
                       "block my-1 w-full bg-gray-50 py-1 border border-gray-300 rounded-md px-3"
                     }
@@ -91,6 +112,7 @@ export default function AddCompanyForm({
                     type="text"
                     placeholder="RNC"
                     id="rnc"
+                    defaultValue={company ? company.rnc : ""}
                     className={
                       "block my-1 w-full bg-gray-50 py-1 border border-gray-300 rounded-md px-3"
                     }
