@@ -14,18 +14,35 @@ const publicUserSelect = {
   createdAt: true,
 } as const;
 
-const membershipsSelect = {
-  memberships: {
-    select: {
-      id: true,
-      companyId: true,
-      roleId: true,
-      defaultBranchId: true,
-      role: { select: { id: true, name: true } },
-      company: { select: { id: true, name: true, slug: true } },
-    },
-  },
+/** Select de UserCompany; en Prisma la relación se llama `memberships` (1:N). */
+const membershipRelationSelect = {
+  id: true,
+  companyId: true,
+  roleId: true,
+  defaultBranchId: true,
+  role: { select: { id: true, name: true } },
+  company: { select: { id: true, name: true, slug: true } },
 } as const;
+
+export type UserMembership = {
+  id: string;
+  companyId: string;
+  roleId: string;
+  defaultBranchId: string | null;
+  role: { id: string; name: string };
+  company: { id: string; name: string; slug: string };
+};
+
+type UserWithMembershipsRow = {
+  memberships: UserMembership[];
+};
+
+function withMembership<T extends UserWithMembershipsRow>(
+  user: T,
+): Omit<T, 'memberships'> & { membership: UserMembership | null } {
+  const { memberships, ...rest } = user;
+  return { ...rest, membership: memberships[0] ?? null };
+}
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -49,34 +66,27 @@ export class UsersService {
     });
   }
 
-  findById(id: string) {
-    return prisma.user.findUnique({
+  async findById(id: string) {
+    const user = await prisma.user.findUnique({
       where: { id },
       select: {
         ...publicUserSelect,
-        memberships: {
-          select: {
-            id: true,
-            companyId: true,
-            roleId: true,
-            defaultBranchId: true,
-            role: { select: { id: true, name: true, description: true } },
-            company: { select: { id: true, name: true, slug: true } },
-          },
-        },
+        memberships: { select: membershipRelationSelect, take: 1 },
       },
     });
+    return user ? withMembership(user) : null;
   }
 
-  findByEmail(email: string) {
-    return prisma.user.findUnique({
+  async findByEmail(email: string) {
+    const user = await prisma.user.findUnique({
       where: { email: normalizeEmail(email) },
       select: {
         ...publicUserSelect,
         passwordHash: true,
-        ...membershipsSelect,
+        memberships: { select: membershipRelationSelect, take: 1 },
       },
     });
+    return user ? withMembership(user) : null;
   }
 
   async create(createUserDto: CreateUserDto) {

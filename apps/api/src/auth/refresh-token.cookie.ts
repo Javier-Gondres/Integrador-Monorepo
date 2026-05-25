@@ -2,7 +2,7 @@ import type { CookieOptions, Response } from 'express';
 
 export const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
-const REFRESH_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+export const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 function resolveSameSite(): CookieOptions['sameSite'] {
   const fromEnv = process.env.COOKIE_SAME_SITE;
@@ -21,7 +21,7 @@ export function refreshTokenCookieOptions(): CookieOptions {
     secure: sameSite === 'none' || process.env.COOKIE_SECURE === 'true',
     sameSite,
     path: '/',
-    maxAge: REFRESH_MAX_AGE_MS,
+    maxAge: REFRESH_TOKEN_MAX_AGE_MS,
   };
 }
 

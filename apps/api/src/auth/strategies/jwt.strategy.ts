@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
+import { AccessTokenPayload } from '../auth.types';
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(config: ConfigService) {
@@ -13,7 +15,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: any) {
-    return { userId: payload.sub, username: payload.username };
+  validate(payload: AccessTokenPayload) {
+    return {
+      userId: payload.sub,
+      companyId: payload.companyId,
+      role: payload.role,
+      branchId: payload.branchId,
+    };
   }
 }

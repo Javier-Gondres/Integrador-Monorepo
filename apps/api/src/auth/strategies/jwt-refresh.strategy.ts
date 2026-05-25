@@ -1,9 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UsersService } from 'src/users/users.service';
 
+import { RefreshTokenPayload } from '../auth.types';
 import { REFRESH_TOKEN_COOKIE } from '../refresh-token.cookie';
 
 function readRefreshTokenCookie(req: Request): string | null {
@@ -20,7 +26,10 @@ export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
   'jwt-refresh',
 ) {
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    private usersService: UsersService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([readRefreshTokenCookie]),
       secretOrKey: config.getOrThrow<string>('JWT_REFRESH_SECRET'),
@@ -28,11 +37,24 @@ export class JwtRefreshStrategy extends PassportStrategy(
     });
   }
 
-  validate(req: Request, payload: { sub: string }) {
-    const refreshToken = readRefreshTokenCookie(req);
-    if (!refreshToken) {
+  async validate(req: Request, refreshTokenPayload: RefreshTokenPayload) {
+    const refreshTokenFromCookie = readRefreshTokenCookie(req);
+    if (!refreshTokenFromCookie) {
       throw new UnauthorizedException();
     }
-    return { userId: payload.sub, refreshToken };
+
+    const authenticatedUser = await this.usersService.findById(
+      refreshTokenPayload.sub,
+    );
+
+    if (!authenticatedUser) {
+      throw new NotFoundException();
+    }
+
+    return {
+      refreshTokenPayload,
+      refreshTokenFromCookie,
+      authenticatedUser,
+    };
   }
 }
