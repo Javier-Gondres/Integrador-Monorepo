@@ -1,9 +1,10 @@
 import { Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { AuthUser, RefreshGuardRequestUser } from './auth.types';
+import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
   clearRefreshTokenCookie,
   setRefreshTokenCookie,
@@ -13,7 +14,7 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(
     @Req() req: Request & { user: AuthUser },
@@ -26,7 +27,7 @@ export class AuthController {
     return { accessToken };
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRefreshAuthGuard)
   @Post('refresh')
   async refresh(
     @Req() req: Request & { user: RefreshGuardRequestUser },
@@ -35,18 +36,17 @@ export class AuthController {
     const { refreshTokenPayload, refreshTokenFromCookie, authenticatedUser } =
       req.user;
 
-    const { accessToken, refreshToken } =
-      await this.authService.refreshSession(
-        refreshTokenPayload,
-        refreshTokenFromCookie,
-        authenticatedUser,
-      );
+    const { accessToken, refreshToken } = await this.authService.refreshSession(
+      refreshTokenPayload,
+      refreshTokenFromCookie,
+      authenticatedUser,
+    );
 
     setRefreshTokenCookie(res, refreshToken);
     return { accessToken };
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRefreshAuthGuard)
   @Post('logout')
   async logout(
     @Req() req: Request & { user: RefreshGuardRequestUser },
