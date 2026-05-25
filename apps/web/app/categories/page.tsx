@@ -10,7 +10,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface Category {
   id: number;
@@ -20,9 +20,15 @@ interface Category {
   deleted: boolean;
 }
 
+interface PaginatedResponse {
+  data: Category[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-// Paleta de colores TailAdmin v1.3
 const C = {
   pageBg: "#F1F5F9",
   cardBg: "#FFFFFF",
@@ -48,13 +54,20 @@ const C = {
 };
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Estado del servidor y atributos que se le mandan al servidor
+  const [data, setData] = useState<Category[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  // Controles busqueda y paginacion
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -62,43 +75,57 @@ export default function CategoriesPage() {
     state: true,
   });
 
-  // Fetch Principal
-  const cargarCategorias = async (signal?: AbortSignal) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/categories`, {
-        cache: "no-store",
-        signal,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
-      const data = await res.json();
-      setCategories(Array.isArray(data) ? data : []);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        if (e.name === "AbortError") return;
-        console.error("Error real de la API:", e.message);
-      } else {
-        console.error("Error desconocido de la API:", e);
-      }
-      alert("No se pudieron cargar las categorías. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Debounce aplicado a 350ms
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm), 350);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
+  // Resetear a página 1 cuando cambia el filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  // Fetch principal
   useEffect(() => {
     const controller = new AbortController();
-    cargarCategorias(controller.signal);
 
-    return () => {
-      controller.abort();
+    const cargar = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(currentPage),
+          take: String(rowsPerPage),
+          ...(debouncedSearch && { q: debouncedSearch }),
+        });
+
+        const res = await fetch(`${API_URL}/categories?${params}`, {
+          signal: controller.signal,
+          headers: { Accept: "application/json" },
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json: PaginatedResponse = await res.json();
+        setData(json.data);
+        setTotal(json.total);
+        setTotalPages(json.totalPages);
+
+        if (currentPage > json.totalPages) setCurrentPage(json.totalPages);
+      } catch (e) {
+        if (e instanceof Error && e.name === "AbortError") return;
+        console.error(e);
+        alert("No se pudieron cargar las categorías. Intenta de nuevo.");
+      } finally {
+        setLoading(false);
+      }
     };
-  }, []);
 
+    cargar();
+    return () => controller.abort();
+  }, [currentPage, rowsPerPage, debouncedSearch]);
+
+  // Cambiar estado activo/inactivo
   const cambiarEstado = async (id: number, cur: boolean) => {
     const next = !cur;
     try {
@@ -106,57 +133,39 @@ export default function CategoriesPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
       });
-      if (res.ok)
-        setCategories((prev) =>
+      if (res.ok) {
+        setData((prev) =>
           prev.map((c) => (c.id === id ? { ...c, state: next } : c)),
         );
+      }
     } catch (e) {
       console.error(e);
     }
   };
 
   // Borrado lógico
-  const borradoLogico = async (id: number, currentDeleteStatus: boolean) => {
-    const newDeleteStatus = !currentDeleteStatus;
-
+  const borradoLogico = async (id: number) => {
     try {
-      const res = await fetch(
-        `${API_URL}/categories/${id}/state/${newDeleteStatus}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const res = await fetch(`${API_URL}/categories/${id}/delete`, {
+        method: "PATCH",
+      });
+      if (!res.ok) throw new Error("No se pudo eliminar");
 
-      if (!res.ok) {
-        throw new Error("No se pudo modificar el estado de borrado lógico");
-      }
-
-      setCategories((prevCategories) =>
-        prevCategories.map((cat) =>
-          cat.id === id ? { ...cat, deleted: newDeleteStatus } : cat,
-        ),
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Error en el borrado lógico:", error.message);
-      } else {
-        console.error("Error desconocido en el borrado lógico:", error);
-      }
+      setData((prev) => prev.filter((c) => c.id !== id));
+      setTotal((prev) => prev - 1);
+    } catch (e) {
+      console.error(e);
       alert("No se pudo procesar la solicitud de borrado");
     }
   };
 
-  // Guardar (Crear o Editar)
+  // ── Guardar (Crear o Editar)
   const guardarCategoria = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const url = editingCategory
       ? `${API_URL}/categories/${editingCategory.id}`
       : `${API_URL}/categories`;
-
     const method = editingCategory ? "PUT" : "POST";
 
     try {
@@ -170,13 +179,15 @@ export default function CategoriesPage() {
         setIsModalOpen(false);
         setEditingCategory(null);
         setFormData({ name: "", description: "", state: true });
-        cargarCategorias();
+        // Fuerza re-fetch de la página actual
+        setCurrentPage((p) => (p === 1 ? 1 : p));
+        setDebouncedSearch((s) => s);
       } else {
         const errData = await res.json().catch(() => ({}));
         alert(`Error al guardar: ${errData.message || res.statusText}`);
       }
     } catch (e) {
-      console.error("Error al guardar la categoría:", e);
+      console.error(e);
       alert("Ocurrió un error de red al intentar guardar.");
     }
   };
@@ -197,32 +208,9 @@ export default function CategoriesPage() {
     setIsModalOpen(true);
   };
 
-  // Paginacion y Filtros
-  const filtered = useMemo(
-    () =>
-      categories
-        .filter((c) => !c.deleted)
-        .filter(
-          (c) =>
-            c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (c.description &&
-              c.description.toLowerCase().includes(searchTerm.toLowerCase())),
-        ),
-    [categories, searchTerm],
-  );
-
-  const totalRows = filtered.length;
-  const totalPages = useMemo(
-    () => Math.ceil(totalRows / rowsPerPage) || 1,
-    [totalRows, rowsPerPage],
-  );
-  const safePage = Math.min(currentPage, totalPages);
-  const startIdx = (safePage - 1) * rowsPerPage;
-  const endIdx = Math.min(startIdx + rowsPerPage, totalRows);
-  const rows = useMemo(
-    () => filtered.slice(startIdx, endIdx),
-    [filtered, startIdx, endIdx],
-  );
+  // Valores para el footer (calculados para el server)
+  const startIdx = total === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+  const endIdx = Math.min(currentPage * rowsPerPage, total);
 
   return (
     <main
@@ -232,7 +220,7 @@ export default function CategoriesPage() {
         fontFamily: "inherit",
       }}
     >
-      {/* Header de la pagina */}
+      {/* Header */}
       <div
         style={{
           backgroundColor: C.cardBg,
@@ -257,7 +245,7 @@ export default function CategoriesPage() {
         </h1>
       </div>
 
-      {/* Body  */}
+      {/* Body */}
       <div
         style={{
           padding: "32px 40px",
@@ -266,7 +254,7 @@ export default function CategoriesPage() {
           gap: "20px",
         }}
       >
-        {/*Toolbar */}
+        {/* Toolbar */}
         <div
           style={{
             display: "flex",
@@ -275,15 +263,11 @@ export default function CategoriesPage() {
             gap: "12px",
           }}
         >
-          {/* Buscador*/}
           <input
             type="text"
             placeholder="Buscar categoría..."
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               width: "280px",
               height: "40px",
@@ -296,11 +280,9 @@ export default function CategoriesPage() {
               outline: "none",
             }}
           />
-
-          {/* Botones de accion */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <button
-              onClick={() => cargarCategorias()}
+              onClick={() => setDebouncedSearch((s) => s)}
               title="Refrescar"
               style={{
                 width: "40px",
@@ -353,7 +335,7 @@ export default function CategoriesPage() {
             overflow: "hidden",
           }}
         >
-          {/* header */}
+          {/* Header tabla */}
           <div
             style={{
               padding: "16px 24px",
@@ -374,11 +356,10 @@ export default function CategoriesPage() {
               Lista de Categorías
             </h3>
             <span style={{ fontSize: "13px", color: C.mutedText }}>
-              {totalRows} {totalRows === 1 ? "resultado" : "resultados"}
+              {total} {total === 1 ? "resultado" : "resultados"}
             </span>
           </div>
 
-          {/* Table */}
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
@@ -417,7 +398,7 @@ export default function CategoriesPage() {
                       Cargando categorías...
                     </td>
                   </tr>
-                ) : rows.length === 0 ? (
+                ) : data.length === 0 ? (
                   <tr>
                     <td
                       colSpan={4}
@@ -432,18 +413,17 @@ export default function CategoriesPage() {
                     </td>
                   </tr>
                 ) : (
-                  rows.map((cat, i) => (
+                  data.map((cat, i) => (
                     <tr
                       key={cat.id}
                       style={{
                         borderBottom:
-                          i < rows.length - 1
+                          i < data.length - 1
                             ? `1px solid ${C.divider}`
                             : "none",
                       }}
                       className="group hover:bg-[#F9FAFB] transition-colors"
                     >
-                      {/* Nombre */}
                       <td
                         style={{
                           padding: "14px 20px",
@@ -454,7 +434,6 @@ export default function CategoriesPage() {
                       >
                         {cat.name}
                       </td>
-                      {/* Descripción */}
                       <td
                         style={{
                           padding: "14px 20px",
@@ -480,7 +459,6 @@ export default function CategoriesPage() {
                           )}
                         </div>
                       </td>
-                      {/* Estado */}
                       <td style={{ padding: "14px 20px", textAlign: "center" }}>
                         <button
                           onClick={() => cambiarEstado(cat.id, cat.state)}
@@ -528,7 +506,6 @@ export default function CategoriesPage() {
                           )}
                         </button>
                       </td>
-                      {/* Acciones */}
                       <td style={{ padding: "14px 20px", textAlign: "center" }}>
                         <div
                           style={{
@@ -558,7 +535,7 @@ export default function CategoriesPage() {
                             <Pencil style={{ width: "14px", height: "14px" }} />
                           </button>
                           <button
-                            onClick={() => borradoLogico(cat.id, cat.deleted)}
+                            onClick={() => borradoLogico(cat.id)}
                             title="Eliminar"
                             style={{
                               width: "34px",
@@ -585,7 +562,7 @@ export default function CategoriesPage() {
             </table>
           </div>
 
-          {/* Footer de paginacion */}
+          {/* Footer paginación */}
           <div
             style={{
               padding: "14px 24px",
@@ -597,7 +574,6 @@ export default function CategoriesPage() {
               flexWrap: "wrap",
             }}
           >
-            {/*Apartado de filas por página*/}
             <div
               style={{
                 display: "flex",
@@ -634,23 +610,21 @@ export default function CategoriesPage() {
               </select>
             </div>
 
-            {/* Rangos */}
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               <span style={{ fontSize: "13px", color: C.headText }}>
-                {totalRows === 0 ? "0–0" : `${startIdx + 1}–${endIdx}`} de{" "}
-                {totalRows}
+                {total === 0 ? "0–0" : `${startIdx}–${endIdx}`} de {total}
               </span>
               <div style={{ display: "flex", gap: "6px" }}>
                 {[
                   {
                     onClick: () => setCurrentPage((p) => Math.max(p - 1, 1)),
-                    disabled: safePage === 1 || loading,
+                    disabled: currentPage === 1 || loading,
                     Icon: ChevronLeft,
                   },
                   {
                     onClick: () =>
                       setCurrentPage((p) => Math.min(p + 1, totalPages)),
-                    disabled: safePage === totalPages || loading,
+                    disabled: currentPage === totalPages || loading,
                     Icon: ChevronRight,
                   },
                 ].map(({ onClick, disabled, Icon }, i) => (
@@ -681,7 +655,7 @@ export default function CategoriesPage() {
         </div>
       </div>
 
-      {/*Modal*/}
+      {/* Modal */}
       {isModalOpen && (
         <div
           style={{
@@ -707,7 +681,6 @@ export default function CategoriesPage() {
               flexDirection: "column",
             }}
           >
-            {/* header */}
             <div
               style={{
                 padding: "20px 24px",
@@ -753,7 +726,6 @@ export default function CategoriesPage() {
               </button>
             </div>
 
-            {/* Modal body */}
             <form
               onSubmit={guardarCategoria}
               style={{
@@ -763,7 +735,6 @@ export default function CategoriesPage() {
                 gap: "18px",
               }}
             >
-              {/* Nombre */}
               <div
                 style={{ display: "flex", flexDirection: "column", gap: "6px" }}
               >
@@ -797,7 +768,6 @@ export default function CategoriesPage() {
                 />
               </div>
 
-              {/* Descripción */}
               <div
                 style={{ display: "flex", flexDirection: "column", gap: "6px" }}
               >
@@ -830,7 +800,6 @@ export default function CategoriesPage() {
                 />
               </div>
 
-              {/* Estado */}
               <div
                 style={{
                   display: "flex",
@@ -869,7 +838,6 @@ export default function CategoriesPage() {
                 </label>
               </div>
 
-              {/* Botones */}
               <div
                 style={{
                   display: "flex",
