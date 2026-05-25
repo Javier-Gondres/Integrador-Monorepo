@@ -1,13 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UsersService } from 'src/users/users.service';
 
-import { AccessTokenPayload } from '../auth.types';
+import { AccessTokenPayload, JwtGuardRequestUser } from '../auth.types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    private readonly usersService: UsersService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -15,12 +19,30 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: AccessTokenPayload) {
+  async validate(payload: AccessTokenPayload): Promise<JwtGuardRequestUser> {
+    const authenticatedUser = await this.usersService.findByIdForAccessToken(
+      payload.sub,
+      payload.companyId,
+    );
+
+    if (!authenticatedUser?.membership) {
+      throw new UnauthorizedException();
+    }
+
+    const { membership } = authenticatedUser;
+
+    if (
+      membership.role.name !== payload.role ||
+      membership.defaultBranchId !== payload.branchId
+    ) {
+      throw new UnauthorizedException();
+    }
+
     return {
-      userId: payload.sub,
-      companyId: payload.companyId,
-      role: payload.role,
-      branchId: payload.branchId,
+      userId: authenticatedUser.id,
+      companyId: membership.companyId,
+      role: membership.role.name,
+      branchId: membership.defaultBranchId,
     };
   }
 }

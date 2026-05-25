@@ -77,6 +77,26 @@ export class UsersService {
     return user ? withMembership(user) : null;
   }
 
+  async findByIdForAccessToken(userId: string, companyId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        ...publicUserSelect,
+        memberships: {
+          where: { companyId },
+          select: membershipRelationSelect,
+          take: 1,
+        },
+      },
+    });
+
+    if (!user?.isActive) {
+      return null;
+    }
+
+    return withMembership(user);
+  }
+
   async findByEmail(email: string) {
     const user = await prisma.user.findUnique({
       where: { email: normalizeEmail(email) },

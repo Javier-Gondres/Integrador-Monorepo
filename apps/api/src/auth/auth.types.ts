@@ -28,6 +28,14 @@ export type AuthTokens = {
   refreshToken: string;
 };
 
+/** Objeto que deja `JwtStrategy` en `req.user`. */
+export type JwtGuardRequestUser = {
+  userId: string;
+  companyId: string;
+  role: string;
+  branchId: string | null;
+};
+
 /** Objeto que deja `JwtRefreshStrategy` en `req.user`. */
 export type RefreshGuardRequestUser = {
   refreshTokenPayload: RefreshTokenPayload;
