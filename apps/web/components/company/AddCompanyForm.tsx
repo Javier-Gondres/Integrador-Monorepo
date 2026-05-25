@@ -9,7 +9,9 @@ import {
 } from "@headlessui/react";
 import { Dispatch, SetStateAction } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
+import { createCompany } from "../../actions/create-company-action";
 import { DraftCompany } from "../../src/types";
 import Error from "../ui/Error";
 
@@ -30,7 +32,15 @@ export default function AddCompanyForm({
   } = useForm<DraftCompany>();
 
   const registerCompany = (data: DraftCompany) => {
+    createCompany(data);
     reset();
+    onOpenChange(false);
+    toast.success("Empresa creada exitosamente");
+  };
+
+  const handleClose = () => {
+    reset();
+    onOpenChange(false);
   };
 
   return (
@@ -38,7 +48,7 @@ export default function AddCompanyForm({
       open={open}
       as="div"
       className="relative z-10 focus:outline-none"
-      onClose={() => onOpenChange(false)}
+      onClose={() => handleClose()}
     >
       {/* Para mostrar el background oscuro */}
       <div className="fixed inset-0 bg-black/40" aria-hidden="true">
@@ -100,7 +110,7 @@ export default function AddCompanyForm({
                   <Button
                     type="button"
                     className="inline-flex items-center gap-2 rounded-md bg-gray-50 px-3 py-1.5 text-sm/6 font-semibold text-black shadow-inner shadow-white/10 focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white data-hover:bg-gray-600 data-open:bg-gray-700"
-                    onClick={() => onOpenChange(false)}
+                    onClick={() => handleClose()}
                   >
                     Cancelar
                   </Button>

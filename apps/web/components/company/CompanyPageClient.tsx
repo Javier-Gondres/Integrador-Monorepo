@@ -2,6 +2,7 @@
 
 import type { Company } from "@repo/db";
 import { useMemo, useState } from "react";
+import { ToastContainer, Zoom } from "react-toastify";
 
 import AddCompanyForm from "./AddCompanyForm";
 import CompanyList from "./CompanyList";
@@ -52,6 +53,18 @@ export default function CompanyPageClient({
         <AddCompanyForm open={formOpen} onOpenChange={setFormOpen} />
         {/* later: <CompanyFormDialog mode={mode} company={selected} onClose={() => setMode(null)} /> */}
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000} //duracion para cerrarse solo (en ms)
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        pauseOnHover
+        theme="light"
+        transition={Zoom}
+      />
     </div>
   );
 }

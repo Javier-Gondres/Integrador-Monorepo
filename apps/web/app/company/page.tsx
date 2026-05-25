@@ -4,7 +4,7 @@ import CompanyPageClient from "../../components/company/CompanyPageClient";
 import { CompanyResponseSchema } from "../../src/schemas";
 
 async function getCompanies() {
-  const url = `${process.env.NEXT_PUBLIC_API_URL}/company`;
+  const url = `${process.env.API_URL}/company`;
   const req = await fetch(url);
 
   if (!req.ok) {
