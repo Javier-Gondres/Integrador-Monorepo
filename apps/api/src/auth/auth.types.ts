@@ -1,22 +1,4 @@
-import { UserMembership } from 'src/users/users.service';
-
-export type AuthUser = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  isActive: boolean;
-  lastLoginAt: Date | null;
-  createdAt: Date;
-  membership: UserMembership | null;
-};
-
-export type AccessTokenPayload = {
-  sub: string;
-  companyId: string;
-  role: string;
-  branchId: string | null;
-};
+export type AccessTokenPayload = { sub: string };
 
 export type RefreshTokenPayload = {
   sub: string;
@@ -28,17 +10,41 @@ export type AuthTokens = {
   refreshToken: string;
 };
 
-/** Objeto que deja `JwtStrategy` en `req.user`. */
-export type JwtGuardRequestUser = {
+export type AuthContext = {
   userId: string;
-  companyId: string;
-  role: string;
+  companyId: string | null;
   branchId: string | null;
+  role: string | null;
+  // TODO: cargar permisos dinámicos aquí (ej. permissions: string[])
 };
 
-/** Objeto que deja `JwtRefreshStrategy` en `req.user`. */
+export type UserAuthContext = {
+  id: string;
+  email: string;
+  isActive: boolean;
+  membership: {
+    companyId: string;
+    defaultBranchId: string | null;
+    role: { name: string };
+  } | null;
+};
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+  membership: {
+    companyId: string;
+    defaultBranchId: string | null;
+    role: { name: string };
+  } | null;
+};
+
 export type RefreshGuardRequestUser = {
   refreshTokenPayload: RefreshTokenPayload;
   refreshTokenFromCookie: string;
-  authenticatedUser: AuthUser;
 };

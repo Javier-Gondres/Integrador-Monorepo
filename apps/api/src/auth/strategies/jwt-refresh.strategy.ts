@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
@@ -28,7 +24,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
 ) {
   constructor(
     config: ConfigService,
-    private usersService: UsersService,
+    private readonly usersService: UsersService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([readRefreshTokenCookie]),
@@ -43,18 +39,17 @@ export class JwtRefreshStrategy extends PassportStrategy(
       throw new UnauthorizedException();
     }
 
-    const authenticatedUser = await this.usersService.findById(
+    const userAuthContext = await this.usersService.findAuthContext(
       refreshTokenPayload.sub,
     );
 
-    if (!authenticatedUser) {
-      throw new NotFoundException();
+    if (!userAuthContext?.isActive) {
+      throw new UnauthorizedException();
     }
 
     return {
       refreshTokenPayload,
       refreshTokenFromCookie,
-      authenticatedUser,
     };
   }
 }

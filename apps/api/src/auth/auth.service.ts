@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
-import { UserMembership, UsersService } from 'src/users/users.service';
+import { UsersService } from 'src/users/users.service';
 
 import {
   AccessTokenPayload,
@@ -47,29 +47,22 @@ export class AuthService {
   }
 
   async login(authenticatedUser: AuthUser): Promise<AuthTokens> {
-    const companyMembership =
-      this.getCompanyMembershipOrFail(authenticatedUser);
     await this.usersService.updateLastLogin(authenticatedUser.id);
-    return this.generateAccessAndRefreshTokens(
-      authenticatedUser.id,
-      companyMembership,
-    );
+    return this.generateAccessAndRefreshTokens(authenticatedUser.id);
   }
 
   async refreshSession(
     refreshTokenPayload: RefreshTokenPayload,
     refreshTokenFromCookie: string,
-    authenticatedUser: AuthUser,
   ): Promise<AuthTokens> {
-    if (
-      !authenticatedUser.isActive ||
-      authenticatedUser.id !== refreshTokenPayload.sub
-    ) {
+    const userAuthContext = await this.usersService.findAuthContext(
+      refreshTokenPayload.sub,
+    );
+
+    if (!userAuthContext?.isActive) {
       throw new UnauthorizedException();
     }
 
-    const companyMembership =
-      this.getCompanyMembershipOrFail(authenticatedUser);
     const refreshTokenRecord = await this.verifyRefreshTokenInDatabase(
       refreshTokenPayload,
       refreshTokenFromCookie,
@@ -78,7 +71,6 @@ export class AuthService {
     return this.revokeOldRefreshTokenAndCreateNew(
       refreshTokenRecord.id,
       refreshTokenPayload.sub,
-      companyMembership,
     );
   }
 
@@ -116,23 +108,8 @@ export class AuthService {
     });
   }
 
-  private getCompanyMembershipOrFail(user: AuthUser): UserMembership {
-    if (!user.membership) {
-      throw new UnauthorizedException('El usuario no tiene empresa asignada');
-    }
-    return user.membership;
-  }
-
-  private buildAccessTokenClaims(
-    userId: string,
-    companyMembership: UserMembership,
-  ): AccessTokenPayload {
-    return {
-      sub: userId,
-      companyId: companyMembership.companyId,
-      role: companyMembership.role.name,
-      branchId: companyMembership.defaultBranchId,
-    };
+  private buildAccessTokenClaims(userId: string): AccessTokenPayload {
+    return { sub: userId };
   }
 
   private generateAccessToken(claims: AccessTokenPayload): string {
@@ -173,11 +150,10 @@ export class AuthService {
 
   private async generateAccessAndRefreshTokens(
     userId: string,
-    companyMembership: UserMembership,
   ): Promise<AuthTokens> {
     const newRefreshTokenId = randomUUID();
     const accessToken = this.generateAccessToken(
-      this.buildAccessTokenClaims(userId, companyMembership),
+      this.buildAccessTokenClaims(userId),
     );
     const refreshToken = this.generateRefreshToken({
       sub: userId,
@@ -230,11 +206,10 @@ export class AuthService {
   private async revokeOldRefreshTokenAndCreateNew(
     previousRefreshTokenId: string,
     userId: string,
-    companyMembership: UserMembership,
   ): Promise<AuthTokens> {
     const newRefreshTokenId = randomUUID();
     const accessToken = this.generateAccessToken(
-      this.buildAccessTokenClaims(userId, companyMembership),
+      this.buildAccessTokenClaims(userId),
     );
     const refreshToken = this.generateRefreshToken({
       sub: userId,

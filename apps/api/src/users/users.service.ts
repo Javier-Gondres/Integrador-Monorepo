@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
+import { UserAuthContext } from '../auth/auth.types';
 import { CreateUserDto } from './dto/createUser.dto';
 
 const publicUserSelect = {
@@ -14,8 +15,13 @@ const publicUserSelect = {
   createdAt: true,
 } as const;
 
-/** Select de UserCompany; en Prisma la relación se llama `memberships` (1:N). */
 const membershipRelationSelect = {
+  companyId: true,
+  defaultBranchId: true,
+  role: { select: { name: true } },
+} as const;
+
+const membershipRelationSelectFull = {
   id: true,
   companyId: true,
   roleId: true,
@@ -59,6 +65,40 @@ function isUniqueConstraintError(error: unknown): boolean {
 
 @Injectable()
 export class UsersService {
+  async findAuthContext(userId: string): Promise<UserAuthContext | null> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        memberships: {
+          select: membershipRelationSelect,
+          take: 1,
+        },
+      },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const membership = user.memberships[0] ?? null;
+
+    return {
+      id: user.id,
+      email: user.email,
+      isActive: user.isActive,
+      membership: membership
+        ? {
+            companyId: membership.companyId,
+            defaultBranchId: membership.defaultBranchId,
+            role: { name: membership.role.name },
+          }
+        : null,
+    };
+  }
+
   findAll() {
     return prisma.user.findMany({
       orderBy: { createdAt: 'asc' },
@@ -71,30 +111,10 @@ export class UsersService {
       where: { id },
       select: {
         ...publicUserSelect,
-        memberships: { select: membershipRelationSelect, take: 1 },
+        memberships: { select: membershipRelationSelectFull, take: 1 },
       },
     });
     return user ? withMembership(user) : null;
-  }
-
-  async findByIdForAccessToken(userId: string, companyId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        ...publicUserSelect,
-        memberships: {
-          where: { companyId },
-          select: membershipRelationSelect,
-          take: 1,
-        },
-      },
-    });
-
-    if (!user?.isActive) {
-      return null;
-    }
-
-    return withMembership(user);
   }
 
   async findByEmail(email: string) {
@@ -103,7 +123,7 @@ export class UsersService {
       select: {
         ...publicUserSelect,
         passwordHash: true,
-        memberships: { select: membershipRelationSelect, take: 1 },
+        memberships: { select: membershipRelationSelectFull, take: 1 },
       },
     });
     return user ? withMembership(user) : null;

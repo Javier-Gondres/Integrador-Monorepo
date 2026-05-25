@@ -33,13 +33,11 @@ export class AuthController {
     @Req() req: Request & { user: RefreshGuardRequestUser },
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { refreshTokenPayload, refreshTokenFromCookie, authenticatedUser } =
-      req.user;
+    const { refreshTokenPayload, refreshTokenFromCookie } = req.user;
 
     const { accessToken, refreshToken } = await this.authService.refreshSession(
       refreshTokenPayload,
       refreshTokenFromCookie,
-      authenticatedUser,
     );
 
     setRefreshTokenCookie(res, refreshToken);

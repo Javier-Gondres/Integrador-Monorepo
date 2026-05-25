@@ -83,7 +83,7 @@ model Role {
 model UserCompany {
   id              String   @id @default(cuid())
 
-  userId          String
+  userId          String   @unique // un usuario: una empresa como máximo
   companyId       String
   roleId          String
 
@@ -96,9 +96,6 @@ model UserCompany {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@unique([userId, companyId])
-
-  @@index([userId])
   @@index([companyId])
 }
 
