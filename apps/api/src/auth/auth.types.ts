@@ -16,7 +16,7 @@ export type AuthContext = {
   userId: string;
   companyId: string | null;
   branchId: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+   
   role: RoleName | null;
   // TODO: cargar permisos dinámicos aquí (ej. permissions: string[])
 };

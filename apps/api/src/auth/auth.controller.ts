@@ -1,8 +1,10 @@
-import { Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
-import { AuthUser, RefreshGuardRequestUser } from './auth.types';
+import { AuthContext, AuthUser, RefreshGuardRequestUser } from './auth.types';
+import { Auth } from './decorators/auth.decorator';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
@@ -53,5 +55,11 @@ export class AuthController {
     await this.authService.logoutSession(req.user.refreshTokenPayload);
     clearRefreshTokenCookie(res);
     return { message: 'Sesión cerrada' };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getMe(@Auth() auth: AuthContext) {
+    return auth;
   }
 }

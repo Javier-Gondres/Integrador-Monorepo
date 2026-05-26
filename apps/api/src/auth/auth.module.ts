@@ -5,6 +5,7 @@ import { UsersModule } from 'src/users/users.module';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { LocalStrategy } from './strategies/local.strategies';
@@ -19,7 +20,13 @@ import { LocalStrategy } from './strategies/local.strategies';
       signOptions: { expiresIn: '15m' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    JwtAuthGuard,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

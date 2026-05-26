@@ -47,12 +47,31 @@ POST {{baseUrl}}/auth/refresh
 
 ###
 
-### 4) Logout — invalida la sesión y borra la cookie
+@accessToken = {{refresh.response.body.$.accessToken}}
+
+### 4) JWT — contexto de autorización (requiere access token)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 5) JWT — ping mínimo (requiere access token)
+GET {{baseUrl}}/auth/ping
+Authorization: Bearer {{accessToken}}
+
+###
+
+### 6) JWT sin token — debe fallar (401)
+GET {{baseUrl}}/auth/me
+
+###
+
+### 7) Logout — invalida la sesión y borra la cookie
 POST {{baseUrl}}/auth/logout
 
 ###
 
-### 5) Refresh tras logout — debe fallar (401)
+### 8) Refresh tras logout — debe fallar (401)
 POST {{baseUrl}}/auth/refresh
 
 ###
@@ -67,8 +86,3 @@ Content-Type: application/json
 }
 
 ###
-
-### Ejemplo: ruta protegida con access token (cuando exista un endpoint con JwtAuthGuard)
-# Tras refresh, puedes usar: @accessToken = {{refresh.response.body.$.accessToken}}
-# GET {{baseUrl}}/alguna-ruta-protegida
-# Authorization: Bearer {{accessToken}}
