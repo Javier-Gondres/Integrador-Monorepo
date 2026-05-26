@@ -14,6 +14,11 @@ export class CompanyService {
         name: createCompanyDto.name,
         rnc: createCompanyDto.rnc,
         slug: slug(createCompanyDto.name),
+        branches: {
+          create: {
+            name: "Sucursal",
+          },
+        },
       },
     });
   }
