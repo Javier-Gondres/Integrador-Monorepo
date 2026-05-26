@@ -5,6 +5,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { CompanyModule } from "./company/company.module";
 import { UsersModule } from "./users/users.module";
+import { BranchModule } from './branch/branch.module';
 
 const envFilePath =
   process.env.APP_ENV === "staging" ? ".env.staging" : ".env.development";
@@ -17,6 +18,7 @@ const envFilePath =
     }),
     UsersModule,
     CompanyModule,
+    BranchModule,
   ],
   controllers: [AppController],
   providers: [AppService],
