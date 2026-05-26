@@ -10,7 +10,8 @@ function resolveSameSite(): CookieOptions['sameSite'] {
     return fromEnv;
   }
 
-  return 'none';
+  // En producción, usamos 'none' para cookies seguras.
+  return 'lax';
 }
 
 export function refreshTokenCookieOptions(): CookieOptions {

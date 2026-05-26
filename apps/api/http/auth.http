@@ -1,0 +1,74 @@
+# Auth API — REST Client (extensión "REST Client" en VS Code / Cursor)
+#
+# Requisitos:
+#   1. PostgreSQL + migraciones: pnpm --filter @repo/db run db:migrate:dev
+#   2. API en marcha: pnpm --filter api run dev
+#   3. apps/api/.env.development con JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, DATABASE_URL
+#      y COOKIE_SAME_SITE=lax (reinicia la API tras cambiar el .env)
+#
+# Flujo: ejecuta las peticiones en orden (1 → 2 → 3 → …).
+# REST Client reenvía la cookie refreshToken automáticamente tras el login.
+
+@baseUrl = http://localhost:3001
+@email = prueba@ejemplo.com
+@password = Password123
+
+### 1) Crear usuario (si aún no existe)
+# @name createUser
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "firstName": "Juan",
+  "lastName": "Pérez"
+}
+
+###
+
+### 2) Login — devuelve accessToken y cookie refreshToken
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###
+
+@accessToken = {{login.response.body.$.accessToken}}
+
+### 3) Refresh — usa la cookie del login (sin body ni headers extra)
+# @name refresh
+POST {{baseUrl}}/auth/refresh
+
+###
+
+### 4) Logout — invalida la sesión y borra la cookie
+POST {{baseUrl}}/auth/logout
+
+###
+
+### 5) Refresh tras logout — debe fallar (401)
+POST {{baseUrl}}/auth/refresh
+
+###
+
+### Login con credenciales incorrectas — debe fallar (401)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "PasswordIncorrecta"
+}
+
+###
+
+### Ejemplo: ruta protegida con access token (cuando exista un endpoint con JwtAuthGuard)
+# Tras refresh, puedes usar: @accessToken = {{refresh.response.body.$.accessToken}}
+# GET {{baseUrl}}/alguna-ruta-protegida
+# Authorization: Bearer {{accessToken}}
