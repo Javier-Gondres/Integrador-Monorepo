@@ -1,11 +1,15 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
+import {
+  Company,
+  type CompanyContext,
+  RequireCompany,
+} from 'src/common/company';
 
 import { AuthService } from './auth.service';
 import { AuthContext, RefreshGuardRequestUser } from './auth.types';
 import { Auth } from './decorators/auth.decorator';
 import { LoginDto } from './dto/login.dto/login.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import {
   clearRefreshTokenCookie,
@@ -58,9 +62,9 @@ export class AuthController {
     return { message: 'Sesión cerrada' };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @RequireCompany()
   @Get('me')
-  getMe(@Auth() auth: AuthContext) {
-    return auth;
+  getMe(@Auth() auth: AuthContext, @Company() company: CompanyContext) {
+    return { auth, company };
   }
 }

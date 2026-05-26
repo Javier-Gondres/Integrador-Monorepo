@@ -49,7 +49,8 @@ POST {{baseUrl}}/auth/refresh
 
 @accessToken = {{refresh.response.body.$.data.accessToken}}
 
-### 4) JWT — contexto de autorización (requiere access token)
+### 4) JWT + empresa — contexto auth y company (requiere membership)
+# Respuesta: { success, data: { auth: { userId, companyId, ... }, company: { companyId, branchId, role } } }
 GET {{baseUrl}}/auth/me
 Authorization: Bearer {{accessToken}}
 

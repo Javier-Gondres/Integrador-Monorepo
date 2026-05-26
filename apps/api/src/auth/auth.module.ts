@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from 'src/users/users.module';
 
+import { CompanyGuard } from '../common/company/guards/company.guard';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -23,7 +24,8 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     JwtStrategy,
     JwtRefreshStrategy,
     JwtAuthGuard,
+    CompanyGuard,
   ],
-  exports: [AuthService],
+  exports: [AuthService, JwtAuthGuard, CompanyGuard],
 })
 export class AuthModule {}
