@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/errors';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { createGlobalValidationPipe } from './common/pipes/validation.pipe.factory';
 
 function corsOrigin(config: ConfigService) {
@@ -48,6 +49,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(createGlobalValidationPipe());
+  app.useGlobalInterceptors(new ResponseInterceptor());
 
   app.enableCors({
     origin: corsOrigin(config),
