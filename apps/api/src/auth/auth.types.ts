@@ -16,7 +16,7 @@ export type AuthContext = {
   userId: string;
   companyId: string | null;
   branchId: string | null;
-   
+
   role: RoleName | null;
   // TODO: cargar permisos dinámicos aquí (ej. permissions: string[])
 };

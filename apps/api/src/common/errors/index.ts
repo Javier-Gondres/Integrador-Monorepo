@@ -1,4 +1,4 @@
-export { type ErrorCode,ErrorCodes } from './constants/error-codes';
+export { type ErrorCode, ErrorCodes } from './constants/error-codes';
 export { AuthException } from './exceptions/auth.exception';
 export { BusinessException } from './exceptions/business.exception';
 export { InventoryException } from './exceptions/inventory.exception';

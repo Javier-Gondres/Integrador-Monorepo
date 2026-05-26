@@ -33,17 +33,11 @@ export class BusinessException extends HttpException {
     return new BusinessException(errorCode, message, HttpStatus.NOT_FOUND);
   }
 
-  static conflict(
-    errorCode: ErrorCode,
-    message: string,
-  ): BusinessException {
+  static conflict(errorCode: ErrorCode, message: string): BusinessException {
     return new BusinessException(errorCode, message, HttpStatus.CONFLICT);
   }
 
-  static forbidden(
-    errorCode: ErrorCode,
-    message: string,
-  ): BusinessException {
+  static forbidden(errorCode: ErrorCode, message: string): BusinessException {
     return new BusinessException(errorCode, message, HttpStatus.FORBIDDEN);
   }
 }

@@ -7,9 +7,7 @@ import { BusinessException } from './business.exception';
  * Errores del dominio de inventario y caja.
  */
 export class InventoryException extends BusinessException {
-  static insufficientStock(
-    productName?: string,
-  ): InventoryException {
+  static insufficientStock(productName?: string): InventoryException {
     const suffix = productName ? ` para "${productName}"` : '';
     return new InventoryException(
       ErrorCodes.INSUFFICIENT_STOCK,
