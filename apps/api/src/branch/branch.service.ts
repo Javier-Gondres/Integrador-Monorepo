@@ -30,7 +30,9 @@ export class BranchService {
   async findAll(slug: string) {
     return await prisma.branch.findMany({
       where: {
-        slug,
+        company: {
+          slug,
+        },
         isActive: true,
       },
     });
