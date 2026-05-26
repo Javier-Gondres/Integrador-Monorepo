@@ -46,12 +46,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
 
+  // Express middleware (corre antes que guards/pipes/interceptors de Nest).
   app.use(cookieParser());
+  app.use(observabilityMiddleware);
 
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(createGlobalValidationPipe());
-  // Middleware corre antes que guards/pipes/interceptors para cubrir también fallos de guards.
-  app.use(observabilityMiddleware);
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   app.enableCors({
