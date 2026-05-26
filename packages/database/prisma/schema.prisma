@@ -42,5 +42,19 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  
+  branches Branch[]
+}
+
+model Branch {
+  id String @id @default(uuid())
+  name String
+  address String?
+  phone String?
+
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company Company @relation(fields: [companyId], references: [id])
 }
