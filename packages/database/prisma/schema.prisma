@@ -12,28 +12,176 @@ datasource db {
   provider = "postgresql"
 }
 
-model User { 
-  id    Int     @id @default(autoincrement()) 
-  email String  @unique
-  name  String?
-  posts Post[]
-} 
-model Post { 
-  id        Int     @id @default(autoincrement()) 
-  title     String
-  content   String?
-  published Boolean @default(false) 
-  author    User    @relation(fields: [authorId], references: [id]) 
-  authorId  Int
-} 
 model Category { 
   id    Int     @id @default(autoincrement()) 
   name  String  @unique
   description String?
   state Boolean @default(true)
   deleted Boolean @default(false)
+
+  products CategoryProduct[]
 }
 model Prueba { 
   id        Int     @id @default(autoincrement()) 
   title     String
 } 
+
+model Company {
+  id            String   @id @default(cuid())
+
+  name          String
+  slug          String   @unique
+
+  rnc           String?
+
+  email         String?
+  phone         String?
+
+  isActive      Boolean  @default(true)
+
+  branches      Branch[]
+  users         UserCompany[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Branch {
+  id            String   @id @default(cuid())
+
+  companyId     String
+
+  name          String
+  address       String?
+
+  isActive      Boolean  @default(true)
+
+  company       Company  @relation(fields: [companyId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model User {
+  id              String   @id @default(cuid())
+
+  email           String   @unique
+  passwordHash    String
+
+  firstName       String
+  lastName        String
+
+  isActive        Boolean  @default(true)
+
+  lastLoginAt     DateTime?
+
+  memberships     UserCompany[]
+
+  refreshTokens   RefreshToken[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Role {
+  id            String   @id @default(cuid())
+
+  name          String   @unique
+  description   String?
+
+  users         UserCompany[]
+}
+
+model UserCompany {
+  id              String   @id @default(cuid())
+
+  userId          String
+  companyId       String
+  roleId          String
+
+  defaultBranchId String?
+
+  user            User     @relation(fields: [userId], references: [id])
+  company         Company  @relation(fields: [companyId], references: [id])
+  role            Role     @relation(fields: [roleId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, companyId])
+
+  @@index([userId])
+  @@index([companyId])
+}
+
+model RefreshToken {
+  id                String   @id @default(cuid())
+
+  userId            String
+
+  hashedToken       String
+
+  expiresAt         DateTime
+
+  revoked           Boolean  @default(false)
+  revokedAt         DateTime?
+
+  createdByIp       String?
+  revokedByIp       String?
+
+  userAgent         String?
+
+  replacedByTokenId String?
+
+  user              User     @relation(fields: [userId], references: [id])
+
+  createdAt         DateTime @default(now())
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id              String   @id @default(cuid())
+
+  companyId       String?
+  userId          String?
+
+  action          String
+
+  entity          String?
+  entityId        String?
+
+  metadata        Json?
+
+  createdAt       DateTime @default(now())
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  price           Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  state           Boolean  @default(true)
+  deleted         Boolean  @default(false)
+  companyId        String?
+  category  CategoryProduct[]
+}
+
+model CategoryProduct {
+  id          String   @id @default(cuid())
+  
+  categoryId  Int      
+  productId   String
+
+  category    Category @relation(fields: [categoryId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([categoryId, productId])
+}
