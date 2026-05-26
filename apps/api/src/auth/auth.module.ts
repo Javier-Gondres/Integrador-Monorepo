@@ -8,8 +8,6 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
-import { LocalStrategy } from './strategies/local.strategies';
-
 @Module({
   controllers: [AuthController],
   imports: [
@@ -22,7 +20,6 @@ import { LocalStrategy } from './strategies/local.strategies';
   ],
   providers: [
     AuthService,
-    LocalStrategy,
     JwtStrategy,
     JwtRefreshStrategy,
     JwtAuthGuard,

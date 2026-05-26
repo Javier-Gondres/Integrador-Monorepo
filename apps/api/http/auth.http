@@ -39,7 +39,7 @@ Content-Type: application/json
 
 ###
 
-@accessToken = {{login.response.body.$.accessToken}}
+@accessToken = {{login.response.body.$.data.accessToken}}
 
 ### 3) Refresh — usa la cookie del login (sin body ni headers extra)
 # @name refresh
@@ -47,16 +47,10 @@ POST {{baseUrl}}/auth/refresh
 
 ###
 
-@accessToken = {{refresh.response.body.$.accessToken}}
+@accessToken = {{refresh.response.body.$.data.accessToken}}
 
 ### 4) JWT — contexto de autorización (requiere access token)
 GET {{baseUrl}}/auth/me
-Authorization: Bearer {{accessToken}}
-
-###
-
-### 5) JWT — ping mínimo (requiere access token)
-GET {{baseUrl}}/auth/ping
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -83,6 +77,17 @@ Content-Type: application/json
 {
   "email": "{{email}}",
   "password": "PasswordIncorrecta"
+}
+
+###
+
+### Login con body inválido — debe fallar (400 VALIDATION_ERROR)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "no-es-email",
+  "password": "123"
 }
 
 ###
