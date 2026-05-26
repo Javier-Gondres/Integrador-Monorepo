@@ -10,6 +10,8 @@ declare global {
       auth?: AuthContext;
       /** Tenant activo; solo tras `CompanyGuard`. */
       company?: CompanyContext;
+      /** Identificador único de la petición para correlación/logs. */
+      requestId?: string;
     }
   }
 }

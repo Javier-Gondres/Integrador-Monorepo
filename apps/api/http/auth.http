@@ -13,6 +13,8 @@
 @email = prueba@ejemplo.com
 @password = Password123
 
+@requestId = manual-auth-test-{{$timestamp}}
+
 ### 1) Crear usuario (si aún no existe)
 # @name createUser
 POST {{baseUrl}}/users
@@ -53,7 +55,7 @@ POST {{baseUrl}}/auth/refresh
 # Respuesta: { success, data: { auth: { userId, companyId, ... }, company: { companyId, branchId, role } } }
 GET {{baseUrl}}/auth/me
 Authorization: Bearer {{accessToken}}
-
+x-request-id: {{requestId}}
 ###
 
 ### 6) JWT sin token — debe fallar (401)

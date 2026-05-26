@@ -8,6 +8,8 @@ export interface ApiErrorResponse {
   message: string;
   /** Código interno estable para el frontend (i18n, analytics, retry). */
   error: string;
+  /** Correlación de incidente entre frontend, logs y backend. */
+  requestId: string;
   timestamp: string;
   path: string;
   /**

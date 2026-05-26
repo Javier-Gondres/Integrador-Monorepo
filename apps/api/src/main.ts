@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/errors';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { observabilityMiddleware } from './common/middlewares/observability.middleware';
 import { createGlobalValidationPipe } from './common/pipes/validation.pipe.factory';
 
 function corsOrigin(config: ConfigService) {
@@ -49,6 +50,8 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(createGlobalValidationPipe());
+  // Middleware corre antes que guards/pipes/interceptors para cubrir también fallos de guards.
+  app.use(observabilityMiddleware);
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   app.enableCors({

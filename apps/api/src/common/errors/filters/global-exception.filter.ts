@@ -35,12 +35,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     const resolved = this.resolveException(exception);
     const isProduction = this.isProduction();
+    const requestId = request.requestId ?? 'unknown';
 
     if (resolved.statusCode >= 500) {
-      this.logger.error(
-        resolved.message,
-        exception instanceof Error ? exception.stack : String(exception),
-      );
+      this.logTechnicalError(exception, resolved, request);
     }
 
     const body: ApiErrorResponse = {
@@ -48,6 +46,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode: resolved.statusCode,
       message: resolved.message,
       error: resolved.error,
+      requestId,
       timestamp: new Date().toISOString(),
       path: request.url,
       ...(!isProduction && resolved.details !== undefined
@@ -94,12 +93,84 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         return this.mapHttpException(httpException);
       }
       default:
-        this.logger.warn(
-          `Prisma error no mapeado: ${exception.code}`,
-          exception.message,
-        );
         return this.mapUnknownError(exception);
     }
+  }
+
+  /**
+   * Observability middleware deja el log principal por request.
+   * Este log agrega únicamente contexto técnico cuando hay 500.
+   */
+  private logTechnicalError(
+    exception: unknown,
+    resolved: ResolvedError,
+    request: Request,
+  ): void {
+    const requestId = request.requestId;
+
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      this.logger.error(
+        JSON.stringify({
+          requestId,
+          source: 'prisma',
+          prismaCode: exception.code,
+          error: resolved.error,
+          message: this.shorten(exception.message),
+          path: request.url,
+        }),
+      );
+      return;
+    }
+
+    if (exception instanceof HttpException) {
+      // HttpException 5xx: mantenemos log técnico mínimo para no duplicar ruido.
+      this.logger.error(
+        JSON.stringify({
+          requestId,
+          source: 'http-exception',
+          statusCode: resolved.statusCode,
+          error: resolved.error,
+          message: resolved.message,
+          path: request.url,
+        }),
+      );
+      return;
+    }
+
+    if (exception instanceof Error) {
+      const payload = {
+        requestId,
+        source: 'unhandled-error',
+        name: exception.name,
+        error: resolved.error,
+        message: exception.message,
+        path: request.url,
+      };
+
+      if (this.isProduction()) {
+        this.logger.error(JSON.stringify(payload));
+      } else {
+        this.logger.error(JSON.stringify(payload), exception.stack);
+      }
+      return;
+    }
+
+    this.logger.error(
+      JSON.stringify({
+        requestId,
+        source: 'unknown-throwable',
+        error: resolved.error,
+        message: String(exception),
+        path: request.url,
+      }),
+    );
+  }
+
+  private shorten(value: string, max = 240): string {
+    if (value.length <= max) {
+      return value;
+    }
+    return `${value.slice(0, max)}...`;
   }
 
   private mapUniqueConstraint(
