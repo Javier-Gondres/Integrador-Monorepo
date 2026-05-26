@@ -35,6 +35,9 @@ export class CompanyService {
         slug,
         isActive: true,
       },
+      include: {
+        branches: true,
+      },
     });
 
     if (!company) {
