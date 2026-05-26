@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { RoleName } from '@repo/db';
 import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
@@ -53,15 +53,6 @@ function withMembership<T extends UserWithMembershipsRow>(
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
-}
-
-function isUniqueConstraintError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code: string }).code === 'P2002'
-  );
 }
 
 @Injectable()
@@ -134,22 +125,16 @@ export class UsersService {
     const email = normalizeEmail(createUserDto.email);
     const passwordHash = await bcrypt.hash(createUserDto.password, 10);
 
-    try {
-      return await prisma.user.create({
-        data: {
-          email,
-          passwordHash,
-          firstName: createUserDto.firstName.trim(),
-          lastName: createUserDto.lastName.trim(),
-        },
-        select: publicUserSelect,
-      });
-    } catch (error: unknown) {
-      if (isUniqueConstraintError(error)) {
-        throw new ConflictException('Ese email ya está registrado');
-      }
-      throw error;
-    }
+    // P2002 (email duplicado) lo traduce GlobalExceptionFilter → 409 EMAIL_ALREADY_EXISTS
+    return prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+        firstName: createUserDto.firstName.trim(),
+        lastName: createUserDto.lastName.trim(),
+      },
+      select: publicUserSelect,
+    });
   }
 
   updateLastLogin(id: string) {

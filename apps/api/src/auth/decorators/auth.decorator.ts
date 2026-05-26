@@ -1,9 +1,6 @@
-import {
-  createParamDecorator,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
+import { AuthException } from 'src/common/errors';
 
 import { AuthContext } from '../auth.types';
 
@@ -12,7 +9,7 @@ export const Auth = createParamDecorator(
     const request = ctx.switchToHttp().getRequest<Request>();
 
     if (!request.auth) {
-      throw new UnauthorizedException();
+      throw AuthException.unauthorized();
     }
 
     return request.auth;

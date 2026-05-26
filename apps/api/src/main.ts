@@ -1,11 +1,12 @@
 import './load-env';
 
-import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './common/errors';
+import { createGlobalValidationPipe } from './common/pipes/validation.pipe.factory';
 
 function corsOrigin(config: ConfigService) {
   const list = (config.get<string>('CORS_ORIGINS') ?? 'http://localhost:3000')
@@ -45,13 +46,8 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+  app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalPipes(createGlobalValidationPipe());
 
   app.enableCors({
     origin: corsOrigin(config),

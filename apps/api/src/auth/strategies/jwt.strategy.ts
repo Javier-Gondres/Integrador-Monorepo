@@ -1,7 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AuthException } from 'src/common/errors';
 import { UsersService } from 'src/users/users.service';
 
 import { AccessTokenPayload, AuthContext } from '../auth.types';
@@ -26,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     );
 
     if (!userAuthContext?.isActive) {
-      throw new UnauthorizedException();
+      throw AuthException.unauthorized();
     }
 
     // TODO: cargar permisos dinámicos aquí antes de devolver el contexto

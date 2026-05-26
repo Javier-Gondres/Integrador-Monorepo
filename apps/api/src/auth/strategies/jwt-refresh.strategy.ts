@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AuthException } from 'src/common/errors';
 import { UsersService } from 'src/users/users.service';
 
 import { RefreshTokenPayload } from '../auth.types';
@@ -36,7 +37,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
   async validate(req: Request, refreshTokenPayload: RefreshTokenPayload) {
     const refreshTokenFromCookie = readRefreshTokenCookie(req);
     if (!refreshTokenFromCookie) {
-      throw new UnauthorizedException();
+      throw AuthException.sessionExpired();
     }
 
     const userAuthContext = await this.usersService.findAuthContext(
@@ -44,7 +45,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
     );
 
     if (!userAuthContext?.isActive) {
-      throw new UnauthorizedException();
+      throw AuthException.sessionExpired();
     }
 
     return {

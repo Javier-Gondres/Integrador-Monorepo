@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
+import { AuthException } from 'src/common/errors';
 import { UsersService } from 'src/users/users.service';
 
 import {
@@ -30,7 +31,7 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<AuthUser> {
     const userFromDatabase = await this.usersService.findByEmail(email);
     if (!userFromDatabase?.isActive) {
-      throw new UnauthorizedException();
+      throw AuthException.invalidCredentials();
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -38,7 +39,7 @@ export class AuthService {
       userFromDatabase.passwordHash,
     );
     if (!isPasswordValid) {
-      throw new UnauthorizedException();
+      throw AuthException.invalidCredentials();
     }
 
     const { passwordHash: _passwordHash, ...userWithoutPassword } =
@@ -60,7 +61,7 @@ export class AuthService {
     );
 
     if (!userAuthContext?.isActive) {
-      throw new UnauthorizedException();
+      throw AuthException.invalidCredentials();
     }
 
     const refreshTokenRecord = await this.verifyRefreshTokenInDatabase(
@@ -189,7 +190,7 @@ export class AuthService {
       isExpired ||
       belongsToAnotherUser
     ) {
-      throw new UnauthorizedException();
+      throw AuthException.invalidCredentials();
     }
 
     const doesCookieMatchDatabase = await bcrypt.compare(
@@ -197,7 +198,7 @@ export class AuthService {
       refreshTokenRecord.hashedToken,
     );
     if (!doesCookieMatchDatabase) {
-      throw new UnauthorizedException();
+      throw AuthException.invalidCredentials();
     }
 
     return refreshTokenRecord;

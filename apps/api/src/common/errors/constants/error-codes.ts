@@ -1,0 +1,32 @@
+/**
+ * Códigos de error internos reutilizables.
+ * Convención: SCREAMING_SNAKE_CASE, valores idénticos a la clave.
+ * El frontend puede mapearlos a mensajes localizados sin depender del texto HTTP.
+ */
+export const ErrorCodes = {
+  // Genéricos
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  DUPLICATE_RECORD: 'DUPLICATE_RECORD',
+  RECORD_NOT_FOUND: 'RECORD_NOT_FOUND',
+
+  // Auth
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  SESSION_EXPIRED: 'SESSION_EXPIRED',
+  UNAUTHORIZED_COMPANY_ACCESS: 'UNAUTHORIZED_COMPANY_ACCESS',
+
+  // Usuarios / CRM
+  EMAIL_ALREADY_EXISTS: 'EMAIL_ALREADY_EXISTS',
+  CUSTOMER_NOT_FOUND: 'CUSTOMER_NOT_FOUND',
+
+  // Inventario
+  INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
+  PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
+  BOX_CLOSED: 'BOX_CLOSED',
+
+  // Pagos
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+} as const;
+
+export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
