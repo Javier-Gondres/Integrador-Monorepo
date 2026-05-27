@@ -114,8 +114,11 @@ export default function EmployeesPage() {
         if (!res.ok) throw new Error("no branches");
         const data = await res.json();
         setBranches(data || []);
-      } catch (e) {
-        console.warn("Could not load branches, fallback to manual input");
+      } catch (error) {
+        console.warn(
+          "Could not load branches, fallback to manual input",
+          error,
+        );
       } finally {
         setBranchesLoading(false);
       }
