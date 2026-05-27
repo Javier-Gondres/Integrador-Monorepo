@@ -19,23 +19,12 @@
 
 @requestId = manual-auth-test-{{$timestamp}}
 
-### 1) Crear usuario (si aún no existe)
-# @name createUser
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-  "email": "{{email}}",
-  "password": "{{password}}",
-  "firstName": "Juan",
-  "lastName": "Pérez"
-}
-
-###
-
-### 1b) Asignar empresa y rol al usuario (terminal, no REST)
+### 1) Bootstrap: usuario admin con empresa (terminal, no REST)
+# Crea roles, empresa-demo y vincula {{email}} como OWNER.
 # pnpm db:seed:dev
 # Opcional: SEED_USER_EMAIL=otro@mail.com pnpm db:seed:dev
+#
+# POST /users ahora requiere JWT + empresa; para más usuarios usa users.http.
 
 ###
 

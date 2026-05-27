@@ -2,13 +2,11 @@
 #
 # Requisitos:
 #   1. API en marcha → pnpm --filter api run dev
-#   2. Usuario creado (POST /users abajo o auth.http paso 1)
-#   3. Membresía en empresa (obligatorio para GET /users):
-#        pnpm db:seed:dev
-#      Asigna empresa-demo + rol OWNER al email de prueba.
-#   4. Login (auth.http paso 2) y pegar token en @accessToken
+#   2. Primer usuario admin: pnpm db:seed:dev (o usuario con empresa ya creado)
+#   3. Login abajo → @accessToken
+#   4. POST /users crea User + membresía en tu empresa (requiere Bearer)
 #
-# Si GET /users responde 403 UNAUTHORIZED_COMPANY_ACCESS → falta UserCompany (paso 3).
+# Si GET /users responde 403 → el usuario del token no tiene empresa (ejecuta seed).
 
 @baseUrl = http://localhost:3001
 @userId = pegar-id-cuid-aqui
@@ -65,29 +63,33 @@ Authorization: Bearer {{accessToken}}
 
 ###
 
-### Crear usuario (solo User; NO crea membresía en empresa)
+### Crear usuario en la empresa (User + UserCompany + rol)
 # @name createUser
 POST {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-  "email": "{{email}}",
+  "email": "nuevo.cajero@ejemplo.com",
   "password": "{{password}}",
-  "firstName": "Juan",
-  "lastName": "Pérez"
+  "firstName": "María",
+  "lastName": "García",
+  "role": "CASHIER"
 }
 
 ###
 
 ### Crear usuario (email duplicado — debe responder 409)
 POST {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-  "email": "{{email}}",
+  "email": "nuevo.cajero@ejemplo.com",
   "password": "{{password}}",
   "firstName": "Otro",
-  "lastName": "Usuario"
+  "lastName": "Usuario",
+  "role": "CASHIER"
 }
 
 ###
@@ -109,11 +111,13 @@ PATCH {{baseUrl}}/users/{{userId}}/last-login
 
 ### Crear usuario (validación — contraseña corta, debe fallar)
 POST {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
   "email": "invalido@test.com",
   "password": "corta",
   "firstName": "",
-  "lastName": ""
+  "lastName": "",
+  "role": "CASHIER"
 }

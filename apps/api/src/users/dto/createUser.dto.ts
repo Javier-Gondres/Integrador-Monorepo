@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { RoleName } from '@repo/db';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {
   @IsEmail({}, { message: 'El email no es válido' })
@@ -16,4 +17,7 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'El apellido es obligatorio' })
   @IsString({ message: 'El apellido debe ser texto' })
   lastName!: string;
+
+  @IsEnum(RoleName, { message: 'El rol no es válido' })
+  role!: RoleName;
 }

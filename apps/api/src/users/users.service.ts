@@ -5,10 +5,7 @@ import { UserAuthContext } from '../auth/auth.types';
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
 import { CreateUserDto } from './dto/createUser.dto';
-import {
-  NormalizedQueryUsers,
-  QueryUsersDto,
-} from './dto/query-users.dto';
+import { NormalizedQueryUsers, QueryUsersDto } from './dto/query-users.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { UsersRepository } from './users.repository';
 
@@ -68,17 +65,27 @@ export class UsersService {
     return this.usersRepository.findByEmail(email);
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async create(companyId: string, createUserDto: CreateUserDto) {
     const email = createUserDto.email.trim().toLowerCase();
     const passwordHash = await bcrypt.hash(createUserDto.password, 10);
 
-    // P2002 (email duplicado) lo traduce GlobalExceptionFilter → 409 EMAIL_ALREADY_EXISTS
-    return this.usersRepository.create({
+    const result = await this.usersRepository.createWithMembership({
       email,
       passwordHash,
       firstName: createUserDto.firstName.trim(),
       lastName: createUserDto.lastName.trim(),
+      companyId,
+      roleName: createUserDto.role,
     });
+
+    if (result.status === 'role_not_found') {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El rol no existe',
+      );
+    }
+
+    return result.user;
   }
 
   updateLastLogin(id: string) {

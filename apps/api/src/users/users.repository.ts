@@ -26,6 +26,15 @@ export type CreateUserData = {
   lastName: string;
 };
 
+export type CreateUserWithMembershipData = CreateUserData & {
+  companyId: string;
+  roleName: RoleName;
+};
+
+export type CreateUserPersistenceResult =
+  | { status: 'ok'; user: PublicUserWithMembership }
+  | { status: 'role_not_found' };
+
 export type UpdateUserFields = {
   firstName?: string;
   lastName?: string;
@@ -110,15 +119,52 @@ export class UsersRepository {
     return user ? (withMembership(user) as UserWithPasswordHash) : null;
   }
 
-  async create(data: CreateUserData) {
-    return prisma.user.create({
-      data: {
-        email: data.email,
-        passwordHash: data.passwordHash,
-        firstName: data.firstName,
-        lastName: data.lastName,
-      },
-      select: publicUserSelect,
+  async createWithMembership(
+    data: CreateUserWithMembershipData,
+  ): Promise<CreateUserPersistenceResult> {
+    return prisma.$transaction(async (tx) => {
+      const roleRecord = await tx.role.findFirst({
+        where: { name: data.roleName },
+        select: { id: true },
+      });
+      if (!roleRecord) {
+        return { status: 'role_not_found' };
+      }
+
+      const user = await tx.user.create({
+        data: {
+          email: data.email,
+          passwordHash: data.passwordHash,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        },
+        select: publicUserSelect,
+      });
+
+      await tx.userCompany.create({
+        data: {
+          userId: user.id,
+          companyId: data.companyId,
+          roleId: roleRecord.id,
+        },
+      });
+
+      const row = await tx.user.findUnique({
+        where: { id: user.id },
+        select: {
+          ...publicUserSelect,
+          memberships: {
+            where: { companyId: data.companyId },
+            select: membershipRelationSelectFull,
+            take: 1,
+          },
+        },
+      });
+
+      return {
+        status: 'ok',
+        user: withMembership(row!) as PublicUserWithMembership,
+      };
     });
   }
 

@@ -38,9 +38,14 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
+  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
+  @RequireCompany()
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @CompanyId() companyId: string,
+  ) {
+    return this.usersService.create(companyId, createUserDto);
   }
 
   @Patch(':id/last-login')
