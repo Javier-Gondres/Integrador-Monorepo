@@ -3,7 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
+import { EmployeesModule } from './employees/employees.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
+//import { UsersModule } from './users/users.module';
 
 const envFilePath =
   process.env.APP_ENV === 'staging' ? '.env.staging' : '.env.development';
@@ -14,7 +16,9 @@ const envFilePath =
       isGlobal: true,
       envFilePath,
     }),
-    UsersModule,
+    //UsersModule,
+    EmployeesModule,
+    SuppliersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
