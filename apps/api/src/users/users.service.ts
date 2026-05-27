@@ -4,7 +4,10 @@ import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
 import { UserAuthContext } from '../auth/auth.types';
+import { BusinessException, ErrorCodes } from '../common/errors';
+import { getDefinedData } from '../common/helpers/object.utils';
 import { CreateUserDto } from './dto/createUser.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 const publicUserSelect = {
   id: true,
@@ -143,5 +146,91 @@ export class UsersService {
       data: { lastLoginAt: new Date() },
       select: publicUserSelect,
     });
+  }
+
+  async updateUser(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    companyIdFromUserAuth: string,
+  ) {
+    const user = await this.exsistingUser(id);
+
+    if (user.membership?.companyId !== companyIdFromUserAuth) {
+      throw BusinessException.forbidden(
+        ErrorCodes.UNAUTHORIZED_COMPANY_ACCESS,
+        'El usuario no existe en la empresa',
+      );
+    }
+
+    const { role, ...otherFields } = updateUserDto;
+
+    const userData = getDefinedData<Omit<UpdateUserDto, 'role'>>(otherFields);
+
+    if (userData.firstName !== undefined) {
+      userData.firstName = userData.firstName.trim();
+    }
+    if (userData.lastName !== undefined) {
+      userData.lastName = userData.lastName.trim();
+    }
+
+    const hasUserFields = Object.keys(userData).length > 0;
+    const hasRole = role !== undefined;
+
+    if (!hasUserFields && !hasRole) {
+      throw new BusinessException(
+        ErrorCodes.VALIDATION_ERROR,
+        'Debe enviar al menos un campo para actualizar',
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      if (hasUserFields) {
+        await tx.user.update({ where: { id }, data: userData });
+      }
+
+      if (hasRole) {
+        const roleRecord = await tx.role.findFirst({
+          where: { name: role },
+          select: { id: true },
+        });
+        if (!roleRecord) {
+          throw BusinessException.notFound(
+            ErrorCodes.RECORD_NOT_FOUND,
+            'El rol no existe',
+          );
+        }
+
+        const { count } = await tx.userCompany.updateMany({
+          where: { userId: id },
+          data: { roleId: roleRecord.id },
+        });
+
+        if (count === 0) {
+          throw BusinessException.notFound(
+            ErrorCodes.RECORD_NOT_FOUND,
+            'La membresía del usuario no existe',
+          );
+        }
+      }
+    });
+
+    return this.findById(id);
+  }
+
+  private async exsistingUser(id: string) {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        ...publicUserSelect,
+        memberships: { select: membershipRelationSelectFull, take: 1 },
+      },
+    });
+    if (!user) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario no existe',
+      );
+    }
+    return withMembership(user);
   }
 }
