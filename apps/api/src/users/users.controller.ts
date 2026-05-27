@@ -33,9 +33,10 @@ export class UsersController {
     return this.usersService.findByEmail(email);
   }
 
+  @RequireCompany()
   @Get(':id')
-  findById(@Param('id') id: string) {
-    return this.usersService.findById(id);
+  findById(@Param('id') id: string, @CompanyId() companyId: string) {
+    return this.usersService.findByIdInCompany(id, companyId);
   }
 
   // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard

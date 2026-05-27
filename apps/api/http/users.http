@@ -9,7 +9,7 @@
 # Si GET /users responde 403 → el usuario del token no tiene empresa (ejecuta seed).
 
 @baseUrl = http://localhost:3001
-@userId = pegar-id-cuid-aqui
+@userId =cmpldelqh0000p850yo1xpoz4
 @email = prueba@ejemplo.com
 @password = Password123
 
@@ -94,8 +94,9 @@ Content-Type: application/json
 
 ###
 
-### Obtener usuario por id
+### Obtener usuario por id (misma empresa; 404 si no existe o es de otra empresa)
 GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
 
 ###
 

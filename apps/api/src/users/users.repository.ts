@@ -96,12 +96,22 @@ export class UsersRepository {
     };
   }
 
-  async findPublicById(id: string): Promise<PublicUserWithMembership | null> {
-    const user = await prisma.user.findUnique({
-      where: { id },
+  async findPublicByIdInCompany(
+    id: string,
+    companyId: string,
+  ): Promise<PublicUserWithMembership | null> {
+    const user = await prisma.user.findFirst({
+      where: {
+        id,
+        memberships: { some: { companyId } },
+      },
       select: {
         ...publicUserSelect,
-        memberships: { select: membershipRelationSelectFull, take: 1 },
+        memberships: {
+          where: { companyId },
+          select: membershipRelationSelectFull,
+          take: 1,
+        },
       },
     });
     return user ? (withMembership(user) as PublicUserWithMembership) : null;

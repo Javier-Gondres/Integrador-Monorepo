@@ -57,8 +57,18 @@ export class UsersService {
     };
   }
 
-  findById(id: string) {
-    return this.usersRepository.findPublicById(id);
+  async findByIdInCompany(id: string, companyId: string) {
+    const user = await this.usersRepository.findPublicByIdInCompany(
+      id,
+      companyId,
+    );
+    if (!user) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario no existe',
+      );
+    }
+    return user;
   }
 
   findByEmail(email: string) {
@@ -97,14 +107,7 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
     companyIdFromUserAuth: string,
   ) {
-    const user = await this.existingUser(id);
-
-    if (user.membership?.companyId !== companyIdFromUserAuth) {
-      throw BusinessException.forbidden(
-        ErrorCodes.UNAUTHORIZED_COMPANY_ACCESS,
-        'El usuario no existe en la empresa',
-      );
-    }
+    await this.findByIdInCompany(id, companyIdFromUserAuth);
 
     const { role, ...otherFields } = updateUserDto;
 
@@ -146,7 +149,7 @@ export class UsersService {
       );
     }
 
-    return this.findById(id);
+    return this.findByIdInCompany(id, companyIdFromUserAuth);
   }
 
   private normalizeQuery(query: QueryUsersDto): NormalizedQueryUsers {
@@ -163,14 +166,4 @@ export class UsersService {
     };
   }
 
-  private async existingUser(id: string) {
-    const user = await this.usersRepository.findPublicById(id);
-    if (!user) {
-      throw BusinessException.notFound(
-        ErrorCodes.RECORD_NOT_FOUND,
-        'El usuario no existe',
-      );
-    }
-    return user;
-  }
 }
