@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import type { Company } from "@repo/db";
 import { prisma } from "@repo/db";
 import slug from "slug";
@@ -9,11 +13,28 @@ import { UpdateCompanyDto } from "./dto/update-company.dto";
 @Injectable()
 export class CompanyService {
   async create(createCompanyDto: CreateCompanyDto): Promise<Company> {
+    const companySlug = slug(createCompanyDto.name);
+
+    const validateUnique = await prisma.company.findFirst({
+      where: {
+        OR: [
+          { slug: { equals: companySlug } },
+          { rnc: { equals: createCompanyDto.rnc } },
+        ],
+      },
+    });
+
+    if (validateUnique) {
+      throw new BadRequestException(
+        "Ya existe una compania con el nombre o rnc ingresado",
+      );
+    }
+
     return await prisma.company.create({
       data: {
         name: createCompanyDto.name,
         rnc: createCompanyDto.rnc,
-        slug: slug(createCompanyDto.name),
+        slug: companySlug,
         branches: {
           create: {
             name: "Sucursal",
@@ -25,7 +46,7 @@ export class CompanyService {
 
   async findAll() {
     return await prisma.company.findMany({
-      where: { isActive: true },
+      include: { branches: true },
     });
   }
 
@@ -49,6 +70,32 @@ export class CompanyService {
 
   async update(slug: string, updateCompanyDto: UpdateCompanyDto) {
     const company = await this.findOne(slug);
+    let validateUnique = undefined;
+    if (
+      !(
+        updateCompanyDto.rnc === undefined ||
+        updateCompanyDto.rnc === company.rnc
+      )
+    ) {
+      validateUnique = await prisma.company.findFirst({
+        where: {
+          AND: [
+            {
+              rnc: {
+                equals: updateCompanyDto.rnc,
+                not: company.slug,
+              },
+            },
+          ],
+        },
+      });
+    }
+
+    if (validateUnique) {
+      throw new BadRequestException(
+        `Ya existe una empresa con el rnc: ${updateCompanyDto.rnc}`,
+      );
+    }
 
     return await prisma.company.update({
       select: { name: true, rnc: true },
