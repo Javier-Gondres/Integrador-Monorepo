@@ -1,24 +1,78 @@
 # Users API — REST Client (VS Code / Cursor extension "REST Client")
-# Requisitos: API en marcha → pnpm --filter api run dev
-# Copia el `id` de la respuesta de "Crear usuario" en @userId para las demás peticiones.
+#
+# Requisitos:
+#   1. API en marcha → pnpm --filter api run dev
+#   2. Usuario creado (POST /users abajo o auth.http paso 1)
+#   3. Membresía en empresa (obligatorio para GET /users):
+#        pnpm db:seed:dev
+#      Asigna empresa-demo + rol OWNER al email de prueba.
+#   4. Login (auth.http paso 2) y pegar token en @accessToken
+#
+# Si GET /users responde 403 UNAUTHORIZED_COMPANY_ACCESS → falta UserCompany (paso 3).
 
 @baseUrl = http://localhost:3001
 @userId = pegar-id-cuid-aqui
 @email = prueba@ejemplo.com
+@password = Password123
 
-### Listar usuarios
-GET {{baseUrl}}/users
+### Login (obtener accessToken)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
 
 ###
 
-### Crear usuario
+@accessToken = {{login.response.body.$.data.accessToken}}
+
+### Verificar contexto de empresa (debe tener companyId)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (requiere empresa asignada)
+GET {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (paginado)
+GET {{baseUrl}}/users?page=1&limit=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (filtro por texto)
+GET {{baseUrl}}/users?search=Juan
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (filtro por rol)
+GET {{baseUrl}}/users?role=CASHIER
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (filtro por estado activo)
+GET {{baseUrl}}/users?isActive=true
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Crear usuario (solo User; NO crea membresía en empresa)
 # @name createUser
 POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
   "email": "{{email}}",
-  "password": "Password123",
+  "password": "{{password}}",
   "firstName": "Juan",
   "lastName": "Pérez"
 }
@@ -31,7 +85,7 @@ Content-Type: application/json
 
 {
   "email": "{{email}}",
-  "password": "Password123",
+  "password": "{{password}}",
   "firstName": "Otro",
   "lastName": "Usuario"
 }
@@ -53,7 +107,7 @@ PATCH {{baseUrl}}/users/{{userId}}/last-login
 
 ###
 
-### Crear usuario (validación — contraseña corta, debe fallar si hay ValidationPipe global)
+### Crear usuario (validación — contraseña corta, debe fallar)
 POST {{baseUrl}}/users
 Content-Type: application/json
 

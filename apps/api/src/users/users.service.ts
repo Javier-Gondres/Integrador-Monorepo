@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import type { RoleName } from '@repo/db';
 import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
@@ -7,52 +6,21 @@ import { UserAuthContext } from '../auth/auth.types';
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
 import { CreateUserDto } from './dto/createUser.dto';
+import {
+  NormalizedQueryUsers,
+  QueryUsersDto,
+} from './dto/query-users.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
+import { UsersRepository } from './users.repository';
+import {
+  membershipRelationSelect,
+  membershipRelationSelectFull,
+  publicUserSelect,
+  withMembership,
+} from './users.selects';
 
-const publicUserSelect = {
-  id: true,
-  email: true,
-  firstName: true,
-  lastName: true,
-  isActive: true,
-  lastLoginAt: true,
-  createdAt: true,
-} as const;
-
-const membershipRelationSelect = {
-  companyId: true,
-  defaultBranchId: true,
-  role: { select: { name: true } },
-} as const;
-
-const membershipRelationSelectFull = {
-  id: true,
-  companyId: true,
-  roleId: true,
-  defaultBranchId: true,
-  role: { select: { id: true, name: true } },
-  company: { select: { id: true, name: true, slug: true } },
-} as const;
-
-export type UserMembership = {
-  id: string;
-  companyId: string;
-  roleId: string;
-  defaultBranchId: string | null;
-  role: { id: string; name: RoleName };
-  company: { id: string; name: string; slug: string };
-};
-
-type UserWithMembershipsRow = {
-  memberships: UserMembership[];
-};
-
-function withMembership<T extends UserWithMembershipsRow>(
-  user: T,
-): Omit<T, 'memberships'> & { membership: UserMembership | null } {
-  const { memberships, ...rest } = user;
-  return { ...rest, membership: memberships[0] ?? null };
-}
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 10;
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -60,6 +28,8 @@ function normalizeEmail(email: string): string {
 
 @Injectable()
 export class UsersService {
+  constructor(private readonly usersRepository: UsersRepository) {}
+
   async findAuthContext(userId: string): Promise<UserAuthContext | null> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -94,11 +64,22 @@ export class UsersService {
     };
   }
 
-  findAll() {
-    return prisma.user.findMany({
-      orderBy: { createdAt: 'asc' },
-      select: publicUserSelect,
-    });
+  async findAllByCompany(companyId: string, query: QueryUsersDto) {
+    const normalized = this.normalizeQuery(query);
+    const { items, total } = await this.usersRepository.findManyByCompany(
+      companyId,
+      normalized,
+    );
+
+    return {
+      items,
+      meta: {
+        page: normalized.page,
+        limit: normalized.limit,
+        total,
+        totalPages: Math.ceil(total / normalized.limit) || 0,
+      },
+    };
   }
 
   async findById(id: string) {
@@ -153,7 +134,7 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
     companyIdFromUserAuth: string,
   ) {
-    const user = await this.exsistingUser(id);
+    const user = await this.existingUser(id);
 
     if (user.membership?.companyId !== companyIdFromUserAuth) {
       throw BusinessException.forbidden(
@@ -217,7 +198,21 @@ export class UsersService {
     return this.findById(id);
   }
 
-  private async exsistingUser(id: string) {
+  private normalizeQuery(query: QueryUsersDto): NormalizedQueryUsers {
+    const page = query.page ?? DEFAULT_PAGE;
+    const limit = query.limit ?? DEFAULT_LIMIT;
+    const search = query.search?.trim();
+
+    return {
+      page,
+      limit,
+      ...(search && { search }),
+      ...(query.role !== undefined && { role: query.role }),
+      ...(query.isActive !== undefined && { isActive: query.isActive }),
+    };
+  }
+
+  private async existingUser(id: string) {
     const user = await prisma.user.findUnique({
       where: { id },
       select: {

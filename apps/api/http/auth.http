@@ -6,8 +6,12 @@
 #   3. apps/api/.env.development con JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, DATABASE_URL
 #      y COOKIE_SAME_SITE=lax (reinicia la API tras cambiar el .env)
 #
-# Flujo: ejecuta las peticiones en orden (1 → 2 → 3 → …).
+# Flujo: ejecuta las peticiones en orden (1 → 1b → 2 → 3 → …).
 # REST Client reenvía la cookie refreshToken automáticamente tras el login.
+#
+# IMPORTANTE: POST /users solo crea User. Para rutas con @RequireCompany() (GET /users, etc.)
+# ejecuta el seed después del paso 1:
+#   pnpm db:seed:dev
 
 @baseUrl = http://localhost:3001
 @email = prueba@ejemplo.com
@@ -26,6 +30,12 @@ Content-Type: application/json
   "firstName": "Juan",
   "lastName": "Pérez"
 }
+
+###
+
+### 1b) Asignar empresa y rol al usuario (terminal, no REST)
+# pnpm db:seed:dev
+# Opcional: SEED_USER_EMAIL=otro@mail.com pnpm db:seed:dev
 
 ###
 

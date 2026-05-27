@@ -5,17 +5,12 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
+  Query,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import {
-  Company,
-  CompanyContext,
-  CompanyId,
-  RequireCompany,
-} from 'src/common/company';
+import { CompanyId, RequireCompany } from 'src/common/company';
 
 import { CreateUserDto } from './dto/createUser.dto';
+import { QueryUsersDto } from './dto/query-users.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { UsersService } from './users.service';
 
@@ -23,9 +18,14 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
+  @RequireCompany()
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(
+    @CompanyId() companyId: string,
+    @Query() query: QueryUsersDto,
+  ) {
+    return this.usersService.findAllByCompany(companyId, query);
   }
 
   @Get('email/:email')
