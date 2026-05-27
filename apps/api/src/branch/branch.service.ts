@@ -33,7 +33,6 @@ export class BranchService {
         company: {
           slug,
         },
-        isActive: true,
       },
     });
   }
