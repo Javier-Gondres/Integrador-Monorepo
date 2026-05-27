@@ -110,7 +110,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email: normalizeEmail(email) },
       select: {
         ...publicUserSelect,

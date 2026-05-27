@@ -16,7 +16,7 @@ import {
 export class ServiceErrorHandlingExample {
   /** Auth: regla de negocio explícita → excepción de dominio. */
   async loginExample(email: string, password: string): Promise<void> {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({ where: { email } });
     if (!user) {
       throw AuthException.invalidCredentials();
     }

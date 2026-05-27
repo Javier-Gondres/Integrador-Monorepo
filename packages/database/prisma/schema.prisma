@@ -20,11 +20,14 @@ enum RoleName {
   INVENTORY_ASSISTANT
 }
 
+/// Master data con soft delete. Al agregar Product, Customer o Supplier, incluir
+/// `deletedAt`, `@@unique([campo, deletedAt])` en campos únicos y registrar el
+/// modelo en `packages/database/src/soft-delete/config.ts`.
 model Company {
   id            String   @id @default(cuid())
 
   name          String
-  slug          String   @unique
+  slug          String
 
   rnc           String?
 
@@ -32,12 +35,15 @@ model Company {
   phone         String?
 
   isActive      Boolean  @default(true)
+  deletedAt     DateTime?
 
   branches      Branch[]
   users         UserCompany[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@unique([slug, deletedAt])
 }
 
 model Branch {
@@ -49,6 +55,7 @@ model Branch {
   address       String?
 
   isActive      Boolean  @default(true)
+  deletedAt     DateTime?
 
   company       Company  @relation(fields: [companyId], references: [id])
 
@@ -56,18 +63,20 @@ model Branch {
   updatedAt     DateTime @updatedAt
 
   @@index([companyId])
+  @@index([deletedAt])
 }
 
 model User {
   id              String   @id @default(cuid())
 
-  email           String   @unique
+  email           String
   passwordHash    String
 
   firstName       String
   lastName        String
 
   isActive        Boolean  @default(true)
+  deletedAt       DateTime?
 
   lastLoginAt     DateTime?
 
@@ -77,25 +86,33 @@ model User {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@unique([email, deletedAt])
 }
 
 model Role {
   id            String   @id @default(cuid())
 
-  name          RoleName @unique
+  name          RoleName
   description   String?
 
+  deletedAt     DateTime?
+
   users         UserCompany[]
+
+  @@unique([name, deletedAt])
 }
 
 model UserCompany {
   id              String   @id @default(cuid())
 
-  userId          String   @unique // un usuario: una empresa como máximo
+  userId          String
   companyId       String
   roleId          String
 
   defaultBranchId String?
+
+  deletedAt       DateTime?
 
   user            User     @relation(fields: [userId], references: [id])
   company         Company  @relation(fields: [companyId], references: [id])
@@ -104,7 +121,9 @@ model UserCompany {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@unique([userId, deletedAt])
   @@index([companyId])
+  @@index([deletedAt])
 }
 
 model RefreshToken {
