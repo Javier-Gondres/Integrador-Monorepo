@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional } from "class-validator";
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateBranchDto {
   constructor(name: string, address?: string, phone?: string) {
@@ -7,7 +7,7 @@ export class CreateBranchDto {
     this.phone = phone;
   }
 
-  @IsNotEmpty({ message: "el nombre no puede estar vacío" })
+  @IsNotEmpty({ message: 'el nombre no puede estar vacío' })
   name: string;
 
   @IsOptional()

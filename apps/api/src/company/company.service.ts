@@ -2,13 +2,13 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import type { Company } from "@repo/db";
-import { prisma } from "@repo/db";
-import slug from "slug";
+} from '@nestjs/common';
+import type { Company } from '@repo/db';
+import { prisma } from '@repo/db';
+import slug from 'slug';
 
-import { CreateCompanyDto } from "./dto/create-company.dto";
-import { UpdateCompanyDto } from "./dto/update-company.dto";
+import { CreateCompanyDto } from './dto/create-company.dto';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Injectable()
 export class CompanyService {
@@ -26,7 +26,7 @@ export class CompanyService {
 
     if (validateUnique) {
       throw new BadRequestException(
-        "Ya existe una compania con el nombre o rnc ingresado",
+        'Ya existe una compania con el nombre o rnc ingresado',
       );
     }
 
@@ -37,7 +37,7 @@ export class CompanyService {
         slug: companySlug,
         branches: {
           create: {
-            name: "Sucursal",
+            name: 'Sucursal',
           },
         },
       },

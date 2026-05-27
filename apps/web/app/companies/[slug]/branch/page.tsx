@@ -77,17 +77,14 @@ export default function BranchesPage() {
   const cargarBranches = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `${API_URL}/companies/${companySlug}/branch`,
-        {
-          cache: "no-store",
-          signal,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
+      const res = await fetch(`${API_URL}/companies/${companySlug}/branch`, {
+        cache: "no-store",
+        signal,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-      );
+      });
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const data = await res.json();
       setBranches(Array.isArray(data) ? data : []);
@@ -439,25 +436,29 @@ export default function BranchesPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ backgroundColor: C.tableHead }}>
-                  {["Nombre", "Dirección", "Teléfono", "Estado", "Acciones"].map(
-                    (h) => (
-                      <th
-                        key={h}
-                        style={{
-                          padding: "13px 20px",
-                          textAlign: h === "Nombre" ? "left" : "center",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: C.headText,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          borderBottom: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        {h}
-                      </th>
-                    ),
-                  )}
+                  {[
+                    "Nombre",
+                    "Dirección",
+                    "Teléfono",
+                    "Estado",
+                    "Acciones",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      style={{
+                        padding: "13px 20px",
+                        textAlign: h === "Nombre" ? "left" : "center",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: C.headText,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        borderBottom: `1px solid ${C.divider}`,
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>

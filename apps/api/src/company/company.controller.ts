@@ -7,13 +7,13 @@ import {
   Patch,
   Post,
   ValidationPipe,
-} from "@nestjs/common";
+} from '@nestjs/common';
 
-import { CompanyService } from "./company.service";
-import { CreateCompanyDto } from "./dto/create-company.dto";
-import { UpdateCompanyDto } from "./dto/update-company.dto";
+import { CompanyService } from './company.service';
+import { CreateCompanyDto } from './dto/create-company.dto';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
-@Controller("companies")
+@Controller('companies')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
@@ -27,21 +27,21 @@ export class CompanyController {
     return this.companyService.findAll();
   }
 
-  @Get(":slug")
-  findOne(@Param("slug", ValidationPipe) slug: string) {
+  @Get(':slug')
+  findOne(@Param('slug', ValidationPipe) slug: string) {
     return this.companyService.findOne(slug);
   }
 
-  @Patch(":slug")
+  @Patch(':slug')
   update(
-    @Param("slug", ValidationPipe) slug: string,
+    @Param('slug', ValidationPipe) slug: string,
     @Body() updateCompanyDto: UpdateCompanyDto,
   ) {
     return this.companyService.update(slug, updateCompanyDto);
   }
 
-  @Delete(":slug")
-  remove(@Param("slug", ValidationPipe) slug: string) {
+  @Delete(':slug')
+  remove(@Param('slug', ValidationPipe) slug: string) {
     return this.companyService.remove(slug);
   }
 }

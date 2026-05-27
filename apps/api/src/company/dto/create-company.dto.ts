@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateCompanyDto {
   constructor(rnc: string, name: string) {
@@ -6,9 +6,9 @@ export class CreateCompanyDto {
     this.name = name;
   }
 
-  @IsNotEmpty({ message: "el RNC no puede estar vacío" })
+  @IsNotEmpty({ message: 'el RNC no puede estar vacío' })
   rnc: string;
 
-  @IsNotEmpty({ message: "el nombre no puede estar vacío" })
+  @IsNotEmpty({ message: 'el nombre no puede estar vacío' })
   name: string;
 }

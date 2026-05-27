@@ -1,8 +1,8 @@
-import { Module } from "@nestjs/common";
-import { CompanyModule } from "src/company/company.module";
+import { Module } from '@nestjs/common';
+import { CompanyModule } from 'src/company/company.module';
 
-import { BranchController } from "./branch.controller";
-import { BranchService } from "./branch.service";
+import { BranchController } from './branch.controller';
+import { BranchService } from './branch.service';
 
 @Module({
   imports: [CompanyModule],
