@@ -1,26 +1,64 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@repo/db';
+import type { Prisma, RoleName } from '@repo/db';
 import { prisma } from '@repo/db';
 
 import type { NormalizedQueryUsers } from './dto/query-users.dto';
 import {
+  membershipRelationSelect,
   membershipRelationSelectFull,
   publicUserSelect,
+  type PublicUserWithMembership,
+  type UserWithPasswordHash,
   withMembership,
 } from './users.selects';
 
+export type { PublicUserWithMembership, UserWithPasswordHash } from './users.selects';
+
 export type PaginatedUsersResult = {
-  items: ReturnType<typeof withMembership>[];
+  items: PublicUserWithMembership[];
   total: number;
 };
 
+export type CreateUserData = {
+  email: string;
+  passwordHash: string;
+  firstName: string;
+  lastName: string;
+};
+
+export type UpdateUserFields = {
+  firstName?: string;
+  lastName?: string;
+  isActive?: boolean;
+};
+
+export type UpdateUserPersistenceResult =
+  | { status: 'ok' }
+  | { status: 'role_not_found' }
+  | { status: 'membership_not_found' };
+
 @Injectable()
 export class UsersRepository {
+  async findAuthContextRow(userId: string) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        memberships: {
+          select: membershipRelationSelect,
+          take: 1,
+        },
+      },
+    });
+  }
+
   async findManyByCompany(
     companyId: string,
     query: NormalizedQueryUsers,
   ): Promise<PaginatedUsersResult> {
-    const where = this.buildWhere(companyId, query);
+    const where = this.buildListWhere(companyId, query);
     const skip = (query.page - 1) * query.limit;
 
     const [rows, total] = await Promise.all([
@@ -42,12 +80,97 @@ export class UsersRepository {
     ]);
 
     return {
-      items: rows.map((row) => withMembership(row)),
+      items: rows.map(
+        (row) => withMembership(row) as PublicUserWithMembership,
+      ),
       total,
     };
   }
 
-  private buildWhere(
+  async findPublicById(id: string): Promise<PublicUserWithMembership | null> {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        ...publicUserSelect,
+        memberships: { select: membershipRelationSelectFull, take: 1 },
+      },
+    });
+    return user ? (withMembership(user) as PublicUserWithMembership) : null;
+  }
+
+  async findByEmail(email: string): Promise<UserWithPasswordHash | null> {
+    const user = await prisma.user.findFirst({
+      where: { email: this.normalizeEmail(email) },
+      select: {
+        ...publicUserSelect,
+        passwordHash: true,
+        memberships: { select: membershipRelationSelectFull, take: 1 },
+      },
+    });
+    return user ? (withMembership(user) as UserWithPasswordHash) : null;
+  }
+
+  async create(data: CreateUserData) {
+    return prisma.user.create({
+      data: {
+        email: data.email,
+        passwordHash: data.passwordHash,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      },
+      select: publicUserSelect,
+    });
+  }
+
+  updateLastLogin(id: string) {
+    return prisma.user.update({
+      where: { id },
+      data: { lastLoginAt: new Date() },
+      select: publicUserSelect,
+    });
+  }
+
+  async applyUserUpdate(
+    userId: string,
+    userData: UpdateUserFields,
+    roleName?: RoleName,
+  ): Promise<UpdateUserPersistenceResult> {
+    const hasUserFields = Object.keys(userData).length > 0;
+    const hasRole = roleName !== undefined;
+
+    if (!hasUserFields && !hasRole) {
+      return { status: 'ok' };
+    }
+
+    return prisma.$transaction(async (tx) => {
+      if (hasUserFields) {
+        await tx.user.update({ where: { id: userId }, data: userData });
+      }
+
+      if (hasRole) {
+        const roleRecord = await tx.role.findFirst({
+          where: { name: roleName },
+          select: { id: true },
+        });
+        if (!roleRecord) {
+          return { status: 'role_not_found' };
+        }
+
+        const { count } = await tx.userCompany.updateMany({
+          where: { userId },
+          data: { roleId: roleRecord.id },
+        });
+
+        if (count === 0) {
+          return { status: 'membership_not_found' };
+        }
+      }
+
+      return { status: 'ok' };
+    });
+  }
+
+  private buildListWhere(
     companyId: string,
     query: NormalizedQueryUsers,
   ): Prisma.UserWhereInput {
@@ -69,5 +192,9 @@ export class UsersRepository {
         },
       },
     };
+  }
+
+  private normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
   }
 }

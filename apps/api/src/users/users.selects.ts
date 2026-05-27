@@ -34,6 +34,24 @@ export type UserMembership = {
   company: { id: string; name: string; slug: string };
 };
 
+export type PublicUser = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+};
+
+export type PublicUserWithMembership = PublicUser & {
+  membership: UserMembership | null;
+};
+
+export type UserWithPasswordHash = PublicUserWithMembership & {
+  passwordHash: string;
+};
+
 type UserWithMembershipsRow = {
   memberships: UserMembership[];
 };

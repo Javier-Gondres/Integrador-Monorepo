@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
 import { UserAuthContext } from '../auth/auth.types';
@@ -12,37 +11,16 @@ import {
 } from './dto/query-users.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { UsersRepository } from './users.repository';
-import {
-  membershipRelationSelect,
-  membershipRelationSelectFull,
-  publicUserSelect,
-  withMembership,
-} from './users.selects';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
-}
 
 @Injectable()
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async findAuthContext(userId: string): Promise<UserAuthContext | null> {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        isActive: true,
-        memberships: {
-          select: membershipRelationSelect,
-          take: 1,
-        },
-      },
-    });
+    const user = await this.usersRepository.findAuthContextRow(userId);
 
     if (!user) {
       return null;
@@ -82,51 +60,29 @@ export class UsersService {
     };
   }
 
-  async findById(id: string) {
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        ...publicUserSelect,
-        memberships: { select: membershipRelationSelectFull, take: 1 },
-      },
-    });
-    return user ? withMembership(user) : null;
+  findById(id: string) {
+    return this.usersRepository.findPublicById(id);
   }
 
-  async findByEmail(email: string) {
-    const user = await prisma.user.findFirst({
-      where: { email: normalizeEmail(email) },
-      select: {
-        ...publicUserSelect,
-        passwordHash: true,
-        memberships: { select: membershipRelationSelectFull, take: 1 },
-      },
-    });
-    return user ? withMembership(user) : null;
+  findByEmail(email: string) {
+    return this.usersRepository.findByEmail(email);
   }
 
   async create(createUserDto: CreateUserDto) {
-    const email = normalizeEmail(createUserDto.email);
+    const email = createUserDto.email.trim().toLowerCase();
     const passwordHash = await bcrypt.hash(createUserDto.password, 10);
 
     // P2002 (email duplicado) lo traduce GlobalExceptionFilter → 409 EMAIL_ALREADY_EXISTS
-    return prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        firstName: createUserDto.firstName.trim(),
-        lastName: createUserDto.lastName.trim(),
-      },
-      select: publicUserSelect,
+    return this.usersRepository.create({
+      email,
+      passwordHash,
+      firstName: createUserDto.firstName.trim(),
+      lastName: createUserDto.lastName.trim(),
     });
   }
 
   updateLastLogin(id: string) {
-    return prisma.user.update({
-      where: { id },
-      data: { lastLoginAt: new Date() },
-      select: publicUserSelect,
-    });
+    return this.usersRepository.updateLastLogin(id);
   }
 
   async updateUser(
@@ -164,36 +120,24 @@ export class UsersService {
       );
     }
 
-    await prisma.$transaction(async (tx) => {
-      if (hasUserFields) {
-        await tx.user.update({ where: { id }, data: userData });
-      }
+    const result = await this.usersRepository.applyUserUpdate(
+      id,
+      userData,
+      role,
+    );
 
-      if (hasRole) {
-        const roleRecord = await tx.role.findFirst({
-          where: { name: role },
-          select: { id: true },
-        });
-        if (!roleRecord) {
-          throw BusinessException.notFound(
-            ErrorCodes.RECORD_NOT_FOUND,
-            'El rol no existe',
-          );
-        }
-
-        const { count } = await tx.userCompany.updateMany({
-          where: { userId: id },
-          data: { roleId: roleRecord.id },
-        });
-
-        if (count === 0) {
-          throw BusinessException.notFound(
-            ErrorCodes.RECORD_NOT_FOUND,
-            'La membresía del usuario no existe',
-          );
-        }
-      }
-    });
+    if (result.status === 'role_not_found') {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El rol no existe',
+      );
+    }
+    if (result.status === 'membership_not_found') {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'La membresía del usuario no existe',
+      );
+    }
 
     return this.findById(id);
   }
@@ -213,19 +157,13 @@ export class UsersService {
   }
 
   private async existingUser(id: string) {
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        ...publicUserSelect,
-        memberships: { select: membershipRelationSelectFull, take: 1 },
-      },
-    });
+    const user = await this.usersRepository.findPublicById(id);
     if (!user) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
         'El usuario no existe',
       );
     }
-    return withMembership(user);
+    return user;
   }
 }
