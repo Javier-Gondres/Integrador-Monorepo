@@ -1,11 +1,14 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
+import { AuthService } from '../auth/auth.service';
 import { UserAuthContext } from '../auth/auth.types';
-import { BusinessException, ErrorCodes } from '../common/errors';
+import { AuthException, BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateUserDto } from './dto/createUser.dto';
 import { NormalizedQueryUsers, QueryUsersDto } from './dto/query-users.dto';
+import { UpdateMeDto } from './dto/update-me.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { UsersRepository } from './users.repository';
 
@@ -14,7 +17,11 @@ const DEFAULT_LIMIT = 10;
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
+  ) {}
 
   async findAuthContext(userId: string): Promise<UserAuthContext | null> {
     const user = await this.usersRepository.findAuthContextRow(userId);
@@ -72,7 +79,83 @@ export class UsersService {
   }
 
   findByEmail(email: string) {
-    return this.usersRepository.findByEmail(email);
+    return this.usersRepository.findByEmailForAuth(email);
+  }
+
+  findMe(userId: string, companyId: string) {
+    return this.findByIdInCompany(userId, companyId);
+  }
+
+  listRoles() {
+    return this.usersRepository.findAllRoles();
+  }
+
+  async updateMe(userId: string, companyId: string, dto: UpdateMeDto) {
+    await this.findByIdInCompany(userId, companyId);
+
+    const userData = getDefinedData(dto);
+    if (userData.firstName !== undefined) {
+      userData.firstName = userData.firstName.trim();
+    }
+    if (userData.lastName !== undefined) {
+      userData.lastName = userData.lastName.trim();
+    }
+
+    if (Object.keys(userData).length === 0) {
+      throw new BusinessException(
+        ErrorCodes.VALIDATION_ERROR,
+        'Debe enviar al menos un campo para actualizar',
+      );
+    }
+
+    await this.usersRepository.applyUserUpdate(userId, userData);
+    return this.findByIdInCompany(userId, companyId);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.usersRepository.findPasswordHashById(userId);
+    if (!user?.isActive) {
+      throw AuthException.invalidCredentials();
+    }
+
+    const isCurrentValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+    if (!isCurrentValid) {
+      throw AuthException.invalidCredentials();
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.usersRepository.updatePasswordHash(userId, passwordHash);
+
+    await this.authService.logoutAllSessions(userId);
+
+    return { message: 'Contraseña actualizada correctamente' };
+  }
+
+  async restoreUser(id: string, companyId: string) {
+    const isDeleted = await this.usersRepository.isUserSoftDeletedInCompany(
+      id,
+      companyId,
+    );
+    if (!isDeleted) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario no está eliminado o no pertenece a esta empresa',
+      );
+    }
+
+    const result = await this.usersRepository.restoreInCompany(id, companyId);
+
+    if (result.status === 'membership_not_found') {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario no existe',
+      );
+    }
+
+    return this.findByIdInCompany(id, companyId);
   }
 
   async create(companyId: string, createUserDto: CreateUserDto) {

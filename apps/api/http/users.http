@@ -29,9 +29,45 @@ Content-Type: application/json
 
 @accessToken = {{login.response.body.$.data.accessToken}}
 
-### Verificar contexto de empresa (debe tener companyId)
+### Verificar contexto JWT + empresa (auth)
 GET {{baseUrl}}/auth/me
 Authorization: Bearer {{accessToken}}
+
+###
+
+### Mi perfil (mismo shape que GET /users/:id)
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Roles disponibles (formularios)
+GET {{baseUrl}}/users/roles
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Actualizar mi perfil (nombre / apellido)
+PATCH {{baseUrl}}/users/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Javier",
+  "lastName": "Actualizado"
+}
+
+###
+
+### Cambiar mi contraseña (revoca refresh tokens)
+PATCH {{baseUrl}}/users/me/password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "{{password}}",
+  "newPassword": "NuevaPassword123"
+}
 
 ###
 
@@ -129,19 +165,15 @@ Authorization: Bearer {{accessToken}}
 ###
 
 ### Eliminar usuario (no puedes eliminarte a ti mismo — debe responder 400)
-# Sustituye @selfUserId por tu propio id (el del token / auth/me).
 DELETE {{baseUrl}}/users/{{selfUserId}}
 Authorization: Bearer {{accessToken}}
 
 ###
 
-### Buscar por email (incluye passwordHash — solo para depuración)
-GET {{baseUrl}}/users/email/{{email}}
-
-###
-
-### Actualizar lastLoginAt
-PATCH {{baseUrl}}/users/{{userId}}/last-login
+### Restaurar usuario eliminado (restore + restoreMany)
+# Ejecutar después de DELETE sobre @userId.
+PATCH {{baseUrl}}/users/{{userId}}/restore
+Authorization: Bearer {{accessToken}}
 
 ###
 

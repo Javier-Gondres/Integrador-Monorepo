@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma, RoleName } from '@repo/db';
-import { prisma } from '@repo/db';
+import { prisma, runWithDeleted } from '@repo/db';
 
 import type { NormalizedQueryUsers } from './dto/query-users.dto';
 import {
@@ -56,6 +56,16 @@ export type SoftDeletedUserPayload = Prisma.UserGetPayload<{
 export type SoftDeleteUserPersistenceResult =
   | { status: 'ok'; user: SoftDeletedUserPayload }
   | { status: 'membership_not_found' };
+
+export type RestoreUserPersistenceResult =
+  | { status: 'ok'; user: SoftDeletedUserPayload }
+  | { status: 'membership_not_found' };
+
+export type RoleListItem = {
+  id: string;
+  name: RoleName;
+  description: string | null;
+};
 
 @Injectable()
 export class UsersRepository {
@@ -126,7 +136,10 @@ export class UsersRepository {
     return user ? (withMembership(user) as PublicUserWithMembership) : null;
   }
 
-  async findByEmail(email: string): Promise<UserWithPasswordHash | null> {
+  /** Solo para auth interno (login). No exponer vía HTTP. */
+  async findByEmailForAuth(
+    email: string,
+  ): Promise<UserWithPasswordHash | null> {
     const user = await prisma.user.findFirst({
       where: { email: this.normalizeEmail(email) },
       select: {
@@ -136,6 +149,47 @@ export class UsersRepository {
       },
     });
     return user ? (withMembership(user) as UserWithPasswordHash) : null;
+  }
+
+  findAllRoles(): Promise<RoleListItem[]> {
+    return prisma.role.findMany({
+      select: { id: true, name: true, description: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  findPasswordHashById(userId: string) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, passwordHash: true, isActive: true },
+    });
+  }
+
+  updatePasswordHash(userId: string, passwordHash: string) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+      select: { id: true },
+    });
+  }
+
+  async isUserSoftDeletedInCompany(
+    userId: string,
+    companyId: string,
+  ): Promise<boolean> {
+    return runWithDeleted(async () => {
+      const row = await prisma.user.findFirst({
+        where: {
+          id: userId,
+          deletedAt: { not: null },
+          memberships: {
+            some: { companyId, deletedAt: { not: null } },
+          },
+        },
+        select: { id: true },
+      });
+      return row !== null;
+    });
   }
 
   async createWithMembership(
@@ -206,6 +260,28 @@ export class UsersRepository {
     return prisma.user.deactivate({
       where: { id: userId },
       select: publicUserSelect,
+    });
+  }
+
+  async restoreInCompany(
+    userId: string,
+    companyId: string,
+  ): Promise<RestoreUserPersistenceResult> {
+    return prisma.$transaction(async (tx) => {
+      const membershipRestore = await tx.userCompany.restoreMany({
+        where: { userId, companyId },
+      });
+
+      if (membershipRestore.count === 0) {
+        return { status: 'membership_not_found' as const };
+      }
+
+      const user = await tx.user.restore({
+        where: { id: userId },
+        select: publicUserSelect,
+      });
+
+      return { status: 'ok' as const, user };
     });
   }
 
