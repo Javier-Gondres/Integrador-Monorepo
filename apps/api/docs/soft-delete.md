@@ -108,8 +108,10 @@ Agregar el modelo en `packages/database/src/soft-delete/config.ts`:
 La extension de soft delete aplica reglas automaticas:
 
 - Lecturas (`findMany`, `findFirst`, etc.) excluyen eliminados (`deletedAt: null`)
-- `delete` y `deleteMany` se convierten en actualizaciones logicas
-- Se conserva `isActive` como estado funcional separado de la eliminacion logica
+- Updates (`update`, `updateMany`, `upsert`) solo afectan registros activos (`deletedAt: null`)
+- **No** usar `prisma.model.delete()` / `deleteMany()` para master data: no pasan por soft delete de forma fiable en transacciones
+- Usar **`prisma.model.softDelete()`** y **`prisma.model.softDeleteMany()`** (model extension), compatibles con `$transaction(async (tx) => ...)`
+- En modelos con `isActive`, el soft delete tambien pone `isActive: false`
 
 ## 6) Flujo recomendado para agregar un modelo nuevo
 

@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
+import { AuthContext } from 'src/auth/auth.types';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CompanyId, RequireCompany } from 'src/common/company';
 
 import { CreateUserDto } from './dto/createUser.dto';
@@ -21,10 +24,7 @@ export class UsersController {
   // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
   @RequireCompany()
   @Get()
-  findAll(
-    @CompanyId() companyId: string,
-    @Query() query: QueryUsersDto,
-  ) {
+  findAll(@CompanyId() companyId: string, @Query() query: QueryUsersDto) {
     return this.usersService.findAllByCompany(companyId, query);
   }
 
@@ -42,10 +42,7 @@ export class UsersController {
   // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
   @RequireCompany()
   @Post()
-  create(
-    @Body() createUserDto: CreateUserDto,
-    @CompanyId() companyId: string,
-  ) {
+  create(@Body() createUserDto: CreateUserDto, @CompanyId() companyId: string) {
     return this.usersService.create(companyId, createUserDto);
   }
 
@@ -62,5 +59,16 @@ export class UsersController {
     @CompanyId() companyId: string,
   ) {
     return this.usersService.updateUser(id, updateUserDto, companyId);
+  }
+
+  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
+  @RequireCompany()
+  @Delete(':id')
+  remove(
+    @Param('id') id: string,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.usersService.removeUser(id, companyId, auth.userId);
   }
 }

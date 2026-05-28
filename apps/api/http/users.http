@@ -9,7 +9,7 @@
 # Si GET /users responde 403 → el usuario del token no tiene empresa (ejecuta seed).
 
 @baseUrl = http://localhost:3001
-@userId =cmpldelqh0000p850yo1xpoz4
+@userId =cmppm6pjj00009g50poz2f0x3
 @email = prueba@ejemplo.com
 @password = Password123
 
@@ -96,6 +96,21 @@ Content-Type: application/json
 
 ### Obtener usuario por id (misma empresa; 404 si no existe o es de otra empresa)
 GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Eliminar usuario (softDelete / softDeleteMany — transacción interactiva)
+# Usa el id de otro usuario de tu empresa (no el tuyo → 400).
+DELETE {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Eliminar usuario (no puedes eliminarte a ti mismo — debe responder 400)
+# Sustituye @selfUserId por tu propio id (el del token / auth/me).
+@selfUserId = pegar-tu-propio-id
+DELETE {{baseUrl}}/users/{{selfUserId}}
 Authorization: Bearer {{accessToken}}
 
 ###

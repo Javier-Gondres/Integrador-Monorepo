@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import { UserAuthContext } from '../auth/auth.types';
@@ -150,6 +150,32 @@ export class UsersService {
     }
 
     return this.findByIdInCompany(id, companyIdFromUserAuth);
+  }
+
+  async removeUser(id: string, companyId: string, requesterUserId: string) {
+    if (id === requesterUserId) {
+      throw new BusinessException(
+        ErrorCodes.VALIDATION_ERROR,
+        'No puedes eliminarte a ti mismo',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.findByIdInCompany(id, companyId);
+
+    const result = await this.usersRepository.softDeleteInCompany(id, companyId);
+
+    if (result.status === 'membership_not_found') {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario no existe',
+      );
+    }
+
+    return {
+      message: 'Usuario eliminado correctamente',
+      user: result.user,
+    };
   }
 
   private normalizeQuery(query: QueryUsersDto): NormalizedQueryUsers {

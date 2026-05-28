@@ -12,7 +12,10 @@ import {
   withMembership,
 } from './users.selects';
 
-export type { PublicUserWithMembership, UserWithPasswordHash } from './users.selects';
+export type {
+  PublicUserWithMembership,
+  UserWithPasswordHash,
+} from './users.selects';
 
 export type PaginatedUsersResult = {
   items: PublicUserWithMembership[];
@@ -44,6 +47,13 @@ export type UpdateUserFields = {
 export type UpdateUserPersistenceResult =
   | { status: 'ok' }
   | { status: 'role_not_found' }
+  | { status: 'membership_not_found' };
+
+export type SoftDeleteUserPersistenceResult =
+  | {
+      status: 'ok';
+      user: Pick<PublicUserWithMembership, keyof typeof publicUserSelect>;
+    }
   | { status: 'membership_not_found' };
 
 @Injectable()
@@ -89,9 +99,7 @@ export class UsersRepository {
     ]);
 
     return {
-      items: rows.map(
-        (row) => withMembership(row) as PublicUserWithMembership,
-      ),
+      items: rows.map((row) => withMembership(row) as PublicUserWithMembership),
       total,
     };
   }
@@ -183,6 +191,34 @@ export class UsersRepository {
       where: { id },
       data: { lastLoginAt: new Date() },
       select: publicUserSelect,
+    });
+  }
+
+  async softDeleteInCompany(
+    userId: string,
+    companyId: string,
+  ): Promise<SoftDeleteUserPersistenceResult> {
+    return prisma.$transaction(async (tx) => {
+      const membershipDelete = (await tx.userCompany.softDeleteMany({
+        where: { userId, companyId },
+      })) as { count: number };
+
+      if (membershipDelete.count === 0) {
+        return { status: 'membership_not_found' as const };
+      }
+
+      const user = await tx.user.softDelete({
+        where: { id: userId },
+        select: publicUserSelect,
+      });
+
+      return {
+        status: 'ok' as const,
+        user: user as Pick<
+          PublicUserWithMembership,
+          keyof typeof publicUserSelect
+        >,
+      };
     });
   }
 
