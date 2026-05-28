@@ -152,6 +152,26 @@ export class UsersService {
     return this.findByIdInCompany(id, companyIdFromUserAuth);
   }
 
+  async activateUser(id: string, companyId: string) {
+    await this.findByIdInCompany(id, companyId);
+    await this.usersRepository.activateUser(id);
+    return this.findByIdInCompany(id, companyId);
+  }
+
+  async deactivateUser(id: string, companyId: string, requesterUserId: string) {
+    if (id === requesterUserId) {
+      throw new BusinessException(
+        ErrorCodes.VALIDATION_ERROR,
+        'No puedes desactivarte a ti mismo',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.findByIdInCompany(id, companyId);
+    await this.usersRepository.deactivateUser(id);
+    return this.findByIdInCompany(id, companyId);
+  }
+
   async removeUser(id: string, companyId: string, requesterUserId: string) {
     if (id === requesterUserId) {
       throw new BusinessException(
@@ -163,7 +183,10 @@ export class UsersService {
 
     await this.findByIdInCompany(id, companyId);
 
-    const result = await this.usersRepository.softDeleteInCompany(id, companyId);
+    const result = await this.usersRepository.softDeleteInCompany(
+      id,
+      companyId,
+    );
 
     if (result.status === 'membership_not_found') {
       throw BusinessException.notFound(
@@ -191,5 +214,4 @@ export class UsersService {
       ...(query.isActive !== undefined && { isActive: query.isActive }),
     };
   }
-
 }

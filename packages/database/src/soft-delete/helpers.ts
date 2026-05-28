@@ -11,6 +11,18 @@ export type SoftDeleteUpdateData = {
   isActive?: false;
 };
 
+export type RestoreUpdateData = {
+  deletedAt: null;
+};
+
+export type ActivateUpdateData = {
+  isActive: true;
+};
+
+export type DeactivateUpdateData = {
+  isActive: false;
+};
+
 /**
  * Payload para `update` / `updateMany` al eliminar lógicamente.
  * Mantiene `isActive` separado: solo lo pone en `false` en modelos que lo tienen.
@@ -33,6 +45,19 @@ export function softDeleteDataForModel(
   return data;
 }
 
+/** Revierte eliminación lógica (`deletedAt = null`). No cambia `isActive`. */
+export function restoreDataForModel(_model: string): RestoreUpdateData {
+  return { deletedAt: null };
+}
+
+export function activateDataForModel(_model: string): ActivateUpdateData {
+  return { isActive: true };
+}
+
+export function deactivateDataForModel(_model: string): DeactivateUpdateData {
+  return { isActive: false };
+}
+
 type ArgsWithWhere = { where?: Record<string, unknown> };
 
 /** Combina un `where` existente con `deletedAt: null`. */
@@ -42,6 +67,17 @@ export function mergeNotDeleted<T extends ArgsWithWhere>(args: T): T {
     where: {
       ...(args.where ?? {}),
       ...notDeleted,
+    },
+  };
+}
+
+/** Combina un `where` existente con `deletedAt` no nulo (solo registros eliminados). */
+export function mergeOnlyDeleted<T extends ArgsWithWhere>(args: T): T {
+  return {
+    ...args,
+    where: {
+      ...(args.where ?? {}),
+      ...onlyDeleted,
     },
   };
 }

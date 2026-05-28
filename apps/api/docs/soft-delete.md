@@ -105,14 +105,159 @@ Agregar el modelo en `packages/database/src/soft-delete/config.ts`:
 
 ## 5) Comportamiento esperado con la extension Prisma
 
-La extension de soft delete aplica reglas automaticas:
+### Query extension (infraestructura)
 
 - Lecturas (`findMany`, `findFirst`, etc.) excluyen eliminados (`deletedAt: null`)
-- Updates (`update`, `updateMany`, `upsert`) solo afectan registros activos (`deletedAt: null`)
-- **`prisma.model.delete()` / `deleteMany()` están bloqueados** en master data (error explícito; evita borrado físico accidental)
-- Usar **`prisma.model.softDelete()`** y **`prisma.model.softDeleteMany()`** (model extension), compatibles con `$transaction(async (tx) => ...)`
-- Tipado: `softDelete` → `Prisma.Result<...>`, `softDeleteMany` → `Prisma.BatchPayload`
-- En modelos con `isActive`, el soft delete tambien pone `isActive: false`
+- Updates (`update`, `updateMany`, `upsert`) solo afectan registros no eliminados
+- **`prisma.model.delete()` / `deleteMany()` están bloqueados** (error explícito)
+- **`prisma.withDeleted(fn)`** o **`prisma.model.withDeleted(fn)`** desactivan el filtro global dentro del callback (auditoría, papelera, etc.)
+
+### Model extension (dominio)
+
+| Método | Efecto | Modelos |
+|--------|--------|---------|
+| `softDelete` / `softDeleteMany` | `deletedAt = now`, opcional `isActive: false` | Todos en `SOFT_DELETE_MODELS` |
+| `restore` / `restoreMany` | `deletedAt = null` | Todos en `SOFT_DELETE_MODELS` |
+| `activate` / `activateMany` | `isActive = true` | `SOFT_DELETE_MODELS_WITH_IS_ACTIVE` |
+| `deactivate` / `deactivateMany` | `isActive = false` | `SOFT_DELETE_MODELS_WITH_IS_ACTIVE` |
+
+**Separación conceptual:**
+
+- `restore`: revierte eliminación lógica (`deletedAt = null`). No cambia `isActive`.
+- `activate` / `deactivate`: estado operativo (`isActive`). Un usuario puede estar suspendido (`isActive: false`, `deletedAt: null`) sin estar eliminado.
+
+Tipado: operaciones unitarias → `Prisma.Result<...>`; `*Many` → `Prisma.BatchPayload`.
+
+### `softDelete` y `softDeleteMany` — ejemplos de uso
+
+**No uses** `prisma.model.delete()` ni `deleteMany()` en master data: la query extension lanza error. Usa siempre los métodos de model extension.
+
+#### `softDelete` (un registro)
+
+Equivalente a un `update` que pone `deletedAt = now()`. En `User`, `Company` y `Branch` también pone `isActive: false`.
+
+```ts
+import { prisma } from "@repo/db";
+
+// Por id — devuelve el registro actualizado (inferencia según select/include)
+const user = await prisma.user.softDelete({
+  where: { id: userId },
+  select: {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    isActive: true,
+    deletedAt: true,
+  },
+});
+
+// Con include (misma forma que update)
+const company = await prisma.company.softDelete({
+  where: { id: companyId },
+  include: { branches: true },
+});
+
+// Por clave compuesta unique + deletedAt (activos)
+const role = await prisma.role.softDelete({
+  where: {
+    name_deletedAt: {
+      name: "CASHIER",
+      deletedAt: null,
+    },
+  },
+});
+```
+
+Después del soft delete, `findFirst` / `findMany` normales **no** devuelven ese registro (filtro global `deletedAt: null`).
+
+#### `softDeleteMany` (varios registros)
+
+Equivalente a `updateMany`. Solo afecta filas **no eliminadas** (el `where` se combina con `deletedAt: null`).
+
+```ts
+// Todas las membresías de un usuario en una empresa
+const { count } = await prisma.userCompany.softDeleteMany({
+  where: { userId, companyId },
+});
+
+if (count === 0) {
+  // ninguna membresía activa coincidió
+}
+
+// Varias sucursales de una empresa
+await prisma.branch.softDeleteMany({
+  where: { companyId, isActive: true },
+});
+
+// Por lista de ids
+await prisma.user.softDeleteMany({
+  where: { id: { in: userIds } },
+});
+```
+
+Retorno: `Prisma.BatchPayload` → `{ count: number }`.
+
+#### Transacción (patrón recomendado en la API)
+
+Los métodos funcionan dentro de `$transaction` usando `tx` (sin rebinding de delegates):
+
+```ts
+// Ejemplo real: DELETE /users/:id (apps/api/src/users/users.repository.ts)
+await prisma.$transaction(async (tx) => {
+  const membershipDelete = await tx.userCompany.softDeleteMany({
+    where: { userId, companyId },
+  });
+
+  if (membershipDelete.count === 0) {
+    return { status: "membership_not_found" };
+  }
+
+  const user = await tx.user.softDelete({
+    where: { id: userId },
+    select: publicUserSelect,
+  });
+
+  return { status: "ok", user };
+});
+```
+
+#### Qué evitar
+
+```ts
+// ❌ Borrado físico — error explícito
+await prisma.user.delete({ where: { id: userId } });
+
+// ❌ No redirige a soft delete
+await prisma.user.deleteMany({ where: { companyId } });
+
+// ❌ update manual repetido en cada módulo (usa softDelete*)
+await prisma.user.update({
+  where: { id: userId },
+  data: { deletedAt: new Date(), isActive: false },
+});
+```
+
+#### Otros métodos (referencia rápida)
+
+```ts
+// Papelera / auditoría
+await prisma.withDeleted(async () => {
+  const deleted = await prisma.user.findMany({
+    where: { deletedAt: { not: null } },
+  });
+});
+
+// Restaurar usuario eliminado (en transacción)
+await prisma.$transaction(async (tx) => {
+  await tx.userCompany.restoreMany({ where: { userId, companyId } });
+  await tx.user.restore({ where: { id: userId }, select: publicUserSelect });
+});
+
+// Suspender sin eliminar (solo isActive)
+await prisma.user.deactivate({ where: { id } });
+await prisma.user.activate({ where: { id } });
+```
 
 ## 6) Flujo recomendado para agregar un modelo nuevo
 

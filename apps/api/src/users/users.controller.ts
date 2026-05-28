@@ -51,6 +51,24 @@ export class UsersController {
     return this.usersService.updateLastLogin(id);
   }
 
+  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
+  @RequireCompany()
+  @Patch(':id/activate')
+  activate(@Param('id') id: string, @CompanyId() companyId: string) {
+    return this.usersService.activateUser(id, companyId);
+  }
+
+  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
+  @RequireCompany()
+  @Patch(':id/deactivate')
+  deactivate(
+    @Param('id') id: string,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.usersService.deactivateUser(id, companyId, auth.userId);
+  }
+
   @RequireCompany()
   @Patch(':id')
   update(

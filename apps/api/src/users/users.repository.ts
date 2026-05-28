@@ -195,6 +195,20 @@ export class UsersRepository {
     });
   }
 
+  activateUser(userId: string) {
+    return prisma.user.activate({
+      where: { id: userId },
+      select: publicUserSelect,
+    });
+  }
+
+  deactivateUser(userId: string) {
+    return prisma.user.deactivate({
+      where: { id: userId },
+      select: publicUserSelect,
+    });
+  }
+
   async softDeleteInCompany(
     userId: string,
     companyId: string,

@@ -9,9 +9,11 @@
 # Si GET /users responde 403 → el usuario del token no tiene empresa (ejecuta seed).
 
 @baseUrl = http://localhost:3001
-@userId =cmppm6pjj00009g50poz2f0x3
+@userId =cmppmnylw00002k50o2r72pv1
 @email = prueba@ejemplo.com
 @password = Password123
+
+@selfUserId = cmpldelqh0000p850yo1xpoz4
 
 ### Login (obtener accessToken)
 # @name login
@@ -46,7 +48,7 @@ Authorization: Bearer {{accessToken}}
 ###
 
 ### Listar usuarios (filtro por texto)
-GET {{baseUrl}}/users?search=Juan
+GET {{baseUrl}}/users?isActive=false
 Authorization: Bearer {{accessToken}}
 
 ###
@@ -100,6 +102,25 @@ Authorization: Bearer {{accessToken}}
 
 ###
 
+### Desactivar usuario (isActive = false; no es soft delete)
+# Usa el id de otro usuario de tu empresa (no el tuyo → 400).
+PATCH {{baseUrl}}/users/{{userId}}/deactivate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Activar usuario (isActive = true)
+PATCH {{baseUrl}}/users/{{userId}}/activate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Desactivarte a ti mismo — debe responder 400
+PATCH {{baseUrl}}/users/{{selfUserId}}/deactivate
+Authorization: Bearer {{accessToken}}
+
+###
+
 ### Eliminar usuario (softDelete / softDeleteMany — transacción interactiva)
 # Usa el id de otro usuario de tu empresa (no el tuyo → 400).
 DELETE {{baseUrl}}/users/{{userId}}
@@ -109,7 +130,6 @@ Authorization: Bearer {{accessToken}}
 
 ### Eliminar usuario (no puedes eliminarte a ti mismo — debe responder 400)
 # Sustituye @selfUserId por tu propio id (el del token / auth/me).
-@selfUserId = pegar-tu-propio-id
 DELETE {{baseUrl}}/users/{{selfUserId}}
 Authorization: Bearer {{accessToken}}
 
