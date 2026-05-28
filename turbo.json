@@ -55,15 +55,18 @@
     },
 
     "db:generate": {
-      "cache": false
+      "cache": false,
+      "env": ["DATABASE_URL", "DIRECT_URL"]
     },
 
     "db:migrate": {
-      "cache": false
+      "cache": false,
+      "env": ["DATABASE_URL", "DIRECT_URL"]
     },
 
     "db:deploy": {
-      "cache": false
+      "cache": false,
+      "env": ["DATABASE_URL", "DIRECT_URL"]
     },
 
     "lint": {
