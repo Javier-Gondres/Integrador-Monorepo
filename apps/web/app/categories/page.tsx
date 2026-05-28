@@ -75,7 +75,7 @@ export default function CategoriesPage() {
     state: true,
   });
 
-  // Debounce aplicado a 350ms
+  // Debounce aplicado a 550ms
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchTerm), 550);
     return () => clearTimeout(t);
