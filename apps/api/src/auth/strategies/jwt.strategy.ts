@@ -3,8 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthException } from 'src/common/errors';
-import { UsersService } from 'src/users/users.service';
-
+import { AuthService } from '../auth.service';
 import { AccessTokenPayload, AuthContext } from '../auth.types';
 import { toAuthContext } from '../mappers/auth-context.mapper';
 
@@ -12,7 +11,7 @@ import { toAuthContext } from '../mappers/auth-context.mapper';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     config: ConfigService,
-    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -22,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: AccessTokenPayload): Promise<AuthContext> {
-    const userAuthContext = await this.usersService.findAuthContext(
+    const userAuthContext = await this.authService.findAuthContext(
       payload.sub,
     );
 

@@ -4,18 +4,13 @@ import { prisma, runWithDeleted } from '@repo/db';
 
 import type { NormalizedQueryUsers } from './dto/query-users.dto';
 import {
-  membershipRelationSelect,
   membershipRelationSelectFull,
   publicUserSelect,
   type PublicUserWithMembership,
-  type UserWithPasswordHash,
   withMembership,
 } from './users.selects';
 
-export type {
-  PublicUserWithMembership,
-  UserWithPasswordHash,
-} from './users.selects';
+export type { PublicUserWithMembership } from './users.selects';
 
 export type PaginatedUsersResult = {
   items: PublicUserWithMembership[];
@@ -68,21 +63,6 @@ export type RoleListItem = {
 
 @Injectable()
 export class UsersRepository {
-  async findAuthContextRow(userId: string) {
-    return prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        isActive: true,
-        memberships: {
-          select: membershipRelationSelect,
-          take: 1,
-        },
-      },
-    });
-  }
-
   async findManyByCompany(
     companyId: string,
     query: NormalizedQueryUsers,
@@ -133,21 +113,6 @@ export class UsersRepository {
       },
     });
     return user ? (withMembership(user) as PublicUserWithMembership) : null;
-  }
-
-  /** Solo para auth interno (login). No exponer vía HTTP. */
-  async findByEmailForAuth(
-    email: string,
-  ): Promise<UserWithPasswordHash | null> {
-    const user = await prisma.user.findFirst({
-      where: { email: this.normalizeEmail(email) },
-      select: {
-        ...publicUserSelect,
-        passwordHash: true,
-        memberships: { select: membershipRelationSelectFull, take: 1 },
-      },
-    });
-    return user ? (withMembership(user) as UserWithPasswordHash) : null;
   }
 
   findAllRoles(): Promise<RoleListItem[]> {
@@ -237,14 +202,6 @@ export class UsersRepository {
         status: 'ok',
         user: withMembership(row!) as PublicUserWithMembership,
       };
-    });
-  }
-
-  updateLastLogin(id: string) {
-    return prisma.user.update({
-      where: { id },
-      data: { lastLoginAt: new Date() },
-      select: publicUserSelect,
     });
   }
 
@@ -368,9 +325,5 @@ export class UsersRepository {
         },
       },
     };
-  }
-
-  private normalizeEmail(email: string): string {
-    return email.trim().toLowerCase();
   }
 }

@@ -2,7 +2,6 @@ import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import { AuthService } from '../auth/auth.service';
-import { UserAuthContext } from '../auth/auth.types';
 import { AuthException, BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -22,29 +21,6 @@ export class UsersService {
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
   ) {}
-
-  async findAuthContext(userId: string): Promise<UserAuthContext | null> {
-    const user = await this.usersRepository.findAuthContextRow(userId);
-
-    if (!user) {
-      return null;
-    }
-
-    const membership = user.memberships[0] ?? null;
-
-    return {
-      id: user.id,
-      email: user.email,
-      isActive: user.isActive,
-      membership: membership
-        ? {
-            companyId: membership.companyId,
-            defaultBranchId: membership.defaultBranchId,
-            role: { name: membership.role.name },
-          }
-        : null,
-    };
-  }
 
   async findAllByCompany(companyId: string, query: QueryUsersDto) {
     const normalized = this.normalizeQuery(query);
@@ -76,10 +52,6 @@ export class UsersService {
       );
     }
     return user;
-  }
-
-  findByEmail(email: string) {
-    return this.usersRepository.findByEmailForAuth(email);
   }
 
   findMe(userId: string, companyId: string) {
@@ -179,10 +151,6 @@ export class UsersService {
     }
 
     return result.user;
-  }
-
-  updateLastLogin(id: string) {
-    return this.usersRepository.updateLastLogin(id);
   }
 
   async updateUser(

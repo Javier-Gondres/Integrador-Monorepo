@@ -4,8 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthException } from 'src/common/errors';
-import { UsersService } from 'src/users/users.service';
-
+import { AuthService } from '../auth.service';
 import { RefreshTokenPayload } from '../auth.types';
 import { REFRESH_TOKEN_COOKIE } from '../refresh-token.cookie';
 
@@ -25,7 +24,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
 ) {
   constructor(
     config: ConfigService,
-    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([readRefreshTokenCookie]),
@@ -40,7 +39,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
       throw AuthException.sessionExpired();
     }
 
-    const userAuthContext = await this.usersService.findAuthContext(
+    const userAuthContext = await this.authService.findAuthContext(
       refreshTokenPayload.sub,
     );
 

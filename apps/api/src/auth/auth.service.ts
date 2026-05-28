@@ -3,16 +3,16 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { prisma } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 import { AuthException } from 'src/common/errors';
-import { UsersService } from 'src/users/users.service';
 
+import { AuthRepository } from './auth.repository';
 import {
   AccessTokenPayload,
   AuthTokens,
   AuthUser,
   RefreshTokenPayload,
+  UserAuthContext,
 } from './auth.types';
 import { REFRESH_TOKEN_MAX_AGE_MS } from './refresh-token.cookie';
 
@@ -23,13 +23,37 @@ const PASSWORD_HASH_ROUNDS = 10;
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly authRepository: AuthRepository,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
 
+  async findAuthContext(userId: string): Promise<UserAuthContext | null> {
+    const user = await this.authRepository.findAuthContextRow(userId);
+
+    if (!user) {
+      return null;
+    }
+
+    const membership = user.memberships[0] ?? null;
+
+    return {
+      id: user.id,
+      email: user.email,
+      isActive: user.isActive,
+      membership: membership
+        ? {
+            companyId: membership.companyId,
+            defaultBranchId: membership.defaultBranchId,
+            role: { name: membership.role.name },
+          }
+        : null,
+    };
+  }
+
   async validateUser(email: string, password: string): Promise<AuthUser> {
-    const userFromDatabase = await this.usersService.findByEmail(email);
+    const userFromDatabase =
+      await this.authRepository.findByEmailForAuth(email);
     if (!userFromDatabase?.isActive) {
       throw AuthException.invalidCredentials();
     }
@@ -48,7 +72,7 @@ export class AuthService {
   }
 
   async login(authenticatedUser: AuthUser): Promise<AuthTokens> {
-    await this.usersService.updateLastLogin(authenticatedUser.id);
+    await this.authRepository.updateLastLogin(authenticatedUser.id);
     return this.generateAccessAndRefreshTokens(authenticatedUser.id);
   }
 
@@ -56,9 +80,7 @@ export class AuthService {
     refreshTokenPayload: RefreshTokenPayload,
     refreshTokenFromCookie: string,
   ): Promise<AuthTokens> {
-    const userAuthContext = await this.usersService.findAuthContext(
-      refreshTokenPayload.sub,
-    );
+    const userAuthContext = await this.findAuthContext(refreshTokenPayload.sub);
 
     if (!userAuthContext?.isActive) {
       throw AuthException.invalidCredentials();
@@ -76,37 +98,14 @@ export class AuthService {
   }
 
   async logoutSession(refreshTokenPayload: RefreshTokenPayload): Promise<void> {
-    await this.revokeRefreshTokenInDatabase(
+    await this.authRepository.revokeRefreshToken(
       refreshTokenPayload.jti,
       refreshTokenPayload.sub,
     );
   }
 
   async logoutAllSessions(userId: string): Promise<void> {
-    await prisma.refreshToken.updateMany({
-      where: { userId, revoked: false },
-      data: {
-        revoked: true,
-        revokedAt: new Date(),
-      },
-    });
-  }
-
-  private async revokeRefreshTokenInDatabase(
-    refreshTokenId: string,
-    userId: string,
-  ): Promise<void> {
-    await prisma.refreshToken.updateMany({
-      where: {
-        id: refreshTokenId,
-        userId,
-        revoked: false,
-      },
-      data: {
-        revoked: true,
-        revokedAt: new Date(),
-      },
-    });
+    await this.authRepository.revokeAllRefreshTokensForUser(userId);
   }
 
   private buildAccessTokenClaims(userId: string): AccessTokenPayload {
@@ -139,13 +138,11 @@ export class AuthService {
     userId: string,
     plainRefreshToken: string,
   ): Promise<void> {
-    await prisma.refreshToken.create({
-      data: {
-        id: refreshTokenId,
-        userId,
-        hashedToken: await this.hashTokenForStorage(plainRefreshToken),
-        expiresAt: this.getRefreshTokenExpiryDate(),
-      },
+    await this.authRepository.createRefreshToken({
+      id: refreshTokenId,
+      userId,
+      hashedToken: await this.hashTokenForStorage(plainRefreshToken),
+      expiresAt: this.getRefreshTokenExpiryDate(),
     });
   }
 
@@ -174,9 +171,9 @@ export class AuthService {
     refreshTokenPayload: RefreshTokenPayload,
     refreshTokenFromCookie: string,
   ) {
-    const refreshTokenRecord = await prisma.refreshToken.findUnique({
-      where: { id: refreshTokenPayload.jti },
-    });
+    const refreshTokenRecord = await this.authRepository.findRefreshTokenById(
+      refreshTokenPayload.jti,
+    );
 
     const isExpired =
       refreshTokenRecord && refreshTokenRecord.expiresAt < new Date();
@@ -218,24 +215,15 @@ export class AuthService {
     });
     const hashedNewRefreshToken = await this.hashTokenForStorage(refreshToken);
 
-    await prisma.$transaction([
-      prisma.refreshToken.update({
-        where: { id: previousRefreshTokenId },
-        data: {
-          revoked: true,
-          revokedAt: new Date(),
-          replacedByTokenId: newRefreshTokenId,
-        },
-      }),
-      prisma.refreshToken.create({
-        data: {
-          id: newRefreshTokenId,
-          userId,
-          hashedToken: hashedNewRefreshToken,
-          expiresAt: this.getRefreshTokenExpiryDate(),
-        },
-      }),
-    ]);
+    await this.authRepository.rotateRefreshToken({
+      previousTokenId: previousRefreshTokenId,
+      newToken: {
+        id: newRefreshTokenId,
+        userId,
+        hashedToken: hashedNewRefreshToken,
+        expiresAt: this.getRefreshTokenExpiryDate(),
+      },
+    });
 
     return { accessToken, refreshToken };
   }
