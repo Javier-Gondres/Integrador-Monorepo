@@ -49,11 +49,12 @@ export type UpdateUserPersistenceResult =
   | { status: 'role_not_found' }
   | { status: 'membership_not_found' };
 
+export type SoftDeletedUserPayload = Prisma.UserGetPayload<{
+  select: typeof publicUserSelect;
+}>;
+
 export type SoftDeleteUserPersistenceResult =
-  | {
-      status: 'ok';
-      user: Pick<PublicUserWithMembership, keyof typeof publicUserSelect>;
-    }
+  | { status: 'ok'; user: SoftDeletedUserPayload }
   | { status: 'membership_not_found' };
 
 @Injectable()
@@ -199,9 +200,9 @@ export class UsersRepository {
     companyId: string,
   ): Promise<SoftDeleteUserPersistenceResult> {
     return prisma.$transaction(async (tx) => {
-      const membershipDelete = (await tx.userCompany.softDeleteMany({
+      const membershipDelete = await tx.userCompany.softDeleteMany({
         where: { userId, companyId },
-      })) as { count: number };
+      });
 
       if (membershipDelete.count === 0) {
         return { status: 'membership_not_found' as const };
@@ -212,13 +213,7 @@ export class UsersRepository {
         select: publicUserSelect,
       });
 
-      return {
-        status: 'ok' as const,
-        user: user as Pick<
-          PublicUserWithMembership,
-          keyof typeof publicUserSelect
-        >,
-      };
+      return { status: 'ok' as const, user };
     });
   }
 

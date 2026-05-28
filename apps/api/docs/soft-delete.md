@@ -109,8 +109,9 @@ La extension de soft delete aplica reglas automaticas:
 
 - Lecturas (`findMany`, `findFirst`, etc.) excluyen eliminados (`deletedAt: null`)
 - Updates (`update`, `updateMany`, `upsert`) solo afectan registros activos (`deletedAt: null`)
-- **No** usar `prisma.model.delete()` / `deleteMany()` para master data: no pasan por soft delete de forma fiable en transacciones
+- **`prisma.model.delete()` / `deleteMany()` están bloqueados** en master data (error explícito; evita borrado físico accidental)
 - Usar **`prisma.model.softDelete()`** y **`prisma.model.softDeleteMany()`** (model extension), compatibles con `$transaction(async (tx) => ...)`
+- Tipado: `softDelete` → `Prisma.Result<...>`, `softDeleteMany` → `Prisma.BatchPayload`
 - En modelos con `isActive`, el soft delete tambien pone `isActive: false`
 
 ## 6) Flujo recomendado para agregar un modelo nuevo

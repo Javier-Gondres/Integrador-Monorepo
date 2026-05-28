@@ -1,9 +1,6 @@
 import { Prisma } from "../generated/prisma/client.js";
-import { isSoftDeleteModel } from "./config.js";
-import {
-  mergeNotDeleted,
-  softDeleteDataForModel,
-} from "./helpers.js";
+import { isSoftDeleteModel, type SoftDeleteModel } from "./config.js";
+import { mergeNotDeleted, softDeleteDataForModel } from "./helpers.js";
 
 const READ_OPERATIONS = new Set([
   "findMany",
@@ -16,23 +13,21 @@ const READ_OPERATIONS = new Set([
   "groupBy",
 ]);
 
-const WRITE_FILTER_OPERATIONS = new Set([
-  "update",
-  "updateMany",
-  "upsert",
-]);
+const WRITE_FILTER_OPERATIONS = new Set(["update", "updateMany", "upsert"]);
 
 type ModelExtensionContext = {
   $name?: string;
-  update: (args: Record<string, unknown>) => Promise<unknown>;
-  updateMany: (args: Record<string, unknown>) => Promise<unknown>;
+  update: <A>(args: A) => Promise<unknown>;
+  updateMany: <A>(args: A) => Promise<unknown>;
 };
 
 function getModelContext<T>(ctx: T): ModelExtensionContext {
   return Prisma.getExtensionContext(ctx) as unknown as ModelExtensionContext;
 }
 
-function assertSoftDeleteModel(modelName: string | undefined): asserts modelName is string {
+function assertSoftDeleteModel(
+  modelName: string | undefined,
+): asserts modelName is SoftDeleteModel {
   if (!modelName || !isSoftDeleteModel(modelName)) {
     throw new Error(
       `softDelete no está disponible para el modelo: ${modelName ?? "desconocido"}`,
@@ -40,13 +35,16 @@ function assertSoftDeleteModel(modelName: string | undefined): asserts modelName
   }
 }
 
+function physicalDeleteDisabledError(model: string): Error {
+  return new Error(
+    `Los borrados físicos están deshabilitados para "${model}". Usa softDelete() o softDeleteMany().`,
+  );
+}
+
 /**
  * Extensión de soft delete:
- * - Query: filtra `deletedAt: null` en lecturas y updates.
+ * - Query: filtra `deletedAt: null` en lecturas/updates; bloquea `delete`/`deleteMany`.
  * - Model: `softDelete` / `softDeleteMany` (compatibles con transacciones interactivas).
- *
- * No interceptar `delete` / `deleteMany` en query extensions: dentro de `$transaction`
- * el delegado no es estable. Usar `tx.model.softDelete()` en su lugar.
  */
 export const softDeleteExtension = Prisma.defineExtension({
   name: "soft-delete",
@@ -57,11 +55,17 @@ export const softDeleteExtension = Prisma.defineExtension({
           return query(args);
         }
 
+        if (operation === "delete" || operation === "deleteMany") {
+          throw physicalDeleteDisabledError(model);
+        }
+
         if (
           READ_OPERATIONS.has(operation) ||
           WRITE_FILTER_OPERATIONS.has(operation)
         ) {
-          return query(mergeNotDeleted(args as { where?: Record<string, unknown> }));
+          return query(
+            mergeNotDeleted(args as { where?: Record<string, unknown> }),
+          );
         }
 
         return query(args);
@@ -70,24 +74,24 @@ export const softDeleteExtension = Prisma.defineExtension({
   },
   model: {
     $allModels: {
-      async softDelete<T>(
+      async softDelete<T, A extends Omit<Prisma.Args<T, "update">, "data">>(
         this: T,
-        args: Omit<Prisma.Args<T, "update">, "data">,
-      ) {
+        args: A,
+      ): Promise<Prisma.Result<T, A, "update">> {
         const context = getModelContext(this);
         const modelName = context.$name;
         assertSoftDeleteModel(modelName);
 
         return context.update({
-          ...(args as Record<string, unknown>),
+          ...args,
           data: softDeleteDataForModel(modelName),
-        });
+        }) as Promise<Prisma.Result<T, A, "update">>;
       },
 
-      async softDeleteMany<T>(
-        this: T,
-        args: Omit<Prisma.Args<T, "updateMany">, "data">,
-      ) {
+      async softDeleteMany<
+        T,
+        A extends Omit<Prisma.Args<T, "updateMany">, "data">,
+      >(this: T, args: A): Promise<Prisma.BatchPayload> {
         const context = getModelContext(this);
         const modelName = context.$name;
         assertSoftDeleteModel(modelName);
@@ -98,7 +102,7 @@ export const softDeleteExtension = Prisma.defineExtension({
           ...typedArgs,
           where: mergeNotDeleted({ where: typedArgs.where }).where,
           data: softDeleteDataForModel(modelName),
-        });
+        }) as Promise<Prisma.BatchPayload>;
       },
     },
   },
