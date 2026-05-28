@@ -1,8 +1,8 @@
 import { RoleName, User } from '@repo/db';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto implements Partial<
-  Pick<User, 'firstName' | 'lastName' | 'isActive'> & { role?: RoleName }
+  Pick<User, 'firstName' | 'lastName'> & { role?: RoleName }
 > {
   @IsOptional()
   @IsString({ message: 'El nombre debe ser texto' })
@@ -15,8 +15,4 @@ export class UpdateUserDto implements Partial<
   @IsOptional()
   @IsEnum(RoleName, { message: 'El rol no es válido' })
   role?: RoleName;
-
-  @IsOptional()
-  @IsBoolean({ message: 'El estado debe ser un booleano' })
-  isActive?: boolean;
 }

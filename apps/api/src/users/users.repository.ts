@@ -41,7 +41,6 @@ export type CreateUserPersistenceResult =
 export type UpdateUserFields = {
   firstName?: string;
   lastName?: string;
-  isActive?: boolean;
 };
 
 export type UpdateUserPersistenceResult =
