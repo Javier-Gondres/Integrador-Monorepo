@@ -72,7 +72,7 @@ Ahora, para email, la clave unica es el par `email + deletedAt`.
 Por eso esto ya no funciona:
 
 ```ts
-prisma.user.findUnique({ where: { email } }) // ❌
+prisma.user.findUnique({ where: { email } }); // ❌
 ```
 
 Y esto si:
@@ -85,14 +85,14 @@ prisma.user.findUnique({
       deletedAt: null,
     },
   },
-}) // ✅
+}); // ✅
 ```
 
 O con helper:
 
 ```ts
 prisma.user.findUnique({
-  where: uniqueWithNotDeleted("email", email),
+  where: uniqueWithNotDeleted('email', email),
 });
 ```
 
@@ -114,12 +114,12 @@ Agregar el modelo en `packages/database/src/soft-delete/config.ts`:
 
 ### Model extension (dominio)
 
-| Método | Efecto | Modelos |
-|--------|--------|---------|
-| `softDelete` / `softDeleteMany` | `deletedAt = now`, opcional `isActive: false` | Todos en `SOFT_DELETE_MODELS` |
-| `restore` / `restoreMany` | `deletedAt = null` | Todos en `SOFT_DELETE_MODELS` |
-| `activate` / `activateMany` | `isActive = true` | `SOFT_DELETE_MODELS_WITH_IS_ACTIVE` |
-| `deactivate` / `deactivateMany` | `isActive = false` | `SOFT_DELETE_MODELS_WITH_IS_ACTIVE` |
+| Método                          | Efecto                                        | Modelos                             |
+| ------------------------------- | --------------------------------------------- | ----------------------------------- |
+| `softDelete` / `softDeleteMany` | `deletedAt = now`, opcional `isActive: false` | Todos en `SOFT_DELETE_MODELS`       |
+| `restore` / `restoreMany`       | `deletedAt = null`                            | Todos en `SOFT_DELETE_MODELS`       |
+| `activate` / `activateMany`     | `isActive = true`                             | `SOFT_DELETE_MODELS_WITH_IS_ACTIVE` |
+| `deactivate` / `deactivateMany` | `isActive = false`                            | `SOFT_DELETE_MODELS_WITH_IS_ACTIVE` |
 
 **Separación conceptual:**
 
@@ -137,7 +137,7 @@ Tipado: operaciones unitarias → `Prisma.Result<...>`; `*Many` → `Prisma.Batc
 Equivalente a un `update` que pone `deletedAt = now()`. En `User`, `Company` y `Branch` también pone `isActive: false`.
 
 ```ts
-import { prisma } from "@repo/db";
+import { prisma } from '@repo/db';
 
 // Por id — devuelve el registro actualizado (inferencia según select/include)
 const user = await prisma.user.softDelete({
@@ -162,7 +162,7 @@ const company = await prisma.company.softDelete({
 const role = await prisma.role.softDelete({
   where: {
     name_deletedAt: {
-      name: "CASHIER",
+      name: 'CASHIER',
       deletedAt: null,
     },
   },
@@ -210,7 +210,7 @@ await prisma.$transaction(async (tx) => {
   });
 
   if (membershipDelete.count === 0) {
-    return { status: "membership_not_found" };
+    return { status: 'membership_not_found' };
   }
 
   const user = await tx.user.softDelete({
@@ -218,7 +218,7 @@ await prisma.$transaction(async (tx) => {
     select: publicUserSelect,
   });
 
-  return { status: "ok", user };
+  return { status: 'ok', user };
 });
 ```
 

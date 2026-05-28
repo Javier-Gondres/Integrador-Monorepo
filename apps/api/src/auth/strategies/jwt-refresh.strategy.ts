@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthException } from 'src/common/errors';
+
 import { AuthService } from '../auth.service';
 import { RefreshTokenPayload } from '../auth.types';
 import { REFRESH_TOKEN_COOKIE } from '../refresh-token.cookie';

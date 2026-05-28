@@ -6,8 +6,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
  */
 export type SoftDeleteQueryMode = "excludeDeleted" | "includeDeleted";
 
-const softDeleteQueryModeStorage =
-  new AsyncLocalStorage<SoftDeleteQueryMode>();
+const softDeleteQueryModeStorage = new AsyncLocalStorage<SoftDeleteQueryMode>();
 
 export function getSoftDeleteQueryMode(): SoftDeleteQueryMode {
   return softDeleteQueryModeStorage.getStore() ?? "excludeDeleted";

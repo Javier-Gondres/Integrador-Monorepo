@@ -23,21 +23,21 @@ Guía de referencia para el backend `apps/api` (NestJS + Prisma, ERP multiempres
 
 El módulo de auth usa **dos tokens**:
 
-| Token | Duración | Transporte | Uso |
-|-------|----------|------------|-----|
-| **Access token** | 15 min | Header `Authorization: Bearer <token>` | Rutas protegidas (API) |
-| **Refresh token** | 7 días | Cookie HTTP-only `refreshToken` | Renovar sesión sin re-login |
+| Token             | Duración | Transporte                             | Uso                         |
+| ----------------- | -------- | -------------------------------------- | --------------------------- |
+| **Access token**  | 15 min   | Header `Authorization: Bearer <token>` | Rutas protegidas (API)      |
+| **Refresh token** | 7 días   | Cookie HTTP-only `refreshToken`        | Renovar sesión sin re-login |
 
 El access token solo lleva `{ sub: userId }`. El contexto completo (empresa, rol, sucursal) se **recarga desde la BD** en cada request autenticado vía `JwtStrategy`.
 
 ### Endpoints
 
-| Método | Ruta | Protección | Descripción |
-|--------|------|------------|-------------|
-| `POST` | `/auth/login` | Pública | Valida credenciales, devuelve `accessToken`, setea cookie refresh |
-| `POST` | `/auth/refresh` | `JwtRefreshAuthGuard` | Renueva tokens usando cookie |
-| `POST` | `/auth/logout` | `JwtRefreshAuthGuard` | Revoca refresh token y borra cookie |
-| `GET` | `/auth/me` | `@RequireCompany()` | Devuelve `auth` + `company` del usuario |
+| Método | Ruta            | Protección            | Descripción                                                       |
+| ------ | --------------- | --------------------- | ----------------------------------------------------------------- |
+| `POST` | `/auth/login`   | Pública               | Valida credenciales, devuelve `accessToken`, setea cookie refresh |
+| `POST` | `/auth/refresh` | `JwtRefreshAuthGuard` | Renueva tokens usando cookie                                      |
+| `POST` | `/auth/logout`  | `JwtRefreshAuthGuard` | Revoca refresh token y borra cookie                               |
+| `GET`  | `/auth/me`      | `@RequireCompany()`   | Devuelve `auth` + `company` del usuario                           |
 
 ### Login (sin Passport Local)
 
@@ -93,21 +93,21 @@ sequenceDiagram
 
 Tras autenticación, Express expone estos campos (ver `src/types/express.d.ts`):
 
-| Campo | Cuándo existe | Tipo | Contenido |
-|-------|---------------|------|-----------|
-| `request.user` | Tras `JwtAuthGuard` | `AuthContext` | Passport lo setea |
-| `request.auth` | Tras `JwtAuthGuard` o `CompanyGuard` | `AuthContext` | Alias estable para servicios |
-| `request.company` | Tras `CompanyGuard` | `CompanyContext` | Tenant activo |
-| `request.requestId` | Siempre (middleware) | `string` | Trazabilidad |
+| Campo               | Cuándo existe                        | Tipo             | Contenido                    |
+| ------------------- | ------------------------------------ | ---------------- | ---------------------------- |
+| `request.user`      | Tras `JwtAuthGuard`                  | `AuthContext`    | Passport lo setea            |
+| `request.auth`      | Tras `JwtAuthGuard` o `CompanyGuard` | `AuthContext`    | Alias estable para servicios |
+| `request.company`   | Tras `CompanyGuard`                  | `CompanyContext` | Tenant activo                |
+| `request.requestId` | Siempre (middleware)                 | `string`         | Trazabilidad                 |
 
 ### `AuthContext`
 
 ```typescript
 type AuthContext = {
   userId: string;
-  companyId: string | null;   // de UserCompany.membership
-  branchId: string | null;    // defaultBranchId
-  role: RoleName | null;      // OWNER, ADMIN, MANAGER, etc.
+  companyId: string | null; // de UserCompany.membership
+  branchId: string | null; // defaultBranchId
+  role: RoleName | null; // OWNER, ADMIN, MANAGER, etc.
 };
 ```
 
@@ -172,11 +172,11 @@ getProfile(@Auth() auth: AuthContext) {
 
 **Errores:**
 
-| Caso | HTTP | Código |
-|------|------|--------|
-| Sin JWT | 401 | `UNAUTHORIZED` |
-| Sin empresa | 403 | `UNAUTHORIZED_COMPANY_ACCESS` |
-| Sin rol | 403 | `UNAUTHORIZED_COMPANY_ACCESS` |
+| Caso        | HTTP | Código                        |
+| ----------- | ---- | ----------------------------- |
+| Sin JWT     | 401  | `UNAUTHORIZED`                |
+| Sin empresa | 403  | `UNAUTHORIZED_COMPANY_ACCESS` |
+| Sin rol     | 403  | `UNAUTHORIZED_COMPANY_ACCESS` |
 
 ---
 
@@ -252,21 +252,21 @@ Toda respuesta de error pasa por `GlobalExceptionFilter`:
 
 ### Excepciones disponibles
 
-| Clase | Uso | Ejemplo |
-|-------|-----|---------|
-| `AuthException` | Auth / sesión / empresa | `AuthException.invalidCredentials()` |
-| `BusinessException` | Reglas de negocio genéricas | `BusinessException.notFound(ErrorCodes.CUSTOMER_NOT_FOUND, '...')` |
-| `InventoryException` | Stock, productos, caja | `InventoryException.insufficientStock('Tornillo M8')` |
+| Clase                | Uso                         | Ejemplo                                                            |
+| -------------------- | --------------------------- | ------------------------------------------------------------------ |
+| `AuthException`      | Auth / sesión / empresa     | `AuthException.invalidCredentials()`                               |
+| `BusinessException`  | Reglas de negocio genéricas | `BusinessException.notFound(ErrorCodes.CUSTOMER_NOT_FOUND, '...')` |
+| `InventoryException` | Stock, productos, caja      | `InventoryException.insufficientStock('Tornillo M8')`              |
 
 **No crear excepciones por módulo** (`SalesException`, etc.). Usar `BusinessException` + `ErrorCodes`.
 
 ### Factories de `AuthException`
 
 ```typescript
-AuthException.invalidCredentials();           // 401 INVALID_CREDENTIALS
-AuthException.unauthorized();                 // 401 UNAUTHORIZED
-AuthException.sessionExpired();               // 401 SESSION_EXPIRED
-AuthException.unauthorizedCompanyAccess();    // 403 UNAUTHORIZED_COMPANY_ACCESS
+AuthException.invalidCredentials(); // 401 INVALID_CREDENTIALS
+AuthException.unauthorized(); // 401 UNAUTHORIZED
+AuthException.sessionExpired(); // 401 SESSION_EXPIRED
+AuthException.unauthorizedCompanyAccess(); // 403 UNAUTHORIZED_COMPANY_ACCESS
 ```
 
 ### Factories de `InventoryException`
@@ -281,10 +281,10 @@ InventoryException.boxClosed();
 
 El filter mapea automáticamente:
 
-| Código Prisma | HTTP | Error |
-|---------------|------|-------|
-| P2002 (unique) | 409 | `EMAIL_ALREADY_EXISTS` o `DUPLICATE_RECORD` |
-| P2025 (not found) | 404 | `RECORD_NOT_FOUND` |
+| Código Prisma     | HTTP | Error                                       |
+| ----------------- | ---- | ------------------------------------------- |
+| P2002 (unique)    | 409  | `EMAIL_ALREADY_EXISTS` o `DUPLICATE_RECORD` |
+| P2025 (not found) | 404  | `RECORD_NOT_FOUND`                          |
 
 ```typescript
 // ✅ Correcto: dejar propagar
@@ -348,9 +348,9 @@ async findOne(id: string, auth: AuthContext) {
 }
 ```
 
-| Helper | Qué hace |
-|--------|----------|
-| `assertHasCompanyMembership(companyId)` | Falla 403 si no hay empresa |
+| Helper                                                     | Qué hace                                   |
+| ---------------------------------------------------------- | ------------------------------------------ |
+| `assertHasCompanyMembership(companyId)`                    | Falla 403 si no hay empresa                |
 | `assertCompanyAccess(resourceCompanyId, currentCompanyId)` | Falla 403 si el recurso es de otra empresa |
 
 > **Importante:** el guard evita usuarios sin tenant; `assertCompanyAccess` evita **IDOR cross-tenant** al cargar por ID.
@@ -515,16 +515,16 @@ export class LoginDto {
 
 ## Archivos clave
 
-| Tema | Ruta |
-|------|------|
-| Auth controller | `src/auth/auth.controller.ts` |
-| Auth service | `src/auth/auth.service.ts` |
-| JWT strategy | `src/auth/strategies/jwt.strategy.ts` |
-| Refresh strategy | `src/auth/strategies/jwt-refresh.strategy.ts` |
-| JwtAuthGuard | `src/auth/guards/jwt-auth.guard.ts` |
-| Decorator `@Auth` | `src/auth/decorators/auth.decorator.ts` |
-| Company guard/helpers | `src/common/company/` |
-| Errores globales | `src/common/errors/` |
-| Bootstrap app | `src/bootstrap/create-nest-app.ts` |
-| Tests e2e contrato | `test/api-contract.e2e-spec.ts` |
-| Requests de ejemplo | `http/auth.http` |
+| Tema                  | Ruta                                          |
+| --------------------- | --------------------------------------------- |
+| Auth controller       | `src/auth/auth.controller.ts`                 |
+| Auth service          | `src/auth/auth.service.ts`                    |
+| JWT strategy          | `src/auth/strategies/jwt.strategy.ts`         |
+| Refresh strategy      | `src/auth/strategies/jwt-refresh.strategy.ts` |
+| JwtAuthGuard          | `src/auth/guards/jwt-auth.guard.ts`           |
+| Decorator `@Auth`     | `src/auth/decorators/auth.decorator.ts`       |
+| Company guard/helpers | `src/common/company/`                         |
+| Errores globales      | `src/common/errors/`                          |
+| Bootstrap app         | `src/bootstrap/create-nest-app.ts`            |
+| Tests e2e contrato    | `test/api-contract.e2e-spec.ts`               |
+| Requests de ejemplo   | `http/auth.http`                              |
