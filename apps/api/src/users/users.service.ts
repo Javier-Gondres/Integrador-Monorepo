@@ -123,7 +123,7 @@ export class UsersService {
     if (result.status === 'membership_not_found') {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        'El usuario no existe',
+        'No se pudo restaurar la membresía del usuario en esta empresa',
       );
     }
 

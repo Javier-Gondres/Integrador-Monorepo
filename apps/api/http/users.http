@@ -11,7 +11,7 @@
 @baseUrl = http://localhost:3001
 @userId =cmppmnylw00002k50o2r72pv1
 @email = prueba@ejemplo.com
-@password = Password123
+@password = NuevaPassword12
 
 @selfUserId = cmpldelqh0000p850yo1xpoz4
 

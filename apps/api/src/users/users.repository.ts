@@ -223,22 +223,24 @@ export class UsersRepository {
     userId: string,
     companyId: string,
   ): Promise<RestoreUserPersistenceResult> {
-    return prisma.$transaction(async (tx) => {
-      const membershipRestore = await tx.userCompany.restoreMany({
-        where: { userId, companyId },
-      });
+    return prisma.withDeleted(() =>
+      prisma.$transaction(async (tx) => {
+        const membershipRestore = await tx.userCompany.restoreMany({
+          where: { userId, companyId },
+        });
 
-      if (membershipRestore.count === 0) {
-        return { status: 'membership_not_found' as const };
-      }
+        if (membershipRestore.count === 0) {
+          return { status: 'membership_not_found' as const };
+        }
 
-      const user = await tx.user.restore({
-        where: { id: userId },
-        select: publicUserSelect,
-      });
+        const user = await tx.user.restore({
+          where: { id: userId },
+          select: publicUserSelect,
+        });
 
-      return { status: 'ok' as const, user };
-    });
+        return { status: 'ok' as const, user };
+      }),
+    );
   }
 
   async softDeleteInCompany(

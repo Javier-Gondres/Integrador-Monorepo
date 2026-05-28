@@ -248,11 +248,13 @@ await prisma.withDeleted(async () => {
   });
 });
 
-// Restaurar usuario eliminado (en transacción)
-await prisma.$transaction(async (tx) => {
-  await tx.userCompany.restoreMany({ where: { userId, companyId } });
-  await tx.user.restore({ where: { id: userId }, select: publicUserSelect });
-});
+// Restaurar usuario eliminado (en transacción; envolver en withDeleted)
+await prisma.withDeleted(() =>
+  prisma.$transaction(async (tx) => {
+    await tx.userCompany.restoreMany({ where: { userId, companyId } });
+    await tx.user.restore({ where: { id: userId }, select: publicUserSelect });
+  }),
+);
 
 // Suspender sin eliminar (solo isActive)
 await prisma.user.deactivate({ where: { id } });
