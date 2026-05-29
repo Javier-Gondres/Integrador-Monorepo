@@ -16,7 +16,7 @@ model Company {
   id            String   @id @default(cuid())
 
   name          String
-  slug          String   @unique
+  slug          String   
 
   rnc           String?
 
@@ -25,12 +25,9 @@ model Company {
 
   isActive      Boolean  @default(true)
   deletedAt     DateTime?
-
-
 	
   branches      Branch[]
   users         UserCompany[]
-  
   customers Customer[]
   products Product[]
   categories Category[]
@@ -40,6 +37,8 @@ model Company {
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@unique([slug, deletedAt])
 }
 
 model Branch {
@@ -70,6 +69,7 @@ model Branch {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([companyId, name, deletedAt])
   @@index([companyId])
   @@index([deletedAt])
 }
@@ -104,7 +104,6 @@ model Role {
   name          RoleName
   description   String?
 
-
   users         UserCompany[]
   
   deletedAt     DateTime?
@@ -137,7 +136,7 @@ model UserCompany {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@unique([userId, companyId])
+  @@unique([userId, deletedAt]) 
   @@index([userId])
   @@index([companyId])
 }
@@ -174,7 +173,7 @@ model Customer {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  @@unique([companyId, customerCode])
+  @@unique([companyId, customerCode, deletedAt])
 
   @@index([companyId])
   @@index([documentId])
@@ -238,7 +237,7 @@ model Product {
 
   @@index([companyId])
   @@index([deletedAt])
-  @@unique([companyId, code])
+  @@unique([companyId, code, deletedAt])
 }
 
 model CategoryProduct {
@@ -275,7 +274,9 @@ model Employee {
   cashShifts     CashShift[]
   returns        Return[]
 
-  @@unique([branchId, employeeId])
+  @@unique([branchId, employeeId, deletedAt])
+  @@index([branchId])
+  @@index([deletedAt])
 }
 
 model Supplier {
@@ -298,7 +299,9 @@ model Supplier {
   
   purchaseOrders PurchaseOrder[]
 
-  @@unique([companyId, supplierId])
+  @@unique([companyId, supplierId, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
 }
 model AuditLog {
   id              String   @id @default(cuid())
@@ -376,7 +379,7 @@ model Discount {
   @@index([deletedAt])
   @@index([isActive])
 
-  @@unique([companyId, name, startDate, endDate])
+  @@unique([companyId, name, startDate, endDate, deletedAt])
 }
 
 model DiscountProduct {
@@ -430,7 +433,7 @@ model Stock {
   inventoryWastes      InventoryWaste[]
   transferProducts     TransferProduct[]
 
-  @@unique([branchId, productId])
+  @@unique([branchId, productId, deletedAt])
 
   @@index([branchId])
   @@index([productId])
@@ -699,8 +702,7 @@ model CashRegister {
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
 
-  @@unique([branchId, name])
-
+  @@unique([branchId, name, deletedAt])
   @@index([branchId])
   @@index([deletedAt])
 }
