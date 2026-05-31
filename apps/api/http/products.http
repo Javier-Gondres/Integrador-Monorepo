@@ -1,0 +1,173 @@
+# Products API — REST Client (VS Code / Cursor extension "REST Client")
+#
+# Requisitos:
+#   1. API en marcha → pnpm --filter api run dev
+#   2. Seed con empresa demo + categorías/productos → pnpm db:seed:dev
+#   3. Login abajo → @accessToken
+#
+# Tip: tras el seed, ejecuta GET /categories/all para copiar ids reales en @categoryId1 / @categoryId2
+
+@baseUrl = http://localhost:3001
+@email = prueba@ejemplo.com
+@password = Password123
+
+@productId = reemplaza-con-id-de-producto
+@categoryId1 = cmptvvtwi00043c50qdavuoi6
+@categoryId2 = cmptvvtwa00033c5042fafv9d
+
+### Login (obtener accessToken)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###
+
+@accessToken = {{login.response.body.$.data.accessToken}}
+
+### Verificar contexto JWT + empresa
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar productos (paginado)
+GET {{baseUrl}}/products?page=1&take=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar productos (búsqueda por nombre o código)
+GET {{baseUrl}}/products?q=coca&page=1&take=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar productos filtrados por categoría
+GET {{baseUrl}}/products?categoryId={{categoryId1}}&page=1&take=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar productos (solo activos operativamente)
+GET {{baseUrl}}/products?isActive=true&page=1&take=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Crear producto (sin categorías)
+# @name createProduct
+POST {{baseUrl}}/products
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Producto de prueba",
+  "code": "TEST-001",
+  "description": "Creado desde products.http",
+  "price": 99.99,
+  "isActive": true
+}
+
+###
+
+@productId = cmptvvtxi00053c505z9j8bn5
+
+### Crear producto con varias categorías (many-to-many implícito)
+POST {{baseUrl}}/products
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Combo snack + bebida",
+  "code": "COMBO-001",
+  "description": "Producto en múltiples categorías",
+  "price": 120.00,
+  "categoryIds": ["{{categoryId1}}", "{{categoryId2}}"],
+  "isActive": true
+}
+
+###
+
+### Crear producto (código duplicado — debe responder 409)
+POST {{baseUrl}}/products
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Otro producto",
+  "code": "TEST-001",
+  "price": 50.00
+}
+
+###
+
+### Obtener producto por id
+GET {{baseUrl}}/products/{{productId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Actualizar producto
+PATCH {{baseUrl}}/products/{{productId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Producto de prueba (editado)",
+  "price": 109.99,
+  "categoryIds": ["{{categoryId1}}"]
+}
+
+###
+
+### Quitar todas las categorías de un producto
+PATCH {{baseUrl}}/products/{{productId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "categoryIds": []
+}
+
+###
+
+### Desactivar producto (isActive = false)
+PATCH {{baseUrl}}/products/{{productId}}/deactivate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Activar producto (isActive = true)
+PATCH {{baseUrl}}/products/{{productId}}/activate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Eliminar producto (soft delete)
+DELETE {{baseUrl}}/products/{{productId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Crear producto (validación — price negativo, debe fallar 400)
+POST {{baseUrl}}/products
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Inválido",
+  "code": "INV-001",
+  "price": -10
+}
+
+###
+
+### Sin token — debe responder 401
+GET {{baseUrl}}/products
+
+###

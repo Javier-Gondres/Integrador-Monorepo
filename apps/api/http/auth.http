@@ -12,6 +12,10 @@
 # IMPORTANTE: POST /users solo crea User. Para rutas con @RequireCompany() (GET /users, etc.)
 # ejecuta el seed después del paso 1:
 #   pnpm db:seed:dev
+#
+# Tras el seed también puedes probar:
+#   apps/api/http/categories.http
+#   apps/api/http/products.http
 
 @baseUrl = http://localhost:3001
 @email = prueba@ejemplo.com

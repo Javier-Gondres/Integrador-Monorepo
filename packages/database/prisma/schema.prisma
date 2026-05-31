@@ -39,6 +39,8 @@ model Company {
 
   branches      Branch[]
   users         UserCompany[]
+  categories    Category[]
+  products      Product[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -166,4 +168,53 @@ model AuditLog {
   metadata        Json?
 
   createdAt       DateTime @default(now())
+}
+
+model Category {
+  id            String     @id @default(cuid())
+
+  companyId     String
+
+  name          String
+  description   String?
+
+  isActive      Boolean    @default(true)
+  deletedAt     DateTime?
+
+  company       Company    @relation(fields: [companyId], references: [id])
+  products      Product[]
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@unique([companyId, name, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+model Product {
+  id            String      @id @default(cuid())
+
+  companyId     String
+
+  name          String
+  code          String
+
+  description   String?
+  imageUrl      String?
+
+  price         Decimal     @db.Decimal(10, 2)
+
+  isActive      Boolean     @default(true)
+  deletedAt     DateTime?
+
+  company       Company     @relation(fields: [companyId], references: [id])
+  categories    Category[]
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([companyId, code, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
 }
