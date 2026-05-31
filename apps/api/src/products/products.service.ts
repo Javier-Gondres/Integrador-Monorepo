@@ -10,10 +10,8 @@ import {
   QueryProductsDto,
 } from './dto/query-products.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import {
-  type ProductRecord,
-  ProductsRepository,
-} from './products.repository';
+import { ProductsRepository } from './products.repository';
+import type { ProductRecord } from './products.selects';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;

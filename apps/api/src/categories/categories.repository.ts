@@ -2,26 +2,12 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@repo/db';
 import { prisma } from '@repo/db';
 
+import type { PaginatedResult } from '../common/types/repository.types';
+import { type CategoryRecord, categorySelect } from './categories.selects';
 import type { NormalizedQueryCategories } from './dto/query-categories.dto';
 
-export const categorySelect = {
-  id: true,
-  companyId: true,
-  name: true,
-  description: true,
-  isActive: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
-
-export type CategoryRecord = Prisma.CategoryGetPayload<{
-  select: typeof categorySelect;
-}>;
-
-export type PaginatedCategoriesResult = {
-  items: CategoryRecord[];
-  total: number;
-};
+export type { CategoryRecord } from './categories.selects';
+export type PaginatedCategoriesResult = PaginatedResult<CategoryRecord>;
 
 export type CreateCategoryData = {
   name: string;

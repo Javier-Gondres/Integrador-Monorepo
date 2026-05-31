@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma, RoleName } from '@repo/db';
 import { prisma, runWithDeleted } from '@repo/db';
 
+import type { PaginatedResult } from '../common/types/repository.types';
 import type { NormalizedQueryUsers } from './dto/query-users.dto';
 import {
   membershipRelationSelectFull,
@@ -12,10 +13,7 @@ import {
 
 export type { PublicUserWithMembership } from './users.selects';
 
-export type PaginatedUsersResult = {
-  items: PublicUserWithMembership[];
-  total: number;
-};
+export type PaginatedUsersResult = PaginatedResult<PublicUserWithMembership>;
 
 export type CreateUserData = {
   email: string;
