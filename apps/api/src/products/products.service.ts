@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@repo/db';
-import { prisma } from '@repo/db';
+import type { Prisma } from '@repo/db';
 
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
@@ -10,66 +9,25 @@ import {
   QueryProductsDto,
 } from './dto/query-products.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import {
+  type ProductRecord,
+  ProductsRepository,
+} from './products.repository';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
 
-const categorySummarySelect = {
-  id: true,
-  name: true,
-} as const;
-
-const productSelect = {
-  id: true,
-  companyId: true,
-  name: true,
-  code: true,
-  description: true,
-  imageUrl: true,
-  price: true,
-  isActive: true,
-  createdAt: true,
-  updatedAt: true,
-  categories: {
-    select: categorySummarySelect,
-  },
-} as const;
-
-type ProductRecord = Prisma.ProductGetPayload<{ select: typeof productSelect }>;
-
 @Injectable()
 export class ProductsService {
+  constructor(private readonly productsRepository: ProductsRepository) {}
+
   async findPaginatedByCompany(companyId: string, query: QueryProductsDto) {
     const normalized = this.normalizeQuery(query);
-    const skip = (normalized.page - 1) * normalized.take;
-
-    const where: Prisma.ProductWhereInput = {
-      companyId,
-      ...(normalized.isActive !== undefined && {
-        isActive: normalized.isActive,
-      }),
-      ...(normalized.categoryId && {
-        categories: { some: { id: normalized.categoryId, companyId } },
-      }),
-      ...(normalized.q && {
-        OR: [
-          { name: { contains: normalized.q, mode: 'insensitive' } },
-          { code: { contains: normalized.q, mode: 'insensitive' } },
-          { description: { contains: normalized.q, mode: 'insensitive' } },
-        ],
-      }),
-    };
-
-    const [items, total] = await prisma.$transaction([
-      prisma.product.findMany({
-        where,
-        skip,
-        take: normalized.take,
-        orderBy: { name: 'asc' },
-        select: productSelect,
-      }),
-      prisma.product.count({ where }),
-    ]);
+    const { items, total } =
+      await this.productsRepository.findPaginatedByCompany(
+        companyId,
+        normalized,
+      );
 
     return {
       items: items.map(mapProduct),
@@ -83,10 +41,10 @@ export class ProductsService {
   }
 
   async findByIdInCompany(id: string, companyId: string) {
-    const product = await prisma.product.findFirst({
-      where: { id, companyId },
-      select: productSelect,
-    });
+    const product = await this.productsRepository.findByIdInCompany(
+      id,
+      companyId,
+    );
 
     if (!product) {
       throw BusinessException.notFound(
@@ -103,35 +61,17 @@ export class ProductsService {
       await this.assertCategoriesInCompany(dto.categoryIds, companyId);
     }
 
-    try {
-      const product = await prisma.product.create({
-        data: {
-          companyId,
-          name: dto.name.trim(),
-          code: dto.code.trim(),
-          description: dto.description?.trim() || null,
-          imageUrl: dto.imageUrl?.trim() || null,
-          price: dto.price,
-          isActive: dto.isActive ?? true,
-          ...(dto.categoryIds?.length && {
-            categories: {
-              connect: dto.categoryIds.map((id) => ({ id })),
-            },
-          }),
-        },
-        select: productSelect,
-      });
+    const product = await this.productsRepository.create(companyId, {
+      name: dto.name.trim(),
+      code: dto.code.trim(),
+      description: dto.description?.trim() || null,
+      imageUrl: dto.imageUrl?.trim() || null,
+      price: dto.price,
+      isActive: dto.isActive ?? true,
+      categoryIds: dto.categoryIds,
+    });
 
-      return mapProduct(product);
-    } catch (e: unknown) {
-      if (isPrismaUniqueError(e)) {
-        throw BusinessException.conflict(
-          ErrorCodes.DUPLICATE_RECORD,
-          'Ya existe un producto con ese código en esta empresa',
-        );
-      }
-      throw e;
-    }
+    return mapProduct(product);
   }
 
   async update(id: string, companyId: string, dto: UpdateProductDto) {
@@ -167,40 +107,26 @@ export class ProductsService {
       );
     }
 
-    try {
-      const product = await prisma.product.update({
-        where: { id },
-        data: updateData,
-        select: productSelect,
-      });
+    const product = await this.productsRepository.update(id, updateData);
 
-      return mapProduct(product);
-    } catch (e: unknown) {
-      if (isPrismaUniqueError(e)) {
-        throw BusinessException.conflict(
-          ErrorCodes.DUPLICATE_RECORD,
-          'Ya existe un producto con ese código en esta empresa',
-        );
-      }
-      throw e;
-    }
+    return mapProduct(product);
   }
 
   async activate(id: string, companyId: string) {
     await this.findByIdInCompany(id, companyId);
-    await prisma.product.activate({ where: { id } });
+    await this.productsRepository.activate(id);
     return this.findByIdInCompany(id, companyId);
   }
 
   async deactivate(id: string, companyId: string) {
     await this.findByIdInCompany(id, companyId);
-    await prisma.product.deactivate({ where: { id } });
+    await this.productsRepository.deactivate(id);
     return this.findByIdInCompany(id, companyId);
   }
 
   async remove(id: string, companyId: string) {
     await this.findByIdInCompany(id, companyId);
-    await prisma.product.softDelete({ where: { id } });
+    await this.productsRepository.softDelete(id);
 
     return {
       message: 'Producto eliminado correctamente',
@@ -211,12 +137,10 @@ export class ProductsService {
     categoryIds: string[],
     companyId: string,
   ) {
-    const count = await prisma.category.count({
-      where: {
-        id: { in: categoryIds },
-        companyId,
-      },
-    });
+    const count = await this.productsRepository.countCategoriesInCompany(
+      categoryIds,
+      companyId,
+    );
 
     if (count !== categoryIds.length) {
       throw BusinessException.notFound(
@@ -246,13 +170,4 @@ function mapProduct(product: ProductRecord) {
     categories,
     categoryIds: categories.map((category) => category.id),
   };
-}
-
-function isPrismaUniqueError(e: unknown): boolean {
-  return (
-    typeof e === 'object' &&
-    e !== null &&
-    'code' in e &&
-    (e as { code: string }).code === 'P2002'
-  );
 }
