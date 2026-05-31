@@ -29,8 +29,8 @@ export class QueryProductsDto {
   take?: number;
 
   @IsOptional()
-  @IsString({ message: 'q debe ser texto' })
-  q?: string;
+  @IsString({ message: 'search debe ser texto' })
+  search?: string;
 
   @IsOptional()
   @IsString({ message: 'categoryId debe ser texto' })
@@ -45,7 +45,7 @@ export class QueryProductsDto {
 export type NormalizedQueryProducts = {
   page: number;
   take: number;
-  q?: string;
+  search?: string;
   categoryId?: string;
   isActive?: boolean;
 };

@@ -127,7 +127,7 @@ export class CategoriesService {
     return {
       page: query.page ?? DEFAULT_PAGE,
       take: query.take ?? DEFAULT_TAKE,
-      ...(query.q?.trim() && { q: query.q.trim() }),
+      ...(query.search?.trim() && { search: query.search.trim() }),
       ...(query.isActive !== undefined && { isActive: query.isActive }),
     };
   }

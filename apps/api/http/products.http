@@ -42,7 +42,7 @@ Authorization: Bearer {{accessToken}}
 ###
 
 ### Listar productos (búsqueda por nombre o código)
-GET {{baseUrl}}/products?q=coca&page=1&take=10
+GET {{baseUrl}}/products?search=coca&page=1&take=10
 Authorization: Bearer {{accessToken}}
 
 ###

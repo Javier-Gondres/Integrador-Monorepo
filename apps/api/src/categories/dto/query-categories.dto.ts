@@ -29,8 +29,8 @@ export class QueryCategoriesDto {
   take?: number;
 
   @IsOptional()
-  @IsString({ message: 'q debe ser texto' })
-  q?: string;
+  @IsString({ message: 'search debe ser texto' })
+  search?: string;
 
   @IsOptional()
   @Transform(({ value }) => parseOptionalBoolean(value))
@@ -41,6 +41,6 @@ export class QueryCategoriesDto {
 export type NormalizedQueryCategories = {
   page: number;
   take: number;
-  q?: string;
+  search?: string;
   isActive?: boolean;
 };

@@ -107,10 +107,10 @@ export class CategoriesRepository {
     return {
       companyId,
       ...(query.isActive !== undefined && { isActive: query.isActive }),
-      ...(query.q && {
+      ...(query.search && {
         OR: [
-          { name: { contains: query.q, mode: 'insensitive' } },
-          { description: { contains: query.q, mode: 'insensitive' } },
+          { name: { contains: query.search, mode: 'insensitive' } },
+          { description: { contains: query.search, mode: 'insensitive' } },
         ],
       }),
     };

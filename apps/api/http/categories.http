@@ -40,7 +40,7 @@ Authorization: Bearer {{accessToken}}
 ###
 
 ### Listar categorías (búsqueda)
-GET {{baseUrl}}/categories?q=bebidas&page=1&take=10
+GET {{baseUrl}}/categories?search=bebidas&page=1&take=10
 Authorization: Bearer {{accessToken}}
 
 ###

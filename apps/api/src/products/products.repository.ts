@@ -102,11 +102,11 @@ export class ProductsRepository {
       ...(query.categoryId && {
         categories: { some: { id: query.categoryId, companyId } },
       }),
-      ...(query.q && {
+      ...(query.search && {
         OR: [
-          { name: { contains: query.q, mode: 'insensitive' } },
-          { code: { contains: query.q, mode: 'insensitive' } },
-          { description: { contains: query.q, mode: 'insensitive' } },
+          { name: { contains: query.search, mode: 'insensitive' } },
+          { code: { contains: query.search, mode: 'insensitive' } },
+          { description: { contains: query.search, mode: 'insensitive' } },
         ],
       }),
     };
