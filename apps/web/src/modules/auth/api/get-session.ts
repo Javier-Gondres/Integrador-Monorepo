@@ -1,6 +1,10 @@
 import { apiFetch } from "@/lib/api/client";
 
-import type { AuthSession, LoginCredentials, LoginResponse } from "../types/auth.types";
+import type {
+  AuthSession,
+  LoginCredentials,
+  LoginResponse,
+} from "../types/auth.types";
 
 export async function getSession() {
   return apiFetch<AuthSession>("/auth/me");

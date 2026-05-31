@@ -38,7 +38,9 @@ export function getCategoriesTableColumns(
           }}
         >
           {cat.description || (
-            <em style={{ color: C.mutedText, fontSize: "13px" }}>Sin descripción</em>
+            <em style={{ color: C.mutedText, fontSize: "13px" }}>
+              Sin descripción
+            </em>
           )}
         </div>
       ),

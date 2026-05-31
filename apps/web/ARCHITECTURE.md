@@ -36,30 +36,30 @@ El frontend es **únicamente capa de presentación**. Toda la lógica de negocio
 
 Principios clave:
 
-| Principio | Qué significa en la práctica |
-|-----------|-------------------------------|
-| **Feature / Domain First** | El código se organiza por dominio (`products`, `customers`), no por tipo (`components/`, `hooks/` globales). |
-| **`app/` solo enruta** | Las páginas de Next.js no contienen lógica; delegan en `screens/` del módulo. |
-| **Un solo cliente HTTP** | Nunca usar `fetch` directo en componentes. Todo pasa por `apiFetch`. |
-| **Components vs Containers** | Los componentes son visuales; los containers conectan datos (Query/Mutations) con la UI. |
-| **DTO ≠ UI** | Lo que devuelve el API y lo que consume la UI se separan con **mappers**. |
-| **Query solo cuando hace falta** | TanStack Query para filtros, paginación, mutaciones. No para pantallas estáticas. |
+| Principio                        | Qué significa en la práctica                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Feature / Domain First**       | El código se organiza por dominio (`products`, `customers`), no por tipo (`components/`, `hooks/` globales). |
+| **`app/` solo enruta**           | Las páginas de Next.js no contienen lógica; delegan en `screens/` del módulo.                                |
+| **Un solo cliente HTTP**         | Nunca usar `fetch` directo en componentes. Todo pasa por `apiFetch`.                                         |
+| **Components vs Containers**     | Los componentes son visuales; los containers conectan datos (Query/Mutations) con la UI.                     |
+| **DTO ≠ UI**                     | Lo que devuelve el API y lo que consume la UI se separan con **mappers**.                                    |
+| **Query solo cuando hace falta** | TanStack Query para filtros, paginación, mutaciones. No para pantallas estáticas.                            |
 
 ---
 
 ## 2. Stack tecnológico
 
-| Librería | Uso |
-|----------|-----|
-| **Next.js 16** | App Router, Server Components por defecto |
-| **React 19** | UI |
-| **TypeScript** | Tipado estricto |
-| **TanStack Query** | Estado remoto (listas, filtros, mutaciones) |
-| **React Hook Form** | Estado de formularios |
-| **Zod** | Validación de formularios |
-| **Sonner** | Notificaciones toast |
-| **Tailwind CSS v4** | Estilos globales |
-| **Lucide React** | Iconos |
+| Librería            | Uso                                         |
+| ------------------- | ------------------------------------------- |
+| **Next.js 16**      | App Router, Server Components por defecto   |
+| **React 19**        | UI                                          |
+| **TypeScript**      | Tipado estricto                             |
+| **TanStack Query**  | Estado remoto (listas, filtros, mutaciones) |
+| **React Hook Form** | Estado de formularios                       |
+| **Zod**             | Validación de formularios                   |
+| **Sonner**          | Notificaciones toast                        |
+| **Tailwind CSS v4** | Estilos globales                            |
+| **Lucide React**    | Iconos                                      |
 
 **No se usan:** Redux, MobX, SWR, Axios.
 
@@ -188,11 +188,11 @@ export default function CategoriesPage() {
 
 ### Rutas actuales
 
-| URL | Página | Screen |
-|-----|--------|--------|
-| `/` | `(public)/page.tsx` | Home + links dev |
+| URL           | Página                            | Screen             |
+| ------------- | --------------------------------- | ------------------ |
+| `/`           | `(public)/page.tsx`               | Home + links dev   |
 | `/categories` | `(dashboard)/categories/page.tsx` | `CategoriesScreen` |
-| `/products` | `(dashboard)/products/page.tsx` | `ProductsScreen` |
+| `/products`   | `(dashboard)/products/page.tsx`   | `ProductsScreen`   |
 
 ---
 
@@ -202,14 +202,14 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 
 ### Módulos implementados
 
-| Módulo | Estado |
-|--------|--------|
-| `categories` | Completo (CRUD + tabla) |
-| `products` | Completo (CRUD + tabla + combobox categorías) |
-| `auth` | Scaffold (API hooks, sin UI de login aún) |
-| `users` | Scaffold RBAC |
-| `roles` | Scaffold RBAC |
-| `permissions` | Scaffold RBAC |
+| Módulo        | Estado                                        |
+| ------------- | --------------------------------------------- |
+| `categories`  | Completo (CRUD + tabla)                       |
+| `products`    | Completo (CRUD + tabla + combobox categorías) |
+| `auth`        | Scaffold (API hooks, sin UI de login aún)     |
+| `users`       | Scaffold RBAC                                 |
+| `roles`       | Scaffold RBAC                                 |
+| `permissions` | Scaffold RBAC                                 |
 
 ### Convención obligatoria de carpeta
 
@@ -306,7 +306,7 @@ export async function apiFetch<T>(
   options?: RequestInit & {
     params?: Record<string, string | number | boolean | undefined>;
   },
-): Promise<T>
+): Promise<T>;
 ```
 
 **Comportamiento:**
@@ -376,12 +376,12 @@ export async function createCategory(data: CategoryFormValues) {
 
 ### 8.3 Reglas de endpoints
 
-| Regla | Detalle |
-|-------|---------|
+| Regla                     | Detalle                                                       |
+| ------------------------- | ------------------------------------------------------------- |
 | **Nunca `fetch` directo** | Excepto utilidades dev temporales (ej. `UsersTester` en home) |
-| **Tipos Dto en api/** | Las funciones retornan `CategoryDto`, no el modelo UI |
-| **Query params** | Usar `params` de `apiFetch`, no concatenar strings |
-| **Nombre del param** | Usar `search`, no `q` (contrato del API NestJS) |
+| **Tipos Dto en api/**     | Las funciones retornan `CategoryDto`, no el modelo UI         |
+| **Query params**          | Usar `params` de `apiFetch`, no concatenar strings            |
+| **Nombre del param**      | Usar `search`, no `q` (contrato del API NestJS)               |
 
 ---
 
@@ -435,12 +435,12 @@ export function useCreateCategory() {
 
 ### 9.4 Cuándo usar TanStack Query
 
-| Usar Query | No usar Query |
-|------------|---------------|
-| Listas con filtros / paginación | Dashboard estático server-side |
-| Búsqueda con debounce | Reportes pre-renderizados |
-| Mutaciones CRUD | Metadata que no cambia en sesión |
-| Infinite scroll (combobox) | `getDashboardMetrics()` en Server Component |
+| Usar Query                      | No usar Query                               |
+| ------------------------------- | ------------------------------------------- |
+| Listas con filtros / paginación | Dashboard estático server-side              |
+| Búsqueda con debounce           | Reportes pre-renderizados                   |
+| Mutaciones CRUD                 | Metadata que no cambia en sesión            |
+| Infinite scroll (combobox)      | `getDashboardMetrics()` en Server Component |
 
 ### 9.5 Infinite query (ejemplo: combobox de categorías en productos)
 
@@ -462,14 +462,16 @@ modules/{dominio}/mappers/
 
 ```ts
 // types/category.types.ts
-export interface CategoryDto {        // ← lo que devuelve el API
+export interface CategoryDto {
+  // ← lo que devuelve el API
   id: string;
   name: string;
   description: string | null;
   isActive: boolean;
 }
 
-export interface Category {           // ← lo que consume la UI
+export interface Category {
+  // ← lo que consume la UI
   id: string;
   name: string;
   description: string | null;
@@ -483,7 +485,9 @@ export function mapCategoryDtoToUi(dto: CategoryDto): Category {
   return { ...dto };
 }
 
-export function mapCategoriesPageToUi(response: PaginatedResponse<CategoryDto>) {
+export function mapCategoriesPageToUi(
+  response: PaginatedResponse<CategoryDto>,
+) {
   return {
     items: response.items.map(mapCategoryDtoToUi),
     meta: response.meta,
@@ -511,7 +515,9 @@ export function mapProductDtoToUi(dto: ProductDto): Product {
 
 ```ts
 // mappers/product-form.mapper.ts
-export function mapProductToFormValues(product: Product | null): ProductFormSchema {
+export function mapProductToFormValues(
+  product: Product | null,
+): ProductFormSchema {
   return {
     name: product?.name ?? "",
     categoryIds: product?.categories.map((c) => c.id) ?? [],
@@ -641,13 +647,13 @@ shared/hooks/
 
 Solo tipos **transversales**:
 
-| Archivo | Contenido |
-|---------|-----------|
-| `api.ts` | `ApiResponse`, `ApiErrorBody` |
-| `pagination.ts` | `PaginatedResponse`, `PaginationMeta` |
-| `filters.ts` | `BaseListFilters` (page, take, search, isActive) |
-| `sorting.ts` | `SortParams`, `SortDirection` |
-| `auth.ts` | `AuthUser`, `Role`, `Permission` |
+| Archivo         | Contenido                                        |
+| --------------- | ------------------------------------------------ |
+| `api.ts`        | `ApiResponse`, `ApiErrorBody`                    |
+| `pagination.ts` | `PaginatedResponse`, `PaginationMeta`            |
+| `filters.ts`    | `BaseListFilters` (page, take, search, isActive) |
+| `sorting.ts`    | `SortParams`, `SortDirection`                    |
+| `auth.ts`       | `AuthUser`, `Role`, `Permission`                 |
 
 ```ts
 import type { PaginatedResponse } from "@/types/pagination";
@@ -681,12 +687,12 @@ import type { Category } from "@/modules/categories/types/category.types";
 </QueryProvider>
 ```
 
-| Provider | Ubicación | Responsabilidad |
-|----------|-----------|-----------------|
-| `QueryProvider` | `providers/query-provider.tsx` | TanStack Query + DevTools (dev) |
-| `AuthProvider` | `modules/auth/components/` | Sesión (placeholder hasta login UI) |
-| `ThemeProvider` | `providers/theme-provider.tsx` | Tema (placeholder) |
-| `ToastProvider` | `providers/toast-provider.tsx` | Sonner |
+| Provider        | Ubicación                      | Responsabilidad                     |
+| --------------- | ------------------------------ | ----------------------------------- |
+| `QueryProvider` | `providers/query-provider.tsx` | TanStack Query + DevTools (dev)     |
+| `AuthProvider`  | `modules/auth/components/`     | Sesión (placeholder hasta login UI) |
+| `ThemeProvider` | `providers/theme-provider.tsx` | Tema (placeholder)                  |
+| `ToastProvider` | `providers/toast-provider.tsx` | Sonner                              |
 
 ### Config
 
@@ -702,13 +708,13 @@ export const env = {
 
 ## 15. Server Components vs Client Components
 
-| Archivo | Tipo | Razón |
-|---------|------|-------|
-| `app/**/page.tsx` | Server (default) | Solo importa screen |
-| `screens/*.tsx` | Client | Filtros, modales, tablas |
-| `containers/*.tsx` | Client | TanStack Query |
-| `components/*.tsx` | Client si hay eventos | Formularios, inputs |
-| `shared/ui/*` | Server o Client | Mayoría sin estado |
+| Archivo            | Tipo                  | Razón                    |
+| ------------------ | --------------------- | ------------------------ |
+| `app/**/page.tsx`  | Server (default)      | Solo importa screen      |
+| `screens/*.tsx`    | Client                | Filtros, modales, tablas |
+| `containers/*.tsx` | Client                | TanStack Query           |
+| `components/*.tsx` | Client si hay eventos | Formularios, inputs      |
+| `shared/ui/*`      | Server o Client       | Mayoría sin estado       |
 
 **Regla:** no agregar `"use client"` salvo que sea estrictamente necesario.
 
@@ -751,9 +757,15 @@ modules/customers/
 
 ```ts
 // types/customer.types.ts
-export interface CustomerDto { /* campos del API */ }
-export interface Customer { /* modelo UI */ }
-export type CustomerFilters = BaseListFilters & { /* filtros extra */ };
+export interface CustomerDto {
+  /* campos del API */
+}
+export interface Customer {
+  /* modelo UI */
+}
+export type CustomerFilters = BaseListFilters & {
+  /* filtros extra */
+};
 ```
 
 ### Paso 3 — Crear funciones API
@@ -808,7 +820,9 @@ export const customerKeys = { all: ["customers"], list: (f?) => [...], detail: (
 ```tsx
 // screens/customers-screen.tsx
 "use client";
-export function CustomersScreen() { /* compone containers + modales */ }
+export function CustomersScreen() {
+  /* compone containers + modales */
+}
 ```
 
 ### Paso 10 — Página Next.js
@@ -926,10 +940,10 @@ const canEdit = useHasPermission("products:update");
 
 Archivo: `apps/web/.env.development`
 
-| Variable | Descripción |
-|----------|-------------|
-| `NEXT_PUBLIC_API_URL` | URL base del API NestJS (ej. `http://localhost:3001`) |
-| `NEXT_PUBLIC_API_TOKEN` | Token Bearer opcional para dev |
+| Variable                | Descripción                                           |
+| ----------------------- | ----------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`   | URL base del API NestJS (ej. `http://localhost:3001`) |
+| `NEXT_PUBLIC_API_TOKEN` | Token Bearer opcional para dev                        |
 
 Ejemplos en `.env.development.example` y `.env.staging.example`.
 
@@ -961,16 +975,16 @@ pnpm lint             # ESLint (max-warnings 0)
 
 ### ❌ No hacer
 
-| Anti-patrón | Por qué |
-|-------------|---------|
-| `fetch()` directo en components | Sin manejo centralizado de auth/errores |
-| Lógica de negocio en frontend | Debe estar en NestJS |
-| Redux / MobX / SWR / Axios | No están en el stack del proyecto |
-| Tipos de dominio en `src/types/` | Contamina tipos globales |
-| `useQuery` en Server Components | No compatible |
-| Tablas copy-paste por módulo | Usar `shared/data-table` |
-| Validación manual con `useState` | Usar RHF + Zod |
-| Excepciones a la estructura de módulo | Rompe escalabilidad del ERP |
+| Anti-patrón                           | Por qué                                 |
+| ------------------------------------- | --------------------------------------- |
+| `fetch()` directo en components       | Sin manejo centralizado de auth/errores |
+| Lógica de negocio en frontend         | Debe estar en NestJS                    |
+| Redux / MobX / SWR / Axios            | No están en el stack del proyecto       |
+| Tipos de dominio en `src/types/`      | Contamina tipos globales                |
+| `useQuery` en Server Components       | No compatible                           |
+| Tablas copy-paste por módulo          | Usar `shared/data-table`                |
+| Validación manual con `useState`      | Usar RHF + Zod                          |
+| Excepciones a la estructura de módulo | Rompe escalabilidad del ERP             |
 
 ---
 
@@ -995,4 +1009,4 @@ pnpm lint             # ESLint (max-warnings 0)
 
 ---
 
-*Última actualización: refactor arquitectónico con containers, mappers, data-table y scaffolds RBAC.*
+_Última actualización: refactor arquitectónico con containers, mappers, data-table y scaffolds RBAC._

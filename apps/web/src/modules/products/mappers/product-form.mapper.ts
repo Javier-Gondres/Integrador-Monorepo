@@ -1,7 +1,9 @@
 import type { ProductFormSchema } from "../schemas/product.schema";
 import type { Product, ProductFormValues } from "../types/product.types";
 
-export function mapProductToFormValues(product: Product | null): ProductFormSchema {
+export function mapProductToFormValues(
+  product: Product | null,
+): ProductFormSchema {
   return {
     name: product?.name ?? "",
     code: product?.code ?? "",
@@ -12,7 +14,9 @@ export function mapProductToFormValues(product: Product | null): ProductFormSche
   };
 }
 
-export function mapFormValuesToDto(values: ProductFormSchema): ProductFormValues {
+export function mapFormValuesToDto(
+  values: ProductFormSchema,
+): ProductFormValues {
   return {
     name: values.name,
     code: values.code,

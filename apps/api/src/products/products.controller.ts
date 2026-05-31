@@ -21,10 +21,7 @@ export class ProductsController {
 
   @RequireCompany()
   @Get()
-  findAll(
-    @CompanyId() companyId: string,
-    @Query() query: QueryProductsDto,
-  ) {
+  findAll(@CompanyId() companyId: string, @Query() query: QueryProductsDto) {
     return this.productsService.findPaginatedByCompany(companyId, query);
   }
 
@@ -36,10 +33,7 @@ export class ProductsController {
 
   @RequireCompany()
   @Post()
-  create(
-    @Body() dto: CreateProductDto,
-    @CompanyId() companyId: string,
-  ) {
+  create(@Body() dto: CreateProductDto, @CompanyId() companyId: string) {
     return this.productsService.create(companyId, dto);
   }
 

@@ -38,7 +38,8 @@ export default function HomePage() {
         />
         <ol>
           <li>
-            ERP Integrador — frontend refactorizado con arquitectura feature-first
+            ERP Integrador — frontend refactorizado con arquitectura
+            feature-first
           </li>
           <li>
             Edita módulos en <code>src/modules/</code>

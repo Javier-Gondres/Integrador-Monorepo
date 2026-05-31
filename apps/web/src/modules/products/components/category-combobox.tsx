@@ -38,7 +38,9 @@ export function CategoryCombobox({
   const listRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const selectedCategories = categories.filter((c) => selectedIds.includes(c.id));
+  const selectedCategories = categories.filter((c) =>
+    selectedIds.includes(c.id),
+  );
 
   useEffect(() => {
     if (open) {
@@ -48,7 +50,10 @@ export function CategoryCombobox({
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         onOpenChange(false);
       }
     };
@@ -155,7 +160,12 @@ export function CategoryCombobox({
             }}
           >
             <Search
-              style={{ width: "14px", height: "14px", color: C.mutedText, flexShrink: 0 }}
+              style={{
+                width: "14px",
+                height: "14px",
+                color: C.mutedText,
+                flexShrink: 0,
+              }}
             />
             <input
               ref={searchRef}
@@ -297,7 +307,8 @@ export function CategoryCombobox({
               }}
             >
               <span style={{ fontSize: "12px", color: C.mutedText }}>
-                {selectedIds.length} seleccionada{selectedIds.length !== 1 ? "s" : ""}
+                {selectedIds.length} seleccionada
+                {selectedIds.length !== 1 ? "s" : ""}
               </span>
               <button
                 type="button"

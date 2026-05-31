@@ -19,7 +19,10 @@ function getApiHeaders(includeJson = false): HeadersInit {
   return headers;
 }
 
-function buildUrl(endpoint: string, params?: Record<string, string | number | boolean | undefined>): string {
+function buildUrl(
+  endpoint: string,
+  params?: Record<string, string | number | boolean | undefined>,
+): string {
   const url = new URL(`${env.apiUrl}${endpoint}`);
 
   if (params) {
@@ -35,7 +38,9 @@ function buildUrl(endpoint: string, params?: Record<string, string | number | bo
 
 export async function apiFetch<T>(
   endpoint: string,
-  options?: RequestInit & { params?: Record<string, string | number | boolean | undefined> },
+  options?: RequestInit & {
+    params?: Record<string, string | number | boolean | undefined>;
+  },
 ): Promise<T> {
   const { params, ...fetchOptions } = options ?? {};
 
@@ -45,7 +50,9 @@ export async function apiFetch<T>(
     ...fetchOptions,
   });
 
-  const json = (await response.json().catch(() => ({}))) as ApiResponse<T> | ApiErrorBody;
+  const json = (await response.json().catch(() => ({}))) as
+    | ApiResponse<T>
+    | ApiErrorBody;
 
   if (!response.ok) {
     throw new ApiError(response.status, json as ApiErrorBody);

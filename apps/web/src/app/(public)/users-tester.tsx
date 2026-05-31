@@ -7,7 +7,10 @@ import styles from "./page.module.css";
 type UserRow = { id: number; name: string | null; email: string };
 
 const apiBase = () =>
-  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
+  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001").replace(
+    /\/$/,
+    "",
+  );
 
 export function UsersTester() {
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -83,9 +86,9 @@ export function UsersTester() {
         Probar usuarios (dev / staging)
       </h2>
       <p className={styles.usersHint}>
-        Usa la misma web con <code>pnpm dev</code> o <code>pnpm dev:staging</code>;
-        el API debe apuntar a la base de ese entorno (
-        <code>NEXT_PUBLIC_API_URL</code>).
+        Usa la misma web con <code>pnpm dev</code> o{" "}
+        <code>pnpm dev:staging</code>; el API debe apuntar a la base de ese
+        entorno (<code>NEXT_PUBLIC_API_URL</code>).
       </p>
       <form className={styles.usersForm} onSubmit={(e) => void onSubmit(e)}>
         <input

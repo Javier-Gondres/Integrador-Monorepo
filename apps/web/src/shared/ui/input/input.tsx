@@ -6,7 +6,14 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
 }
 
-export function Input({ error, label, required, style, id, ...props }: InputProps) {
+export function Input({
+  error,
+  label,
+  required,
+  style,
+  id,
+  ...props
+}: InputProps) {
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-");
 
   return (
@@ -35,7 +42,9 @@ export function Input({ error, label, required, style, id, ...props }: InputProp
         }}
         {...props}
       />
-      {error && <span style={{ fontSize: "12px", color: C.danger }}>{error}</span>}
+      {error && (
+        <span style={{ fontSize: "12px", color: C.danger }}>{error}</span>
+      )}
     </div>
   );
 }
@@ -75,7 +84,9 @@ export function Textarea({ error, label, style, id, ...props }: TextareaProps) {
         }}
         {...props}
       />
-      {error && <span style={{ fontSize: "12px", color: C.danger }}>{error}</span>}
+      {error && (
+        <span style={{ fontSize: "12px", color: C.danger }}>{error}</span>
+      )}
     </div>
   );
 }
@@ -84,7 +95,11 @@ interface SearchInputProps extends Omit<InputProps, "label"> {
   width?: string | number;
 }
 
-export function SearchInput({ width = "280px", style, ...props }: SearchInputProps) {
+export function SearchInput({
+  width = "280px",
+  style,
+  ...props
+}: SearchInputProps) {
   return (
     <Input
       {...props}

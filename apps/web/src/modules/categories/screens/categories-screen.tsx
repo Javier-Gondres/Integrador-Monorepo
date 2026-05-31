@@ -10,9 +10,9 @@ import { CategoryFormModalContainer } from "../containers/category-form-modal-co
 import type { Category } from "../types/category.types";
 
 export function CategoriesScreen() {
-  const [modalCategory, setModalCategory] = useState<Category | null | undefined>(
-    undefined,
-  );
+  const [modalCategory, setModalCategory] = useState<
+    Category | null | undefined
+  >(undefined);
 
   return (
     <main

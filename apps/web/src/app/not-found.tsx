@@ -13,7 +13,9 @@ export default function NotFound() {
         padding: "24px",
       }}
     >
-      <h2 style={{ fontSize: "24px", fontWeight: 700, color: "#1C2434" }}>404</h2>
+      <h2 style={{ fontSize: "24px", fontWeight: 700, color: "#1C2434" }}>
+        404
+      </h2>
       <p style={{ fontSize: "14px", color: "#637381" }}>
         La página que buscas no existe.
       </p>

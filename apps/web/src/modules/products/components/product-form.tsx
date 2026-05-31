@@ -98,7 +98,9 @@ export function ProductForm({
         />
 
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <label style={{ fontSize: "13px", fontWeight: 600, color: C.bodyText }}>
+          <label
+            style={{ fontSize: "13px", fontWeight: 600, color: C.bodyText }}
+          >
             Categorías
           </label>
           <Controller

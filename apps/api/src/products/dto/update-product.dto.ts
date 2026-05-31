@@ -31,7 +31,10 @@ export class UpdateProductDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'price debe ser un número válido' })
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'price debe ser un número válido' },
+  )
   @Min(0, { message: 'price no puede ser negativo' })
   price?: number;
 

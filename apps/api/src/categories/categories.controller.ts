@@ -21,10 +21,7 @@ export class CategoriesController {
 
   @RequireCompany()
   @Get()
-  findAll(
-    @CompanyId() companyId: string,
-    @Query() query: QueryCategoriesDto,
-  ) {
+  findAll(@CompanyId() companyId: string, @Query() query: QueryCategoriesDto) {
     return this.categoriesService.findPaginatedByCompany(companyId, query);
   }
 
@@ -42,10 +39,7 @@ export class CategoriesController {
 
   @RequireCompany()
   @Post()
-  create(
-    @Body() dto: CreateCategoryDto,
-    @CompanyId() companyId: string,
-  ) {
+  create(@Body() dto: CreateCategoryDto, @CompanyId() companyId: string) {
     return this.categoriesService.create(companyId, dto);
   }
 

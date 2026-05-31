@@ -20,7 +20,9 @@ export function getProductsTableColumns(
     {
       id: "code",
       header: "Código",
-      cell: (p) => <span style={{ fontSize: "13px", color: C.headText }}>{p.code}</span>,
+      cell: (p) => (
+        <span style={{ fontSize: "13px", color: C.headText }}>{p.code}</span>
+      ),
     },
     {
       id: "name",
@@ -43,7 +45,9 @@ export function getProductsTableColumns(
           }}
         >
           {p.description || (
-            <em style={{ color: C.mutedText, fontSize: "13px" }}>Sin descripción</em>
+            <em style={{ color: C.mutedText, fontSize: "13px" }}>
+              Sin descripción
+            </em>
           )}
         </div>
       ),

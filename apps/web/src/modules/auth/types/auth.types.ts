@@ -1,9 +1,4 @@
-export type {
-  AuthSession,
-  AuthUser,
-  Permission,
-  Role,
-} from "@/types/auth";
+export type { AuthSession, AuthUser, Permission, Role } from "@/types/auth";
 
 export interface LoginCredentials {
   email: string;

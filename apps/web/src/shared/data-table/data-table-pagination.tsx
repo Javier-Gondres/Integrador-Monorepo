@@ -63,7 +63,8 @@ export function DataTablePagination({
               Icon: ChevronLeft,
             },
             {
-              onClick: () => onPageChange(Math.min(currentPage + 1, totalPages)),
+              onClick: () =>
+                onPageChange(Math.min(currentPage + 1, totalPages)),
               disabled: currentPage === totalPages || loading,
               Icon: ChevronRight,
             },

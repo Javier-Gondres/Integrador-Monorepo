@@ -11,7 +11,9 @@ export function mapCategoryToFormValues(
   };
 }
 
-export function mapFormValuesToDto(values: CategoryFormSchema): CategoryFormValues {
+export function mapFormValuesToDto(
+  values: CategoryFormSchema,
+): CategoryFormValues {
   return {
     name: values.name,
     description: values.description || undefined,
