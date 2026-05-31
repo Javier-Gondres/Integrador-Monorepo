@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, prisma } from '@repo/db';
+import type { Prisma } from '@repo/db';
 
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
+import { CategoriesRepository } from './categories.repository';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import {
   NormalizedQueryCategories,
@@ -13,45 +14,17 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
 
-const categorySelect = {
-  id: true,
-  companyId: true,
-  name: true,
-  description: true,
-  isActive: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
-
 @Injectable()
 export class CategoriesService {
+  constructor(private readonly categoriesRepository: CategoriesRepository) {}
+
   async findPaginatedByCompany(companyId: string, query: QueryCategoriesDto) {
     const normalized = this.normalizeQuery(query);
-    const skip = (normalized.page - 1) * normalized.take;
-
-    const where: Prisma.CategoryWhereInput = {
-      companyId,
-      ...(normalized.isActive !== undefined && {
-        isActive: normalized.isActive,
-      }),
-      ...(normalized.q && {
-        OR: [
-          { name: { contains: normalized.q, mode: 'insensitive' } },
-          { description: { contains: normalized.q, mode: 'insensitive' } },
-        ],
-      }),
-    };
-
-    const [items, total] = await prisma.$transaction([
-      prisma.category.findMany({
-        where,
-        skip,
-        take: normalized.take,
-        orderBy: { name: 'asc' },
-        select: categorySelect,
-      }),
-      prisma.category.count({ where }),
-    ]);
+    const { items, total } =
+      await this.categoriesRepository.findPaginatedByCompany(
+        companyId,
+        normalized,
+      );
 
     return {
       items,
@@ -65,18 +38,14 @@ export class CategoriesService {
   }
 
   findAllByCompany(companyId: string) {
-    return prisma.category.findMany({
-      where: { companyId, isActive: true },
-      orderBy: { name: 'asc' },
-      select: categorySelect,
-    });
+    return this.categoriesRepository.findAllActiveByCompany(companyId);
   }
 
   async findByIdInCompany(id: string, companyId: string) {
-    const category = await prisma.category.findFirst({
-      where: { id, companyId },
-      select: categorySelect,
-    });
+    const category = await this.categoriesRepository.findByIdInCompany(
+      id,
+      companyId,
+    );
 
     if (!category) {
       throw BusinessException.notFound(
@@ -88,26 +57,26 @@ export class CategoriesService {
     return category;
   }
 
-  async create(companyId: string, dto: CreateCategoryDto) {
-    try {
-      return await prisma.category.create({
-        data: {
-          companyId,
-          name: dto.name.trim(),
-          description: dto.description?.trim() || null,
-          isActive: dto.isActive ?? true,
-        },
-        select: categorySelect,
-      });
-    } catch (e: unknown) {
-      if (isPrismaUniqueError(e)) {
-        throw BusinessException.conflict(
-          ErrorCodes.DUPLICATE_RECORD,
-          'Ya existe una categoría con ese nombre en esta empresa',
-        );
-      }
-      throw e;
+  async assertAllExistInCompany(categoryIds: string[], companyId: string) {
+    const count = await this.categoriesRepository.countByIdsInCompany(
+      categoryIds,
+      companyId,
+    );
+
+    if (count !== categoryIds.length) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'Una o más categorías no existen en esta empresa',
+      );
     }
+  }
+
+  async create(companyId: string, dto: CreateCategoryDto) {
+    return this.categoriesRepository.create(companyId, {
+      name: dto.name.trim(),
+      description: dto.description?.trim() || null,
+      isActive: dto.isActive ?? true,
+    });
   }
 
   async update(id: string, companyId: string, dto: UpdateCategoryDto) {
@@ -130,38 +99,24 @@ export class CategoriesService {
       );
     }
 
-    try {
-      return await prisma.category.update({
-        where: { id },
-        data: updateData,
-        select: categorySelect,
-      });
-    } catch (e: unknown) {
-      if (isPrismaUniqueError(e)) {
-        throw BusinessException.conflict(
-          ErrorCodes.DUPLICATE_RECORD,
-          'Ya existe una categoría con ese nombre en esta empresa',
-        );
-      }
-      throw e;
-    }
+    return this.categoriesRepository.update(id, updateData);
   }
 
   async activate(id: string, companyId: string) {
     await this.findByIdInCompany(id, companyId);
-    await prisma.category.activate({ where: { id } });
+    await this.categoriesRepository.activate(id);
     return this.findByIdInCompany(id, companyId);
   }
 
   async deactivate(id: string, companyId: string) {
     await this.findByIdInCompany(id, companyId);
-    await prisma.category.deactivate({ where: { id } });
+    await this.categoriesRepository.deactivate(id);
     return this.findByIdInCompany(id, companyId);
   }
 
   async remove(id: string, companyId: string) {
     await this.findByIdInCompany(id, companyId);
-    await prisma.category.softDelete({ where: { id } });
+    await this.categoriesRepository.softDelete(id);
 
     return {
       message: 'Categoría eliminada correctamente',
@@ -176,13 +131,4 @@ export class CategoriesService {
       ...(query.isActive !== undefined && { isActive: query.isActive }),
     };
   }
-}
-
-function isPrismaUniqueError(e: unknown): boolean {
-  return (
-    typeof e === 'object' &&
-    e !== null &&
-    'code' in e &&
-    (e as { code: string }).code === 'P2002'
-  );
 }

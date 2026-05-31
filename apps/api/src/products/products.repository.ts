@@ -117,15 +117,6 @@ export class ProductsRepository {
     return prisma.product.softDelete({ where: { id } });
   }
 
-  countCategoriesInCompany(categoryIds: string[], companyId: string) {
-    return prisma.category.count({
-      where: {
-        id: { in: categoryIds },
-        companyId,
-      },
-    });
-  }
-
   private buildListWhere(
     companyId: string,
     query: NormalizedQueryProducts,

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@repo/db';
 
+import { CategoriesService } from '../categories/categories.service';
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -19,7 +20,10 @@ const DEFAULT_TAKE = 10;
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly productsRepository: ProductsRepository) {}
+  constructor(
+    private readonly productsRepository: ProductsRepository,
+    private readonly categoriesService: CategoriesService,
+  ) {}
 
   async findPaginatedByCompany(companyId: string, query: QueryProductsDto) {
     const normalized = this.normalizeQuery(query);
@@ -58,7 +62,10 @@ export class ProductsService {
 
   async create(companyId: string, dto: CreateProductDto) {
     if (dto.categoryIds?.length) {
-      await this.assertCategoriesInCompany(dto.categoryIds, companyId);
+      await this.categoriesService.assertAllExistInCompany(
+        dto.categoryIds,
+        companyId,
+      );
     }
 
     const product = await this.productsRepository.create(companyId, {
@@ -95,7 +102,10 @@ export class ProductsService {
     }
     if (categoryIds !== undefined) {
       if (categoryIds.length > 0) {
-        await this.assertCategoriesInCompany(categoryIds, companyId);
+        await this.categoriesService.assertAllExistInCompany(
+          categoryIds,
+          companyId,
+        );
       }
       updateData.categories = { set: categoryIds.map((cid) => ({ id: cid })) };
     }
@@ -131,23 +141,6 @@ export class ProductsService {
     return {
       message: 'Producto eliminado correctamente',
     };
-  }
-
-  private async assertCategoriesInCompany(
-    categoryIds: string[],
-    companyId: string,
-  ) {
-    const count = await this.productsRepository.countCategoriesInCompany(
-      categoryIds,
-      companyId,
-    );
-
-    if (count !== categoryIds.length) {
-      throw BusinessException.notFound(
-        ErrorCodes.RECORD_NOT_FOUND,
-        'Una o más categorías no existen en esta empresa',
-      );
-    }
   }
 
   private normalizeQuery(query: QueryProductsDto): NormalizedQueryProducts {
