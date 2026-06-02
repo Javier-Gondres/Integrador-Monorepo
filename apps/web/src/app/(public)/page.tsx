@@ -49,6 +49,7 @@ export default function HomePage() {
         <nav className={styles.nav}>
           <Link href="/products">Productos</Link>
           <Link href="/categories">Categorías</Link>
+          <Link href="/companies">Empresas</Link>
         </nav>
 
         <div className={styles.ctas}>

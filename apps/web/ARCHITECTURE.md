@@ -166,7 +166,9 @@ src/app/
 │
 └── (dashboard)/
     ├── categories/page.tsx
-    └── products/page.tsx
+    ├── products/page.tsx
+    ├── companies/page.tsx
+    └── companies/[slug]/branch/page.tsx
 ```
 
 Los **route groups** `(public)` y `(dashboard)` **no afectan la URL**. Sirven para organizar layouts futuros (sidebar, auth guard).
@@ -191,8 +193,10 @@ export default function CategoriesPage() {
 | URL           | Página                            | Screen             |
 | ------------- | --------------------------------- | ------------------ |
 | `/`           | `(public)/page.tsx`               | Home + links dev   |
-| `/categories` | `(dashboard)/categories/page.tsx` | `CategoriesScreen` |
-| `/products`   | `(dashboard)/products/page.tsx`   | `ProductsScreen`   |
+| `/categories`              | `(dashboard)/categories/page.tsx`              | `CategoriesScreen` |
+| `/products`                | `(dashboard)/products/page.tsx`                | `ProductsScreen`   |
+| `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`  |
+| `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`   |
 
 ---
 
@@ -206,6 +210,8 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | ------------- | --------------------------------------------- |
 | `categories`  | Completo (CRUD + tabla)                       |
 | `products`    | Completo (CRUD + tabla + combobox categorías) |
+| `companies`   | Pantalla legacy migrada (lista + CRUD básico) |
+| `branches`    | Pantalla legacy migrada (lista + CRUD básico) |
 | `auth`        | Scaffold (API hooks, sin UI de login aún)     |
 | `users`       | Scaffold RBAC                                 |
 | `roles`       | Scaffold RBAC                                 |

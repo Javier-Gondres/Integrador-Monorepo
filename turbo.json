@@ -11,7 +11,8 @@
         "DATABASE_URL",
         "DIRECT_URL",
         "NEXT_PUBLIC_*",
-        "PORT"
+        "PORT",
+        "API_URL"
       ],
 
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
@@ -27,7 +28,8 @@
         "APP_ENV",
         "DATABASE_URL",
         "DIRECT_URL",
-        "NEXT_PUBLIC_*"
+        "NEXT_PUBLIC_*",
+        "API_URL"
       ],
 
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
