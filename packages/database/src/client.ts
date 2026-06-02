@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 import { PrismaClient } from "./generated/prisma/client.js";
+import { softDeleteExtension } from "./soft-delete/extension.js";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -14,15 +15,18 @@ const pool = new Pool({
 
 const adapter = new PrismaPg(pool);
 
+function createPrismaClient() {
+  return new PrismaClient({ adapter }).$extends(softDeleteExtension);
+}
+
+export type ExtendedPrismaClient = ReturnType<typeof createPrismaClient>;
+
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient;
+  prisma: ExtendedPrismaClient;
 };
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    adapter,
-  });
+export const prisma: ExtendedPrismaClient =
+  globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

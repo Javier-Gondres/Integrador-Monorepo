@@ -1,0 +1,136 @@
+# Categories API — REST Client (VS Code / Cursor extension "REST Client")
+#
+# Requisitos:
+#   1. API en marcha → pnpm --filter api run dev
+#   2. Seed con empresa demo → pnpm db:seed:dev
+#   3. Login abajo → @accessToken
+#
+# Flujo sugerido: login → listar → crear → obtener → actualizar → desactivar/activar → eliminar
+
+@baseUrl = http://localhost:3001
+@email = prueba@ejemplo.com
+@password = Password123
+
+@categoryId = cmptvvtw300023c500j41lrjo
+
+### Login (obtener accessToken)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###
+
+@accessToken = {{login.response.body.$.data.accessToken}}
+
+### Verificar contexto JWT + empresa
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar categorías (paginado)
+GET {{baseUrl}}/categories?page=1&take=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar categorías (búsqueda)
+GET {{baseUrl}}/categories?search=bebidas&page=1&take=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar categorías (solo activas operativamente)
+GET {{baseUrl}}/categories?isActive=true&page=1&take=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar todas las categorías activas (sin paginación — útil para selects)
+GET {{baseUrl}}/categories/all
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Crear categoría
+# @name createCategory
+POST {{baseUrl}}/categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Bebidas",
+  "description": "Refrescos, jugos y agua",
+  "isActive": true
+}
+
+###
+
+### Crear categoría duplicada — debe responder 409
+POST {{baseUrl}}/categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Bebidas",
+  "description": "Duplicado"
+}
+
+###
+
+### Obtener categoría por id
+GET {{baseUrl}}/categories/{{categoryId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Actualizar categoría
+PATCH {{baseUrl}}/categories/{{categoryId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Bebidas frías",
+  "description": "Refrescos y jugos refrigerados"
+}
+
+###
+
+### Desactivar categoría (isActive = false)
+PATCH {{baseUrl}}/categories/{{categoryId}}/deactivate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Activar categoría (isActive = true)
+PATCH {{baseUrl}}/categories/{{categoryId}}/activate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Eliminar categoría (soft delete)
+DELETE {{baseUrl}}/categories/{{categoryId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Crear categoría (validación — name vacío, debe fallar 400)
+POST {{baseUrl}}/categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+
+### Sin token — debe responder 401
+GET {{baseUrl}}/categories
+
+###

@@ -1,0 +1,1 @@
+export const CATEGORIES_COMBOBOX_PAGE_SIZE = 10;

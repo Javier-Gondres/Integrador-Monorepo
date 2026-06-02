@@ -15,6 +15,7 @@
     "lint": "eslint src --max-warnings 0",
     "check-types": "tsc --noEmit",
     "build:dev": "dotenv -e .env.development -- prisma generate && tsc",
+    "db:generate": "prisma generate",
     "db:generate:dev": "dotenv -e .env.development -- prisma generate",
     "db:generate:staging": "dotenv -e .env.staging -- prisma generate",
     "db:generate:production": "dotenv -e .env.production -- prisma generate",
@@ -23,14 +24,21 @@
     "db:deploy": "prisma migrate deploy",
     "db:deploy:dev": "dotenv -e .env.development -- prisma migrate deploy",
     "db:deploy:staging": "dotenv -e .env.staging -- prisma migrate deploy",
-    "db:deploy:production": "dotenv -e .env.production -- prisma migrate deploy"
+    "db:deploy:production": "dotenv -e .env.production -- prisma migrate deploy",
+    "db:seed:dev": "dotenv -e .env.development -- tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^24.0.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.39.1",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   },
   "dependencies": {
