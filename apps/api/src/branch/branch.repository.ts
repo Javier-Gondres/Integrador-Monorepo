@@ -47,10 +47,7 @@ export class BranchRepository {
     });
   }
 
-  update(
-    id: string,
-    data: Prisma.BranchUpdateInput,
-  ): Promise<BranchRecord> {
+  update(id: string, data: Prisma.BranchUpdateInput): Promise<BranchRecord> {
     return prisma.branch.update({
       where: { id },
       data,

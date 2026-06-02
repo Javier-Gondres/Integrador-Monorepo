@@ -190,9 +190,9 @@ export default function CategoriesPage() {
 
 ### Rutas actuales
 
-| URL           | Página                            | Screen             |
-| ------------- | --------------------------------- | ------------------ |
-| `/`           | `(public)/page.tsx`               | Home + links dev   |
+| URL                        | Página                                         | Screen             |
+| -------------------------- | ---------------------------------------------- | ------------------ |
+| `/`                        | `(public)/page.tsx`                            | Home + links dev   |
 | `/categories`              | `(dashboard)/categories/page.tsx`              | `CategoriesScreen` |
 | `/products`                | `(dashboard)/products/page.tsx`                | `ProductsScreen`   |
 | `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`  |

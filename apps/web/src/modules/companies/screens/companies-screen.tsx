@@ -54,7 +54,10 @@ export function CompaniesScreen() {
         console.error("Error desconocido de la API:", e);
       }
       toast.error(
-        getErrorMessage(e, "No se pudieron cargar las empresas. Intenta de nuevo."),
+        getErrorMessage(
+          e,
+          "No se pudieron cargar las empresas. Intenta de nuevo.",
+        ),
       );
     } finally {
       setLoading(false);
@@ -78,9 +81,7 @@ export function CompaniesScreen() {
       });
 
       setCompanies((prevCompanies) =>
-        prevCompanies.map((c) =>
-          c.id === id ? { ...c, isActive: false } : c,
-        ),
+        prevCompanies.map((c) => (c.id === id ? { ...c, isActive: false } : c)),
       );
     } catch (error: unknown) {
       if (error instanceof Error) {

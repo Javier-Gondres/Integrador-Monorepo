@@ -384,12 +384,7 @@ export function BranchesScreen() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ backgroundColor: C.tableHead }}>
-                  {[
-                    "Nombre",
-                    "Dirección",
-                    "Estado",
-                    "Acciones",
-                  ].map((h) => (
+                  {["Nombre", "Dirección", "Estado", "Acciones"].map((h) => (
                     <th
                       key={h}
                       style={{
