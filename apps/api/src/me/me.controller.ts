@@ -1,39 +1,50 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
 import { AuthContext } from 'src/auth/auth.types';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { JwtAuth } from 'src/auth/decorators/jwt-auth.decorator';
 import { CompanyId, RequireCompany } from 'src/common/company';
+import { ChangePasswordDto } from 'src/users/dto/change-password.dto';
+import { UpdateMeDto } from 'src/users/dto/update-me.dto';
 
 import { SwitchBranchDto } from './dto/switch-branch.dto';
-import { SwitchCompanyDto } from './dto/switch-company.dto';
 import { MeService } from './me.service';
 
 @Controller('me')
 export class MeController {
   constructor(private readonly meService: MeService) {}
 
-  @JwtAuth()
+  @RequireCompany()
   @Get()
-  getProfile(@Auth() auth: AuthContext) {
-    return this.meService.getProfile(auth.userId);
-  }
-
-  @JwtAuth()
-  @Get('companies')
-  getCompanies(@Auth() auth: AuthContext) {
-    return this.meService.findMyCompanies(auth.userId);
+  getProfile(@Auth() auth: AuthContext, @CompanyId() companyId: string) {
+    return this.meService.getProfile(auth.userId, companyId);
   }
 
   @RequireCompany()
-  @Get('branches')
-  getBranches(@CompanyId() companyId: string) {
-    return this.meService.findMyBranches(companyId);
+  @Patch()
+  updateProfile(
+    @Auth() auth: AuthContext,
+    @CompanyId() companyId: string,
+    @Body() dto: UpdateMeDto,
+  ) {
+    return this.meService.updateProfile(auth.userId, companyId, dto);
   }
 
   @JwtAuth()
-  @Post('switch-company')
-  switchCompany(@Auth() auth: AuthContext, @Body() dto: SwitchCompanyDto) {
-    return this.meService.switchCompany(auth.userId, dto);
+  @Patch('password')
+  changePassword(@Auth() auth: AuthContext, @Body() dto: ChangePasswordDto) {
+    return this.meService.changePassword(auth.userId, dto);
+  }
+
+  @JwtAuth()
+  @Get('company')
+  getCompany(@Auth() auth: AuthContext) {
+    return this.meService.findMyCompany(auth.userId);
+  }
+
+  @RequireCompany()
+  @Get('branch')
+  getBranch(@Auth() auth: AuthContext) {
+    return this.meService.findMyBranch(auth);
   }
 
   @RequireCompany()

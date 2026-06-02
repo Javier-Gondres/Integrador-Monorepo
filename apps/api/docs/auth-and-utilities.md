@@ -129,6 +129,35 @@ Solo disponible cuando el usuario tiene membership **y** pasó `CompanyGuard`.
 
 ---
 
+## Módulo `/me` (contexto del usuario)
+
+Contexto del usuario autenticado (perfil, empresa, sucursal). **No** administra otros usuarios (eso es `/users`).
+
+| Método  | Ruta                | Protección          | Descripción                                           |
+| ------- | ------------------- | ------------------- | ----------------------------------------------------- |
+| `GET`   | `/me`               | `@RequireCompany()` | Perfil + membership en la empresa activa              |
+| `PATCH` | `/me`               | `@RequireCompany()` | Actualizar nombre/apellido propios                    |
+| `PATCH` | `/me/password`      | `@JwtAuth()`        | Cambiar contraseña (revoca refresh tokens)            |
+| `GET`   | `/me/company`       | `@JwtAuth()`        | Empresa del usuario (única membership)                |
+| `GET`   | `/me/branch`        | `@RequireCompany()` | Sucursal por defecto (`defaultBranchId`)              |
+| `POST`  | `/me/switch-branch` | `@RequireCompany()` | Actualiza `UserCompany.defaultBranchId`               |
+
+> **Regla de dominio:** un usuario = una empresa (`@@unique([userId, deletedAt])` en `UserCompany`). Una sucursal activa por sesión vía `defaultBranchId`. Para listar todas las sucursales del tenant, usar `GET /branches`.
+
+### `/users` (solo administración)
+
+| Método | Ruta | Descripción |
+| ------ | ---- | ----------- |
+| `GET` | `/users` | Listado paginado del equipo |
+| `GET` | `/users/roles` | Catálogo de roles |
+| `GET` | `/users/:id` | Detalle de otro usuario |
+| `POST` | `/users` | Crear usuario en la empresa |
+| `PATCH` | `/users/:id` | Actualizar otro usuario |
+| `PATCH` | `/users/:id/activate` / `deactivate` / `restore` | Estado |
+| `DELETE` | `/users/:id` | Soft delete |
+
+---
+
 ## Guards
 
 Orden de ejecución en NestJS: **Middleware → Guards → Pipes → Controller**.

@@ -42,10 +42,10 @@ export function CompaniesScreen() {
   const cargarCompanies = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const data = await apiFetch<CompanyListItem[]>("/me/companies", {
+      const data = await apiFetch<CompanyListItem>("/me/company", {
         signal,
       });
-      setCompanies(Array.isArray(data) ? data : []);
+      setCompanies(data ? [data] : []);
     } catch (e: unknown) {
       if (e instanceof Error) {
         if (e.name === "AbortError") return;
