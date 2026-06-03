@@ -25,7 +25,9 @@
     "db:deploy:dev": "dotenv -e .env.development -- prisma migrate deploy",
     "db:deploy:staging": "dotenv -e .env.staging -- prisma migrate deploy",
     "db:deploy:production": "dotenv -e .env.production -- prisma migrate deploy",
-    "db:seed:dev": "dotenv -e .env.development -- tsx prisma/seed.ts"
+    "db:seed:dev": "dotenv -e .env.development -- tsx prisma/seed.ts",
+    "db:seed:staging": "dotenv -e .env.staging -- tsx prisma/seed.ts",
+    "db:seed:production": "dotenv -e .env.production -- tsx prisma/seed.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
