@@ -1,3 +1,5 @@
--- AlterTable
-ALTER TABLE "Branch" ALTER COLUMN "address" DROP NOT NULL,
-ALTER COLUMN "phone" DROP NOT NULL;
+-- No-op: resolves a bad-merge artifact.
+--
+-- This targeted Branch.address / Branch.phone from the superseded branch
+-- lineage: "phone" is not part of the current schema, and "address" is already
+-- nullable in 20260521183557_modelos_para_autenticacion.

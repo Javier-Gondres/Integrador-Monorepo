@@ -1,10 +1,4 @@
-/*
-  Warnings:
-
-  - Added the required column `updatedAt` to the `Branch` table without a default value. This is not possible if the table is not empty.
-
-*/
--- AlterTable
-ALTER TABLE "Branch" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL;
+-- No-op: resolves a bad-merge duplicate.
+--
+-- Branch.createdAt / Branch.isActive / Branch.updatedAt already exist from
+-- 20260521183557_modelos_para_autenticacion.

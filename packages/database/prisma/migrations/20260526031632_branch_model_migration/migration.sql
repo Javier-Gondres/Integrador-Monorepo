@@ -1,13 +1,7 @@
--- CreateTable
-CREATE TABLE "Branch" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "address" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
-    "companyId" TEXT NOT NULL,
-
-    CONSTRAINT "Branch_pkey" PRIMARY KEY ("id")
-);
-
--- AddForeignKey
-ALTER TABLE "Branch" ADD CONSTRAINT "Branch_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- No-op: resolves a bad-merge duplicate.
+--
+-- The "Branch" table, its "Branch_companyId_idx" index and the
+-- "Branch_companyId_fkey" foreign key are already created by
+-- 20260521183557_modelos_para_autenticacion. Re-creating "Branch" here broke
+-- replay ("relation Branch already exists"). The extra "phone" column this
+-- branch added is not part of the current schema.

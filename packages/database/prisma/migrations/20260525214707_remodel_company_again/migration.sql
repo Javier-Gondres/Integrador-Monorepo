@@ -1,10 +1,5 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `email` on the `Company` table. All the data in the column will be lost.
-  - You are about to drop the column `phone` on the `Company` table. All the data in the column will be lost.
-
-*/
--- AlterTable
-ALTER TABLE "Company" DROP COLUMN "email",
-DROP COLUMN "phone";
+-- No-op: resolves a bad-merge artifact.
+--
+-- This originally dropped Company.email / Company.phone, but the current schema
+-- keeps both as nullable columns (created by
+-- 20260521183557_modelos_para_autenticacion), so this drop must not run.
