@@ -210,18 +210,18 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 
 ### Módulos implementados
 
-| Módulo        | Estado                                        |
-| ------------- | --------------------------------------------- |
-| `categories`  | Completo (CRUD + tabla)                       |
-| `products`    | Completo (CRUD + tabla + combobox categorías) |
+| Módulo        | Estado                                              |
+| ------------- | --------------------------------------------------- |
+| `categories`  | Completo (CRUD + tabla)                             |
+| `products`    | Completo (CRUD + tabla + combobox categorías)       |
 | `employees`   | Completo (CRUD transaccional User+Employee + tabla) |
-| `suppliers`   | Completo (CRUD + tabla)                       |
-| `companies`   | Pantalla legacy migrada (lista + CRUD básico) |
-| `branches`    | Pantalla legacy migrada (lista + CRUD básico) |
-| `auth`        | Scaffold (API hooks, sin UI de login aún)     |
-| `users`       | Scaffold RBAC                                 |
-| `roles`       | Scaffold RBAC                                 |
-| `permissions` | Scaffold RBAC                                 |
+| `suppliers`   | Completo (CRUD + tabla)                             |
+| `companies`   | Pantalla legacy migrada (lista + CRUD básico)       |
+| `branches`    | Pantalla legacy migrada (lista + CRUD básico)       |
+| `auth`        | Scaffold (API hooks, sin UI de login aún)           |
+| `users`       | Scaffold RBAC                                       |
+| `roles`       | Scaffold RBAC                                       |
+| `permissions` | Scaffold RBAC                                       |
 
 ### Convención obligatoria de carpeta
 

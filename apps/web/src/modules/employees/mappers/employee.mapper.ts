@@ -2,7 +2,9 @@ import type { PaginatedResponse } from "@/types/pagination";
 
 import type { Employee, EmployeeDto } from "../types/employee.types";
 
-function formatSalary(value: string | number | null | undefined): string | null {
+function formatSalary(
+  value: string | number | null | undefined,
+): string | null {
   if (value === null || value === undefined || value === "") {
     return null;
   }

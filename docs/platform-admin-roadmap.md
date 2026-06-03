@@ -76,10 +76,10 @@ La implementación actual es la base correcta; este roadmap solo anticipa la cap
 
 El ERP se implementará con **dos dominios de permisos** separados explícitamente. En arquitecturas SaaS multi-tenant maduras, los roles globales (plataforma) y los roles por tenant (empresa) suelen vivir en capas distintas porque su **alcance** y **riesgo** son diferentes.
 
-| Nivel | Alcance | Pregunta que responde |
-|-------|---------|------------------------|
-| **1 — Plataforma** | Todo el SaaS | ¿Quién administra el producto y los tenants? |
-| **2 — Empresa (tenant)** | Una `Company` | ¿Quién administra esta empresa concreta? |
+| Nivel                    | Alcance       | Pregunta que responde                        |
+| ------------------------ | ------------- | -------------------------------------------- |
+| **1 — Plataforma**       | Todo el SaaS  | ¿Quién administra el producto y los tenants? |
+| **2 — Empresa (tenant)** | Una `Company` | ¿Quién administra esta empresa concreta?     |
 
 ---
 
@@ -106,14 +106,14 @@ SUPPORT
 
 ### Capacidades planeadas
 
-| Acción | SUPER_ADMIN | SUPPORT (típico) |
-|--------|-------------|------------------|
-| Crear empresas | Sí | No / limitado |
-| Suspender empresas | Sí | Según política |
-| Activar empresas | Sí | Según política |
-| Crear Owner inicial | Sí | No |
-| Ver métricas globales | Sí | Lectura parcial |
-| Dar soporte (impersonación / lectura) | Sí | Sí |
+| Acción                                | SUPER_ADMIN | SUPPORT (típico) |
+| ------------------------------------- | ----------- | ---------------- |
+| Crear empresas                        | Sí          | No / limitado    |
+| Suspender empresas                    | Sí          | Según política   |
+| Activar empresas                      | Sí          | Según política   |
+| Crear Owner inicial                   | Sí          | No               |
+| Ver métricas globales                 | Sí          | Lectura parcial  |
+| Dar soporte (impersonación / lectura) | Sí          | Sí               |
 
 ### Guard / contexto futuro (conceptual)
 
@@ -172,14 +172,14 @@ Employee
 
 ## Comparación: Platform Roles vs Company Roles
 
-| Aspecto | Platform Roles | Company Roles |
-|---------|----------------|---------------|
-| Ejemplos | `SUPER_ADMIN`, `SUPPORT` | `OWNER`, `ADMIN`, `CASHIER`, … |
-| Tabla / campo | Futuro: `User.platformRole` o tabla dedicada | `UserCompany.roleId` → `Role` |
-| Scope | Cross-tenant (todo el SaaS) | Una `Company` |
-| ¿Usa `CompanyGuard`? | No (rutas de plataforma) | Sí (rutas de negocio) |
-| ¿Vive en `UserCompany`? | **No** | **Sí** |
-| Implementado hoy | No | Sí (sin `RolesGuard` fino aún) |
+| Aspecto                 | Platform Roles                               | Company Roles                  |
+| ----------------------- | -------------------------------------------- | ------------------------------ |
+| Ejemplos                | `SUPER_ADMIN`, `SUPPORT`                     | `OWNER`, `ADMIN`, `CASHIER`, … |
+| Tabla / campo           | Futuro: `User.platformRole` o tabla dedicada | `UserCompany.roleId` → `Role`  |
+| Scope                   | Cross-tenant (todo el SaaS)                  | Una `Company`                  |
+| ¿Usa `CompanyGuard`?    | No (rutas de plataforma)                     | Sí (rutas de negocio)          |
+| ¿Vive en `UserCompany`? | **No**                                       | **Sí**                         |
+| Implementado hoy        | No                                           | Sí (sin `RolesGuard` fino aún) |
 
 ---
 
@@ -379,14 +379,14 @@ Añadir `SUPER_ADMIN` antes de definir rutas `/platform/*`, guards y políticas 
 
 ## Interacción User · UserCompany · Company (resumen)
 
-| Entidad | Rol en el sistema |
-|---------|-------------------|
-| `User` | Identidad global (email, contraseña, perfil). Puede tener 0..N membresías tenant y 0..1 `Employee`. |
-| `Company` | Tenant / empresa cliente del SaaS. |
-| `UserCompany` | Une `User` + `Company` + `Role` (tenant). Es la fuente de verdad del **rol empresarial**. |
-| `Role` | Catálogo de roles **por tenant** (`RoleName`). |
-| `Branch` | Sucursal; `Employee.branchId` obligatorio. |
-| `Employee` | Usuario operativo del ERP; `userId` obligatorio. |
+| Entidad       | Rol en el sistema                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------- |
+| `User`        | Identidad global (email, contraseña, perfil). Puede tener 0..N membresías tenant y 0..1 `Employee`. |
+| `Company`     | Tenant / empresa cliente del SaaS.                                                                  |
+| `UserCompany` | Une `User` + `Company` + `Role` (tenant). Es la fuente de verdad del **rol empresarial**.           |
+| `Role`        | Catálogo de roles **por tenant** (`RoleName`).                                                      |
+| `Branch`      | Sucursal; `Employee.branchId` obligatorio.                                                          |
+| `Employee`    | Usuario operativo del ERP; `userId` obligatorio.                                                    |
 
 ```mermaid
 erDiagram
@@ -406,13 +406,13 @@ erDiagram
 
 ## RBAC tenant: estado y siguiente paso
 
-| Capacidad | Estado |
-|-----------|--------|
-| Membresía por empresa (`UserCompany`) | Implementado |
-| `CompanyGuard` + `companyId` | Implementado |
-| Enum `RoleName` en DB | Implementado |
-| `RolesGuard` / `@Roles()` en controladores | Pendiente (TODOs en código) |
-| Platform admin / `SUPER_ADMIN` | Documentado aquí; **no implementado** |
+| Capacidad                                  | Estado                                |
+| ------------------------------------------ | ------------------------------------- |
+| Membresía por empresa (`UserCompany`)      | Implementado                          |
+| `CompanyGuard` + `companyId`               | Implementado                          |
+| Enum `RoleName` en DB                      | Implementado                          |
+| `RolesGuard` / `@Roles()` en controladores | Pendiente (TODOs en código)           |
+| Platform admin / `SUPER_ADMIN`             | Documentado aquí; **no implementado** |
 
 Cuando se implemente RBAC completo en tenant, los permisos se derivarán de `UserCompany.role` dentro del `companyId` del JWT — no de roles de plataforma.
 
@@ -420,12 +420,12 @@ Cuando se implemente RBAC completo en tenant, los permisos se derivarán de `Use
 
 ## Documentos relacionados
 
-| Archivo | Contenido |
-|---------|-----------|
-| `docs/employee-user-registration-flow.md` | Employee siempre con User; `POST /employees` transaccional |
-| `docs/platform-admin-roadmap.md` | Este archivo — plataforma vs tenant, SUPER_ADMIN, onboarding futuro |
-| `packages/database/prisma/schema.prisma` | Schema vigente |
-| `apps/api/docs/auth-and-utilities.md` | Auth, guards, errores (si aplica) |
+| Archivo                                   | Contenido                                                           |
+| ----------------------------------------- | ------------------------------------------------------------------- |
+| `docs/employee-user-registration-flow.md` | Employee siempre con User; `POST /employees` transaccional          |
+| `docs/platform-admin-roadmap.md`          | Este archivo — plataforma vs tenant, SUPER_ADMIN, onboarding futuro |
+| `packages/database/prisma/schema.prisma`  | Schema vigente                                                      |
+| `apps/api/docs/auth-and-utilities.md`     | Auth, guards, errores (si aplica)                                   |
 
 ---
 

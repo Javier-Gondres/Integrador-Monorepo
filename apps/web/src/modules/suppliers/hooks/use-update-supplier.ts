@@ -18,9 +18,7 @@ export function useUpdateSupplier() {
       toast.success("Proveedor actualizado correctamente");
     },
     onError: (error) => {
-      toast.error(
-        getErrorMessage(error, "No se pudo actualizar el proveedor"),
-      );
+      toast.error(getErrorMessage(error, "No se pudo actualizar el proveedor"));
     },
   });
 }

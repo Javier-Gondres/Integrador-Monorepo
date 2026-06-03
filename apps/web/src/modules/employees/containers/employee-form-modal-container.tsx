@@ -11,8 +11,10 @@ import {
   mapEmployeeToUpdateFormValues,
   mapUpdateFormValuesToDto,
 } from "../mappers/employee-form.mapper";
-import type { EmployeeFormSchema } from "../schemas/employee.schema";
-import type { EmployeeUpdateFormSchema } from "../schemas/employee.schema";
+import type {
+  EmployeeFormSchema,
+  EmployeeUpdateFormSchema,
+} from "../schemas/employee.schema";
 import type { Employee } from "../types/employee.types";
 
 interface EmployeeFormModalContainerProps {

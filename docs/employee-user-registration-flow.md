@@ -24,11 +24,11 @@ en una sola transacción.
 
 ## 1. Responsabilidades por modelo
 
-| Modelo | Responsabilidad |
-|--------|-----------------|
-| `User` | Autenticación: email, contraseña, nombre de sesión, `lastLoginAt` |
-| `UserCompany` | Autorización tenant: empresa, rol, sucursal por defecto |
-| `Employee` | Datos laborales: teléfono, puesto, salario, fechas, sucursal asignada |
+| Modelo        | Responsabilidad                                                       |
+| ------------- | --------------------------------------------------------------------- |
+| `User`        | Autenticación: email, contraseña, nombre de sesión, `lastLoginAt`     |
+| `UserCompany` | Autorización tenant: empresa, rol, sucursal por defecto               |
+| `Employee`    | Datos laborales: teléfono, puesto, salario, fechas, sucursal asignada |
 
 ### User
 
@@ -88,12 +88,12 @@ erDiagram
 
 ## 3. Reglas de integridad
 
-| Estado | Válido |
-|--------|--------|
-| `companyId` + `branchId` + `userId` | Sí |
-| `userId = null` | **No** |
-| `branchId = null` | **No** |
-| `companyId = null` | **No** |
+| Estado                              | Válido |
+| ----------------------------------- | ------ |
+| `companyId` + `branchId` + `userId` | Sí     |
+| `userId = null`                     | **No** |
+| `branchId = null`                   | **No** |
+| `companyId = null`                  | **No** |
 
 ---
 
@@ -154,14 +154,14 @@ Si cualquier paso falla → `ROLLBACK`.
 
 ## 5. Endpoints vigentes
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/employees` | Listado paginado (`companyId`) |
-| `GET` | `/employees/:id` | Detalle |
-| `POST` | `/employees` | Crear User + UserCompany + Employee |
-| `PATCH` | `/employees/:id` | Actualizar datos laborales |
-| `DELETE` | `/employees/:id` | Soft delete |
-| `PATCH` | `/employees/:id/restore` | Restaurar eliminado |
+| Método   | Ruta                     | Descripción                         |
+| -------- | ------------------------ | ----------------------------------- |
+| `GET`    | `/employees`             | Listado paginado (`companyId`)      |
+| `GET`    | `/employees/:id`         | Detalle                             |
+| `POST`   | `/employees`             | Crear User + UserCompany + Employee |
+| `PATCH`  | `/employees/:id`         | Actualizar datos laborales          |
+| `DELETE` | `/employees/:id`         | Soft delete                         |
+| `PATCH`  | `/employees/:id/restore` | Restaurar eliminado                 |
 
 ### Endpoints eliminados (ya no aplican)
 

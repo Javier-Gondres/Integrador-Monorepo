@@ -10,8 +10,8 @@ import { Modal } from "@/shared/ui/modal";
 
 import {
   type EmployeeFormSchema,
-  type EmployeeUpdateFormSchema,
   employeeFormSchema,
+  type EmployeeUpdateFormSchema,
   employeeUpdateFormSchema,
 } from "../schemas/employee.schema";
 import type { BranchOption, RoleOption } from "../types/employee.types";
@@ -188,7 +188,11 @@ function EmployeeCreateForm({
           {...register("hireDate")}
         />
 
-        <FormActions isSubmitting={isSubmitting} onClose={onClose} submitLabel="Crear empleado" />
+        <FormActions
+          isSubmitting={isSubmitting}
+          onClose={onClose}
+          submitLabel="Crear empleado"
+        />
       </form>
     </Modal>
   );
@@ -302,7 +306,11 @@ function EmployeeEditForm({
           {...register("hireDate")}
         />
 
-        <FormActions isSubmitting={isSubmitting} onClose={onClose} submitLabel="Guardar" />
+        <FormActions
+          isSubmitting={isSubmitting}
+          onClose={onClose}
+          submitLabel="Guardar"
+        />
       </form>
     </Modal>
   );

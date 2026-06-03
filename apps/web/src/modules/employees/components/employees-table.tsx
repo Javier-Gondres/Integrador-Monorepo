@@ -27,7 +27,9 @@ export function getEmployeesTableColumns(
       header: "Email",
       align: "center",
       cell: (row) => (
-        <span style={{ fontSize: "13px", color: C.primary }}>{row.userEmail}</span>
+        <span style={{ fontSize: "13px", color: C.primary }}>
+          {row.userEmail}
+        </span>
       ),
     },
     {

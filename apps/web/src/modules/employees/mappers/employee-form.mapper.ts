@@ -35,7 +35,7 @@ export function mapEmployeeToUpdateFormValues(
     lastName: employee?.lastName ?? "",
     phone: employee?.phone ?? "",
     position: employee?.position ?? "",
-    salary: employee?.salary != null ? String(employee.salary) : "",
+    salary: employee && employee.salary !== null ? String(employee.salary) : "",
     hireDate: employee?.hireDate?.slice(0, 10) ?? "",
     branchId: employee?.branchId ?? "",
   };
