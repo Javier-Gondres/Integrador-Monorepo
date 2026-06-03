@@ -167,6 +167,8 @@ src/app/
 └── (dashboard)/
     ├── categories/page.tsx
     ├── products/page.tsx
+    ├── employees/page.tsx
+    ├── suppliers/page.tsx
     ├── companies/page.tsx
     └── companies/[slug]/branch/page.tsx
 ```
@@ -195,6 +197,8 @@ export default function CategoriesPage() {
 | `/`                        | `(public)/page.tsx`                            | Home + links dev   |
 | `/categories`              | `(dashboard)/categories/page.tsx`              | `CategoriesScreen` |
 | `/products`                | `(dashboard)/products/page.tsx`                | `ProductsScreen`   |
+| `/employees`               | `(dashboard)/employees/page.tsx`               | `EmployeesScreen`  |
+| `/suppliers`               | `(dashboard)/suppliers/page.tsx`               | `SuppliersScreen`  |
 | `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`  |
 | `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`   |
 
@@ -210,6 +214,8 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | ------------- | --------------------------------------------- |
 | `categories`  | Completo (CRUD + tabla)                       |
 | `products`    | Completo (CRUD + tabla + combobox categorías) |
+| `employees`   | Completo (CRUD transaccional User+Employee + tabla) |
+| `suppliers`   | Completo (CRUD + tabla)                       |
 | `companies`   | Pantalla legacy migrada (lista + CRUD básico) |
 | `branches`    | Pantalla legacy migrada (lista + CRUD básico) |
 | `auth`        | Scaffold (API hooks, sin UI de login aún)     |

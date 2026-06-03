@@ -18,5 +18,8 @@
     "typescriptreact"
   ],
 
-  "rest-client.previewResponseInUntitledDocument": true
+  "rest-client.previewResponseInUntitledDocument": true,
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  }
 }

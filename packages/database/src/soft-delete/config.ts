@@ -2,7 +2,7 @@
  * Modelos de master data con eliminación lógica (`deletedAt`).
  * No incluir entidades transaccionales/históricas (AuditLog, RefreshToken, etc.).
  *
- * Al agregar Product, Customer o Supplier al schema, añadirlos aquí y en el schema:
+ * Al agregar Product, Customer, Supplier, Employee u otro master data al schema, añadirlos aquí y en el schema:
  * - `deletedAt DateTime?`
  * - `@@unique([campoUnico, deletedAt])` donde aplique
  */
@@ -14,6 +14,8 @@ export const SOFT_DELETE_MODELS = [
   "UserCompany",
   "Category",
   "Product",
+  "Employee",
+  "Supplier",
 ] as const;
 
 export type SoftDeleteModel = (typeof SOFT_DELETE_MODELS)[number];
@@ -25,6 +27,8 @@ export const SOFT_DELETE_MODELS_WITH_IS_ACTIVE = [
   "User",
   "Category",
   "Product",
+  "Employee",
+  "Supplier",
 ] as const satisfies readonly SoftDeleteModel[];
 
 const softDeleteModelSet = new Set<string>(SOFT_DELETE_MODELS);

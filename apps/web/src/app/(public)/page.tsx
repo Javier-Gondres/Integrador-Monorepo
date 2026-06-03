@@ -49,6 +49,8 @@ export default function HomePage() {
         <nav className={styles.nav}>
           <Link href="/products">Productos</Link>
           <Link href="/categories">Categorías</Link>
+          <Link href="/employees">Empleados</Link>
+          <Link href="/suppliers">Proveedores</Link>
           <Link href="/companies">Empresas</Link>
         </nav>
 

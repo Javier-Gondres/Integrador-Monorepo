@@ -1,11 +1,13 @@
 // This is your Prisma schema file,
+
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+
+  output = "../src/generated/prisma"
 }
 
 datasource db {
@@ -14,114 +16,146 @@ datasource db {
 
 enum RoleName {
   OWNER
+
   ADMIN
+
   MANAGER
+
   CASHIER
+
   INVENTORY_ASSISTANT
 }
 
-/// Master data con soft delete. Al agregar Product, Customer o Supplier, incluir
+/// Master data con soft delete. Al agregar Product, Customer, Supplier, Employee, etc., incluir
+
 /// `deletedAt`, `@@unique([campo, deletedAt])` en campos únicos y registrar el
+
 /// modelo en `packages/database/src/soft-delete/config.ts`.
+
 model Company {
-  id            String   @id @default(cuid())
+  id   String  @id @default(cuid())
+  name String
+  slug String
+  rnc  String?
 
-  name          String
-  slug          String
+  email String?
 
-  rnc           String?
+  phone String?
 
-  email         String?
-  phone         String?
+  isActive Boolean @default(true)
 
-  isActive      Boolean  @default(true)
-  deletedAt     DateTime?
+  deletedAt DateTime?
 
-  branches      Branch[]
-  users         UserCompany[]
-  categories    Category[]
-  products      Product[]
+  branches Branch[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  users UserCompany[]
+
+  categories Category[]
+
+  products Product[]
+
+  employees Employee[]
+
+  suppliers Supplier[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@unique([slug, deletedAt])
 }
 
 model Branch {
-  id            String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  companyId     String
+  companyId String
 
-  name          String
-  address       String?
+  name String
 
-  isActive      Boolean  @default(true)
-  deletedAt     DateTime?
+  address String?
 
-  company       Company  @relation(fields: [companyId], references: [id])
+  isActive Boolean @default(true)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  employees Employee[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([deletedAt])
 }
 
 model User {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  email           String
-  passwordHash    String
+  email String
 
-  firstName       String
-  lastName        String
+  passwordHash String
 
-  isActive        Boolean  @default(true)
-  deletedAt       DateTime?
+  firstName String
 
-  lastLoginAt     DateTime?
+  lastName String
 
-  memberships     UserCompany[]
+  isActive Boolean @default(true)
 
-  refreshTokens   RefreshToken[]
+  deletedAt DateTime?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  lastLoginAt DateTime?
+
+  memberships UserCompany[]
+
+  employee Employee?
+
+  refreshTokens RefreshToken[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@unique([email, deletedAt])
 }
 
 model Role {
-  id            String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  name          RoleName
-  description   String?
+  name RoleName
 
-  deletedAt     DateTime?
+  description String?
 
-  users         UserCompany[]
+  deletedAt DateTime?
+
+  users UserCompany[]
 
   @@unique([name, deletedAt])
 }
 
 model UserCompany {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId          String
-  companyId       String
-  roleId          String
+  userId String
+
+  companyId String
+
+  roleId String
 
   defaultBranchId String?
 
-  deletedAt       DateTime?
+  deletedAt DateTime?
 
-  user            User     @relation(fields: [userId], references: [id])
-  company         Company  @relation(fields: [companyId], references: [id])
-  role            Role     @relation(fields: [roleId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  company Company @relation(fields: [companyId], references: [id])
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, deletedAt])
   @@index([companyId])
@@ -129,63 +163,71 @@ model UserCompany {
 }
 
 model RefreshToken {
-  id                String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId            String
+  userId String
 
-  hashedToken       String
+  hashedToken String
 
-  expiresAt         DateTime
+  expiresAt DateTime
 
-  revoked           Boolean  @default(false)
-  revokedAt         DateTime?
+  revoked Boolean @default(false)
 
-  createdByIp       String?
-  revokedByIp       String?
+  revokedAt DateTime?
 
-  userAgent         String?
+  createdByIp String?
+
+  revokedByIp String?
+
+  userAgent String?
 
   replacedByTokenId String?
 
-  user              User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
-  createdAt         DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
 }
 
 model AuditLog {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  companyId       String?
-  userId          String?
+  companyId String?
 
-  action          String
+  userId String?
 
-  entity          String?
-  entityId        String?
+  action String
 
-  metadata        Json?
+  entity String?
 
-  createdAt       DateTime @default(now())
+  entityId String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
 }
 
 model Category {
-  id            String     @id @default(cuid())
+  id String @id @default(cuid())
 
-  companyId     String
+  companyId String
 
-  name          String
-  description   String?
+  name String
 
-  isActive      Boolean    @default(true)
-  deletedAt     DateTime?
+  description String?
 
-  company       Company    @relation(fields: [companyId], references: [id])
-  products      Product[]
+  isActive Boolean @default(true)
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@unique([companyId, name, deletedAt])
   @@index([companyId])
@@ -193,28 +235,113 @@ model Category {
 }
 
 model Product {
-  id            String      @id @default(cuid())
+  id String @id @default(cuid())
 
-  companyId     String
+  companyId String
 
-  name          String
-  code          String
+  supplierId String?
 
-  description   String?
-  imageUrl      String?
+  name String
 
-  price         Decimal     @db.Decimal(10, 2)
+  code String
 
-  isActive      Boolean     @default(true)
-  deletedAt     DateTime?
+  description String?
 
-  company       Company     @relation(fields: [companyId], references: [id])
-  categories    Category[]
+  imageUrl String?
 
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  price Decimal @db.Decimal(10, 2)
+
+  isActive Boolean @default(true)
+
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  supplier Supplier? @relation(fields: [supplierId], references: [id])
+
+  categories Category[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 
   @@unique([companyId, code, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+/// Usuario operativo del ERP. Siempre vinculado a User + UserCompany.
+
+model Employee {
+  id String @id @default(cuid())
+
+  companyId String
+
+  branchId String
+
+  userId String @unique
+
+  phone String?
+
+  position String?
+
+  salary Decimal? @db.Decimal(10, 2)
+
+  hireDate DateTime?
+
+  terminationDate DateTime?
+
+  isActive Boolean @default(true)
+
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([deletedAt])
+}
+
+model Supplier {
+  id String @id @default(cuid())
+
+  companyId String
+
+  name String
+
+  contactName String?
+
+  email String?
+
+  phone String?
+
+  rnc String?
+
+  address String?
+
+  notes String?
+
+  isActive Boolean @default(true)
+
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name, deletedAt])
   @@index([companyId])
   @@index([deletedAt])
 }
