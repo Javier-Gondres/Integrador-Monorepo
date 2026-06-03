@@ -6,6 +6,5 @@ export interface LoginCredentials {
 }
 
 export interface LoginResponse {
-  user: import("@/types/auth").AuthUser;
-  accessToken?: string;
+  accessToken: string;
 }

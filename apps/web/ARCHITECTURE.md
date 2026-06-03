@@ -325,7 +325,7 @@ export async function apiFetch<T>(
 
 - Base URL: `NEXT_PUBLIC_API_URL` (default `http://localhost:3001`)
 - Envía cookies: `credentials: "include"`
-- Si existe `NEXT_PUBLIC_API_TOKEN`, agrega `Authorization: Bearer ...`
+- Si hay token de acceso en `sessionStorage` (tras login), agrega `Authorization: Bearer ...`
 - Desempaqueta respuestas NestJS `{ data: T }`
 - Si `!response.ok`, lanza `ApiError`
 
@@ -712,7 +712,6 @@ import type { Category } from "@/modules/categories/types/category.types";
 // src/config/env.ts
 export const env = {
   apiUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001",
-  apiToken: process.env.NEXT_PUBLIC_API_TOKEN,
 };
 ```
 
@@ -952,10 +951,9 @@ const canEdit = useHasPermission("products:update");
 
 Archivo: `apps/web/.env.development`
 
-| Variable                | Descripción                                           |
-| ----------------------- | ----------------------------------------------------- |
-| `NEXT_PUBLIC_API_URL`   | URL base del API NestJS (ej. `http://localhost:3001`) |
-| `NEXT_PUBLIC_API_TOKEN` | Token Bearer opcional para dev                        |
+| Variable              | Descripción                                           |
+| --------------------- | ----------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL` | URL base del API NestJS (ej. `http://localhost:3001`) |
 
 Ejemplos en `.env.development.example` y `.env.staging.example`.
 

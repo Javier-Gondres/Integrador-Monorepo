@@ -1,5 +1,6 @@
 import { env } from "@/config/env";
 
+import { getAccessToken } from "./access-token";
 import { ApiError } from "./errors";
 import type { ApiErrorBody, ApiResponse } from "./types";
 
@@ -12,8 +13,9 @@ function getApiHeaders(includeJson = false): HeadersInit {
     headers["Content-Type"] = "application/json";
   }
 
-  if (env.apiToken) {
-    headers.Authorization = `Bearer ${env.apiToken}`;
+  const accessToken = getAccessToken();
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
   }
 
   return headers;

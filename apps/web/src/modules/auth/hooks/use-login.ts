@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { clearAccessToken, setAccessToken } from "@/lib/api/access-token";
 import { getErrorMessage } from "@/lib/api/errors";
 
 import { login, logout } from "../api/get-session";
@@ -12,7 +13,8 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (credentials: LoginCredentials) => login(credentials),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setAccessToken(data.accessToken);
       void queryClient.invalidateQueries({ queryKey: authKeys.all });
       toast.success("Sesión iniciada");
     },
@@ -28,6 +30,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {
+      clearAccessToken();
       queryClient.clear();
       toast.success("Sesión cerrada");
     },
