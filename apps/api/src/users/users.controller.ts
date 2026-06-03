@@ -12,10 +12,8 @@ import { AuthContext } from 'src/auth/auth.types';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CompanyId, RequireCompany } from 'src/common/company';
 
-import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateUserDto } from './dto/createUser.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
-import { UpdateMeDto } from './dto/update-me.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { UsersService } from './users.service';
 
@@ -34,28 +32,6 @@ export class UsersController {
   @Get('roles')
   listRoles() {
     return this.usersService.listRoles();
-  }
-
-  @RequireCompany()
-  @Get('me')
-  getMe(@Auth() auth: AuthContext, @CompanyId() companyId: string) {
-    return this.usersService.findMe(auth.userId, companyId);
-  }
-
-  @RequireCompany()
-  @Patch('me')
-  updateMe(
-    @Auth() auth: AuthContext,
-    @CompanyId() companyId: string,
-    @Body() dto: UpdateMeDto,
-  ) {
-    return this.usersService.updateMe(auth.userId, companyId, dto);
-  }
-
-  @RequireCompany()
-  @Patch('me/password')
-  changePassword(@Auth() auth: AuthContext, @Body() dto: ChangePasswordDto) {
-    return this.usersService.changePassword(auth.userId, dto);
   }
 
   @RequireCompany()

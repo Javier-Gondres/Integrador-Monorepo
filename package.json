@@ -13,6 +13,8 @@
     "db:generate": "pnpm --filter @repo/db run db:generate",
     "db:deploy": "pnpm --filter @repo/db run db:deploy",
     "db:seed:dev": "pnpm --filter @repo/db run db:seed:dev",
+    "db:seed:staging": "pnpm --filter @repo/db run db:seed:staging",
+    "db:seed:production": "pnpm --filter @repo/db run db:seed:production",
     "db:deploy:staging": "pnpm --filter @repo/db run db:deploy:staging",
     "db:deploy:production": "pnpm --filter @repo/db run db:deploy:production",
     "dev:web:staging": "pnpm --filter web run dev:staging",

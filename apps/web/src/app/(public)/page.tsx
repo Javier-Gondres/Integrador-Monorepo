@@ -2,6 +2,7 @@ import { Button } from "@repo/ui/button";
 import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
 
+import { DevLoginButton } from "./dev-login-button";
 import styles from "./page.module.css";
 import { UsersTester } from "./users-tester";
 
@@ -46,9 +47,13 @@ export default function HomePage() {
           </li>
         </ol>
 
+        <DevLoginButton />
+
         <nav className={styles.nav}>
           <Link href="/products">Productos</Link>
           <Link href="/categories">Categorías</Link>
+          <Link href="/employees">Empleados</Link>
+          <Link href="/suppliers">Proveedores</Link>
           <Link href="/companies">Empresas</Link>
         </nav>
 

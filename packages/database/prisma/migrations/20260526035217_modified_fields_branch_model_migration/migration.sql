@@ -1,3 +1,1 @@
--- AlterTable
-ALTER TABLE "Branch" ALTER COLUMN "address" DROP NOT NULL,
-ALTER COLUMN "phone" DROP NOT NULL;
+-- Branch.address is already nullable in 20260521183557_modelos_para_autenticacion; phone was never added.
