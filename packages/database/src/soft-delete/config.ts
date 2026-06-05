@@ -16,6 +16,10 @@ export const SOFT_DELETE_MODELS = [
   "Product",
   "Employee",
   "Supplier",
+  "Customer",
+  "NcfSequence",
+  "CashRegister",
+  "Discount",
 ] as const;
 
 export type SoftDeleteModel = (typeof SOFT_DELETE_MODELS)[number];
@@ -29,6 +33,10 @@ export const SOFT_DELETE_MODELS_WITH_IS_ACTIVE = [
   "Product",
   "Employee",
   "Supplier",
+  "Customer",
+  "NcfSequence",
+  "CashRegister",
+  "Discount",
 ] as const satisfies readonly SoftDeleteModel[];
 
 const softDeleteModelSet = new Set<string>(SOFT_DELETE_MODELS);
