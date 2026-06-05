@@ -29,7 +29,7 @@ Documentación de referencia para implementar servicios en `apps/api` y módulos
 | NCF | Secuencia `B02`, consecutivos `B0200000001`, `B0200000002`… |
 | Caja | `Caja Principal` en sucursal Santiago — turno con apertura RD$ 2,000 |
 | Descuento producto | "Verano 20%" vinculado directamente a Coca-Cola |
-| Descuento categoría | "Bebidas 10%" vinculado a categoría Bebidas |
+| Descuento categoría | "Bebidas 20%" en categoría Bebidas, excluyendo Coca-Cola 2L y Pepsi 2L |
 
 ---
 
@@ -230,40 +230,53 @@ Sin `customerId` en la venta = consumidor final en POS.
 
 ### `Discount`
 
-Promoción por **porcentaje** a nivel empresa. Modelo independiente con relaciones many-to-many:
+Promoción por **porcentaje** a nivel empresa. Modelo independiente:
 
 ```text
-Discount ←→ Product
-Discount ←→ Category
+Discount ←→ Product          (productos incluidos directamente)
+Discount ←→ Category         (categorías incluidas)
+Discount ←→ DiscountExcludedProduct ←→ Product   (exclusiones)
 ```
 
-| Campo | Uso |
-|-------|-----|
+| Campo / relación | Uso |
+|------------------|-----|
 | `percentage` | Porcentaje (ej. 20.00 = 20%) |
 | `startDate`, `endDate` | Vigencia opcional |
-| `products` | Productos vinculados directamente |
-| `categories` | Categorías vinculadas |
+| `products` | Productos con descuento directo |
+| `categories` | Categorías completas con descuento |
+| `excludedProducts` | Productos excluidos de **este** descuento |
 
 **Ejemplos de configuración:**
 
 ```text
-Descuento "Verano 20%" → Producto Coca-Cola
-Descuento "Bebidas 10%" → Categoría Bebidas
+Descuento "Verano 20%" → Producto Coca-Cola 355ml
+Descuento "Bebidas 20%" → Categoría Bebidas
+  Exclusiones: Coca-Cola 2L, Pepsi 2L
 ```
 
-Un mismo descuento puede vincularse a varios productos y/o categorías.
+Un descuento por categoría aplica a todos los productos de esa categoría **excepto** los listados en `DiscountExcludedProduct`.
+
+### `DiscountExcludedProduct`
+
+Vincula un descuento con un producto excluido. Único por `(discountId, productId)`.
+
+**Ejemplo:** "Bebidas 20%" aplica a toda la categoría, pero Coca-Cola 2L y Pepsi 2L quedan fuera.
 
 #### Regla de cálculo al vender (por línea)
 
-1. Obtener descuentos **activos** del producto (vigencia + `isActive`).
+1. Obtener descuentos **activos** vinculados directamente al producto.
 2. Obtener descuentos **activos** de **todas** las categorías del producto.
-3. Combinar todos los porcentajes candidatos.
-4. Seleccionar **únicamente el más alto**: `max(20, 10, 15) = 20%`.
-5. Aplicar solo ese porcentaje sobre la línea.
+3. **Eliminar** descuentos donde el producto aparezca en `DiscountExcludedProduct` de ese descuento.
+4. Combinar los porcentajes restantes.
+5. Seleccionar **únicamente el más alto**: `max(20, 10, 15) = 20%`.
+6. Aplicar solo ese porcentaje sobre la línea.
+7. Persistir `discountPercentage` y `discountAmount` en `SaleItem`.
 
 **Prohibido:** sumar, acumular, multiplicar o aplicar varios descuentos a la vez.
 
-**Ejemplo:** Coca-Cola RD$ 100 con 20% (producto) y 15% (categoría Bebidas) → descuento RD$ 20, subtotal RD$ 80.
+**Ejemplo con exclusión:** Coca-Cola 2L (categoría Bebidas) con descuento categoría 20% pero excluido → no recibe ese 20%. Si tiene descuento directo 10%, aplica 10%.
+
+**Ejemplo sin exclusión:** Coca-Cola 355ml con 20% (producto) y 15% (categoría Bebidas) → aplica 20%, subtotal RD$ 80 sobre precio RD$ 100.
 
 #### Snapshot histórico
 
@@ -534,7 +547,7 @@ Todos los pasos de un flujo deben ejecutarse en **una transacción** salvo consu
 ### Venta al contado
 
 1. Crear `Sale` con `status = PENDING` (validar `cashShift` abierto si aplica POS).
-2. Crear `SaleItem`(s): calcular descuento (máximo entre producto y categorías), persistir `discountPercentage`, `discountAmount` y `subtotal`; calcular totales de cabecera.
+2. Crear `SaleItem`(s): calcular descuento (producto + categorías − exclusiones → `max()`), persistir `discountPercentage`, `discountAmount` y `subtotal`; calcular totales de cabecera.
 3. Crear `Payment`(s) — métodos distintos de `CREDIT`; la suma debe igualar el `total`.
 4. Por cada ítem: validar stock en `Inventory` de la sucursal; **descontar** cantidad.
 5. Crear `InventoryMovement` tipo `SALE` por producto (cantidad positiva en movimiento = unidades salidas; documentar convención de signo en el servicio y ser consistente).
@@ -652,7 +665,7 @@ Todos los pasos de un flujo deben ejecutarse en **una transacción** salvo consu
 | Movimientos manuales | `performedByEmployeeId` obligatorio en `ADJUSTMENT`, `WASTE`, transferencias |
 | Auditoría sucursal | `AuditLog.branchId` en ventas, compras, caja, inventario, transferencias |
 | Cliente | Solo personas físicas; `firstName` y `lastName` obligatorios |
-| Descuentos | Por línea: `max()` de porcentajes producto + categorías; snapshot en `SaleItem` |
+| Descuentos | Por línea: candidatos producto + categorías, filtrar exclusiones, `max()` de %; snapshot en `SaleItem` |
 | Multi-tenant | Filtrar siempre por `companyId` derivado de `UserCompany` / sucursal |
 | Soft delete | Solo master data (ver [Política de Soft Delete](#política-de-soft-delete)); transacciones usan status |
 | Decimales | Usar `Decimal` de Prisma; no `float` en JS para dinero |

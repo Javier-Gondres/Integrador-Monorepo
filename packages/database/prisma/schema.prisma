@@ -297,8 +297,9 @@ model Product {
   saleItems          SaleItem[]
   purchaseOrderItems PurchaseOrderItem[]
   returnItems        ReturnItem[]
-  transferItems      TransferItem[]
-  discounts          Discount[]
+  transferItems           TransferItem[]
+  discounts               Discount[]
+  discountExclusions      DiscountExcludedProduct[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -709,7 +710,7 @@ model PayablePayment {
 }
 
 /// Promoción por porcentaje. Many-to-many con Product y/o Category.
-/// Un descuento puede vincularse a varios productos y/o categorías.
+/// excludedProducts excluye productos de un descuento por categoría.
 model Discount {
   id String @id @default(cuid())
 
@@ -725,15 +726,32 @@ model Discount {
   isActive  Boolean   @default(true)
   deletedAt DateTime?
 
-  company    Company    @relation(fields: [companyId], references: [id])
-  products   Product[]
-  categories Category[]
+  company          Company                   @relation(fields: [companyId], references: [id])
+  products         Product[]
+  categories       Category[]
+  excludedProducts DiscountExcludedProduct[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([deletedAt])
+}
+
+/// Productos excluidos de un descuento (típicamente descuentos por categoría).
+model DiscountExcludedProduct {
+  id String @id @default(cuid())
+
+  discountId String
+  productId  String
+
+  discount Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([discountId, productId])
+  @@index([productId])
 }
 
 model Return {
