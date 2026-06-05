@@ -20,7 +20,7 @@ const navItems = [
   { label: "Categorías", icon: Tag, href: "/categories" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
-  { label: "Proveedores", icon: Truck,         href: "/suppliers" },
+  { label: "Proveedores", icon: Truck, href: "/suppliers" },
 ];
 
 export function Sidebar() {
@@ -50,7 +50,8 @@ export function Sidebar() {
             );
           }
           const Icon = item.icon!;
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active =
+            pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.href}
@@ -78,8 +79,7 @@ export function Sidebar() {
           <LogOut size={14} />
           <span>Cerrar Sesión</span>
         </button>
-        <p className="sb-footer">
-        </p>
+        <p className="sb-footer"></p>
       </div>
     </aside>
   );

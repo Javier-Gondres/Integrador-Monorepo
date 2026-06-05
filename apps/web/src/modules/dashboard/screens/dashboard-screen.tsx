@@ -20,7 +20,8 @@ const availableModules = [
   },
   {
     title: "Categorías",
-    description: "Organiza los productos por familias y estructura el catálogo.",
+    description:
+      "Organiza los productos por familias y estructura el catálogo.",
     href: "/categories",
     icon: Tag,
     tone: "emerald",
@@ -69,7 +70,9 @@ export function DashboardScreen() {
         <div className={styles.sectionHeader}>
           <div>
             <p className={styles.sectionKicker}>Atajo rápido</p>
-            <h2 className={styles.sectionTitle}>Accesos directos al catálogo</h2>
+            <h2 className={styles.sectionTitle}>
+              Accesos directos al catálogo
+            </h2>
           </div>
         </div>
 
@@ -78,7 +81,11 @@ export function DashboardScreen() {
             const Icon = module.icon;
 
             return (
-              <Link key={module.title} href={module.href} className={styles.quickCard}>
+              <Link
+                key={module.title}
+                href={module.href}
+                className={styles.quickCard}
+              >
                 <span className={styles.quickIcon}>
                   <Icon size={16} />
                 </span>
