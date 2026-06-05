@@ -35,7 +35,7 @@ export function Sidebar() {
         </div>
         <div>
           <p className="sidebar-logo-name">Mi ERP</p>
-          <p className="sidebar-logo-sub">v1.0 · workspace</p>
+          <p className="sidebar-logo-sub">Bienvenido al ERP</p>
         </div>
       </div>
 

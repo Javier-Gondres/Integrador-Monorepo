@@ -49,7 +49,7 @@ export function DashboardScreen() {
           <p className={styles.kicker}>Inicio / Dashboard</p>
           <h1 className={styles.title}>Punto de entrada del ERP</h1>
           <p className={styles.description}>
-            Desde aquí puedes navegar a los CRUD principales para registrar y
+            Desde aquí puedes navegar a los módulos principales para registrar y
             administrar tu negocio.
           </p>
 
