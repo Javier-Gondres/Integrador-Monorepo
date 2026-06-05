@@ -146,7 +146,11 @@ Roles del sistema: `OWNER`, `ADMIN`, `MANAGER`, `CASHIER`, `INVENTORY_ASSISTANT`
 
 ### `UserCompany`
 
-Vincula un usuario a **una** empresa y un rol. `defaultBranchId` opcional para UI por defecto.
+Vincula un usuario a **una** empresa y un rol.
+
+| Campo | Uso |
+|-------|-----|
+| `defaultBranchId` / `defaultBranch` | Sucursal por defecto en UI (relación Prisma) |
 
 **Regla:** Un usuario activo solo tiene una membresía (`@@unique([userId, deletedAt])`).
 
@@ -241,7 +245,7 @@ Discount ←→ DiscountExcludedProduct ←→ Product   (exclusiones)
 | Campo / relación | Uso |
 |------------------|-----|
 | `percentage` | Porcentaje (ej. 20.00 = 20%) |
-| `startDate`, `endDate` | Vigencia opcional |
+| `startDate`, `endDate` | Vigencia opcional (indexados para consultas de promociones activas) |
 | `products` | Productos con descuento directo |
 | `categories` | Categorías completas con descuento |
 | `excludedProducts` | Productos excluidos de **este** descuento |
@@ -329,7 +333,7 @@ Cabecera de venta en una sucursal.
 | `status` | `PENDING` → `COMPLETED` o `CANCELLED` |
 | `cashierId` | `Employee` que opera la venta |
 | `cashShiftId` | Turno de caja abierto (opcional pero recomendado en POS) |
-| `ncf`, `ncfSequenceId` | Comprobante fiscal generado |
+| `ncf`, `ncfType`, `ncfSequenceId` | Comprobante fiscal; `ncfType` es snapshot histórico (reportes B01/B02 sin join) |
 | `subtotal`, `taxAmount`, `total` | Montos en RD$ |
 
 ---
@@ -394,7 +398,7 @@ Antes de completar venta fiscal:
 1. Obtener secuencia activa (`isActive`, no vencida, `currentNumber < maxNumber`).
 2. Incrementar `currentNumber` (en transacción).
 3. Formar NCF: `prefix` + número con padding (ej. `B0200000001`).
-4. Guardar en `Sale.ncf` y `Sale.ncfSequenceId`.
+4. Guardar en `Sale.ncf`, `Sale.ncfType` y `Sale.ncfSequenceId`.
 
 ---
 
@@ -474,6 +478,11 @@ Recalcular `status` después de cada `ReceivablePayment` (y en jobs de vencimien
 
 Abono que reduce `balance`. Validar que `amount <= balance`.
 
+| Campo | Uso |
+|-------|-----|
+| `method` | `CASH`, `CARD` o `TRANSFER` (cómo pagó el cliente) |
+| `amount` | Monto del abono |
+
 ---
 
 ### `AccountPayable` / `PayablePayment`
@@ -488,6 +497,11 @@ Análogo con proveedores cuando la compra queda a crédito. `purchaseOrderId` es
 | `OVERDUE` | `balance > 0` y `dueDate < hoy` |
 
 Recalcular `status` después de cada `PayablePayment`.
+
+| Campo en `PayablePayment` | Uso |
+|---------------------------|-----|
+| `method` | `CASH`, `CARD` o `TRANSFER` (cómo se pagó al proveedor) |
+| `amount` | Monto del pago |
 
 ---
 
@@ -524,6 +538,8 @@ Movimiento entre sucursales (`fromBranchId` → `toBranchId`).
 ### `AuditLog`
 
 Registro append-only: `action`, `entity`, `entityId`, `metadata` (JSON), `companyId`, `userId`, `branchId`.
+
+Relaciones: `user` (quién ejecutó la acción), `branch` (sucursal donde ocurrió).
 
 Incluir `branchId` cuando la acción ocurra en sucursal: ventas, compras, transferencias, caja, inventario.
 
@@ -577,7 +593,7 @@ Todos los pasos de un flujo deben ejecutarse en **una transacción** salvo consu
 ### Abono de cuenta por cobrar
 
 1. Validar `AccountReceivable` con `balance > 0`.
-2. Crear `ReceivablePayment` con `amount`.
+2. Crear `ReceivablePayment` con `amount` y `method`.
 3. Reducir `balance` (`balance = balance - amount`).
 4. Recalcular `status`: `PAID` si `balance == 0`; `PARTIAL` si hay pagos y saldo pendiente; `OVERDUE` si vencida.
 5. Rechazar abonos que excedan el saldo.

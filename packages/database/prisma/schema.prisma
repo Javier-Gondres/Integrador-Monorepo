@@ -114,8 +114,9 @@ model Company {
   ncfSequences NcfSequence[]
   discounts    Discount[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  auditLogs AuditLog[]
 
   @@unique([slug, deletedAt])
   @@index([deletedAt])
@@ -133,16 +134,17 @@ model Branch {
 
   company Company @relation(fields: [companyId], references: [id])
 
-  employees          Employee[]
-  inventories        Inventory[]
-  inventoryMovements InventoryMovement[]
-  sales              Sale[]
-  purchaseOrders     PurchaseOrder[]
-  cashRegisters      CashRegister[]
-  transfersFrom      Transfer[]          @relation("TransferFrom")
-  transfersTo        Transfer[]          @relation("TransferTo")
-  returns            Return[]
-  auditLogs          AuditLog[]
+  employees            Employee[]
+  inventories          Inventory[]
+  inventoryMovements   InventoryMovement[]
+  sales                Sale[]
+  purchaseOrders       PurchaseOrder[]
+  cashRegisters        CashRegister[]
+  transfersFrom        Transfer[]          @relation("TransferFrom")
+  transfersTo          Transfer[]          @relation("TransferTo")
+  returns              Return[]
+  auditLogs            AuditLog[]
+  defaultUserCompanies UserCompany[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -167,6 +169,7 @@ model User {
   memberships   UserCompany[]
   employee      Employee?
   refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -199,15 +202,17 @@ model UserCompany {
 
   deletedAt DateTime?
 
-  user    User    @relation(fields: [userId], references: [id])
-  company Company @relation(fields: [companyId], references: [id])
-  role    Role    @relation(fields: [roleId], references: [id])
+  user          User    @relation(fields: [userId], references: [id])
+  company       Company @relation(fields: [companyId], references: [id])
+  role          Role    @relation(fields: [roleId], references: [id])
+  defaultBranch Branch? @relation(fields: [defaultBranchId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([userId, deletedAt])
   @@index([companyId])
+  @@index([defaultBranchId])
   @@index([deletedAt])
 }
 
@@ -242,12 +247,15 @@ model AuditLog {
   entityId  String?
   metadata  Json?
 
-  branch Branch? @relation(fields: [branchId], references: [id])
+  company Company? @relation(fields: [companyId], references: [id])
+  branch  Branch?  @relation(fields: [branchId], references: [id])
+  user    User?    @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 
   @@index([companyId])
   @@index([branchId])
+  @@index([userId])
   @@index([entity, entityId])
 }
 
@@ -297,9 +305,9 @@ model Product {
   saleItems          SaleItem[]
   purchaseOrderItems PurchaseOrderItem[]
   returnItems        ReturnItem[]
-  transferItems           TransferItem[]
-  discounts               Discount[]
-  discountExclusions      DiscountExcludedProduct[]
+  transferItems      TransferItem[]
+  discounts          Discount[]
+  discountExclusions DiscountExcludedProduct[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -461,7 +469,7 @@ model NcfSequence {
   maxNumber      Int
   expirationDate DateTime
 
-  isActive  Boolean @default(true)
+  isActive Boolean @default(true)
 
   company Company @relation(fields: [companyId], references: [id])
   sales   Sale[]
@@ -483,6 +491,7 @@ model Sale {
   ncfSequenceId String?
 
   ncf       String?
+  ncfType   NcfType?
   subtotal  Decimal    @db.Decimal(10, 2)
   taxAmount Decimal    @default(0) @db.Decimal(10, 2)
   total     Decimal    @db.Decimal(10, 2)
@@ -507,6 +516,7 @@ model Sale {
   @@index([customerId])
   @@index([cashierId])
   @@index([status])
+  @@index([ncfType])
   @@index([createdAt])
 }
 
@@ -661,7 +671,8 @@ model ReceivablePayment {
   id String @id @default(cuid())
 
   accountReceivableId String
-  amount              Decimal @db.Decimal(10, 2)
+  amount              Decimal       @db.Decimal(10, 2)
+  method              PaymentMethod
   notes               String?
 
   accountReceivable AccountReceivable @relation(fields: [accountReceivableId], references: [id])
@@ -699,7 +710,8 @@ model PayablePayment {
   id String @id @default(cuid())
 
   accountPayableId String
-  amount           Decimal @db.Decimal(10, 2)
+  amount           Decimal       @db.Decimal(10, 2)
+  method           PaymentMethod
   notes            String?
 
   accountPayable AccountPayable @relation(fields: [accountPayableId], references: [id])
@@ -736,6 +748,8 @@ model Discount {
 
   @@index([companyId])
   @@index([deletedAt])
+  @@index([startDate])
+  @@index([endDate])
 }
 
 /// Productos excluidos de un descuento (típicamente descuentos por categoría).
