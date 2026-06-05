@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @source "../../../../packages/ui/src";
 
-:root {
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -51,3 +51,4 @@ a {
     display: unset;
   }
 }
+ */
