@@ -17,7 +17,6 @@ export const SOFT_DELETE_MODELS = [
   "Employee",
   "Supplier",
   "Customer",
-  "NcfSequence",
   "CashRegister",
   "Discount",
 ] as const;
@@ -34,7 +33,6 @@ export const SOFT_DELETE_MODELS_WITH_IS_ACTIVE = [
   "Employee",
   "Supplier",
   "Customer",
-  "NcfSequence",
   "CashRegister",
   "Discount",
 ] as const satisfies readonly SoftDeleteModel[];

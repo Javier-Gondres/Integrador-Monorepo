@@ -87,9 +87,10 @@ enum ReturnReason {
   OTHER
 }
 
-/// Master data con soft delete. Al agregar Product, Customer, Supplier, Employee, etc., incluir
-/// `deletedAt`, `@@unique([campo, deletedAt])` en campos únicos y registrar el
-/// modelo en `packages/database/src/soft-delete/config.ts`.
+/// Soft delete (`deletedAt`) solo en master data. Registrar cada modelo en
+/// `packages/database/src/soft-delete/config.ts`.
+/// Histórico/transaccional: sin `deletedAt`; usar status (CANCELLED, etc.).
+/// NcfSequence: desactivar con `isActive`, nunca soft delete.
 
 model Company {
   id   String  @id @default(cuid())
@@ -117,6 +118,7 @@ model Company {
   updatedAt DateTime @updatedAt
 
   @@unique([slug, deletedAt])
+  @@index([deletedAt])
 }
 
 model Branch {
@@ -170,6 +172,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@unique([email, deletedAt])
+  @@index([deletedAt])
 }
 
 model Role {
@@ -183,6 +186,7 @@ model Role {
   users UserCompany[]
 
   @@unique([name, deletedAt])
+  @@index([deletedAt])
 }
 
 model UserCompany {
@@ -392,6 +396,7 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([companyId, cedula, deletedAt])
   @@index([companyId])
   @@index([deletedAt])
 }
@@ -455,8 +460,7 @@ model NcfSequence {
   maxNumber      Int
   expirationDate DateTime
 
-  isActive  Boolean   @default(true)
-  deletedAt DateTime?
+  isActive  Boolean @default(true)
 
   company Company @relation(fields: [companyId], references: [id])
   sales   Sale[]
@@ -464,9 +468,8 @@ model NcfSequence {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([companyId, type, prefix, deletedAt])
+  @@unique([companyId, type, prefix])
   @@index([companyId])
-  @@index([deletedAt])
 }
 
 model Sale {

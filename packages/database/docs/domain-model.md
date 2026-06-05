@@ -12,7 +12,7 @@ Documentación de referencia para implementar servicios en `apps/api` y módulos
 - Una **empresa** tiene muchas **sucursales**; el **inventario** es por sucursal (`Inventory`: único por `branchId + productId`).
 - **Nunca** actualices `Inventory.quantity` sin crear un `InventoryMovement` en la misma transacción.
 - Operaciones críticas (venta, compra, transferencia, devolución, abonos) deben ir en **`prisma.$transaction`**.
-- Master data usa **soft delete** (ver [`src/soft-delete/config.ts`](../src/soft-delete/config.ts) y [`apps/api/docs/soft-delete.md`](../../../apps/api/docs/soft-delete.md)). No uses `delete()` en esos modelos.
+- Master data usa **soft delete** — ver [Política de Soft Delete](#política-de-soft-delete). No uses `delete()` en esos modelos.
 - `AuditLog` es append-only: registrar eventos importantes, sin borrado físico. Incluir `branchId` cuando la acción ocurra en una sucursal.
 
 ### Ejemplos de negocio (datos ficticios)
@@ -30,6 +30,68 @@ Documentación de referencia para implementar servicios en `apps/api` y módulos
 | Caja | `Caja Principal` en sucursal Santiago — turno con apertura RD$ 2,000 |
 | Descuento producto | "Verano 20%" vinculado directamente a Coca-Cola |
 | Descuento categoría | "Bebidas 10%" vinculado a categoría Bebidas |
+
+---
+
+## Política de Soft Delete
+
+Mecanismo estándar: `deletedAt DateTime?`. Configuración en [`src/soft-delete/config.ts`](../src/soft-delete/config.ts). Guía de implementación en [`apps/api/docs/soft-delete.md`](../../../apps/api/docs/soft-delete.md).
+
+**Regla general:** Master Data → soft delete. Histórico/transaccional → **nunca** soft delete.
+
+**Regla arquitectónica:** Los catálogos pueden eliminarse lógicamente. Registros históricos y financieros nunca deben eliminarse (ni física ni lógicamente). Si una transacción deja de ser válida, cambiar de estado (`CANCELLED`, `REVERSED`, etc.) pero permanecer almacenada.
+
+### Con soft delete (`deletedAt`)
+
+| Modelo | Motivo |
+|--------|--------|
+| `Company` | Empresa desactivada; mantener historial |
+| `Branch` | Sucursal cerrada |
+| `User` | Usuario deja de trabajar |
+| `Role` | Rol obsoleto |
+| `UserCompany` | Membresía desactivada |
+| `Employee` | Empleado desvinculado |
+| `Category` | Categoría obsoleta |
+| `Product` | Producto descontinuado |
+| `Supplier` | Proveedor inactivo |
+| `Customer` | Cliente inactivo |
+| `Discount` | Promoción retirada |
+| `CashRegister` | Caja fuera de servicio |
+
+### Sin soft delete (histórico)
+
+| Modelo | Alternativa |
+|--------|-------------|
+| `Inventory`, `InventoryMovement` | Fuente de verdad del stock |
+| `Sale`, `SaleItem`, `Payment` | `SaleStatus` (`PENDING`, `COMPLETED`, `CANCELLED`) |
+| `PurchaseOrder`, `PurchaseOrderItem` | `PurchaseOrderStatus` |
+| `AccountReceivable`, `ReceivablePayment` | `ReceivableStatus` |
+| `AccountPayable`, `PayablePayment` | `PayableStatus` |
+| `CashShift` | `closedAt` / arqueo histórico |
+| `Transfer`, `TransferItem` | `TransferStatus` |
+| `Return`, `ReturnItem` | Registro permanente |
+| `NcfSequence` | `isActive = false` si deja de usarse |
+| `AuditLog` | Append-only |
+| `RefreshToken` | `revoked` + `revokedAt` |
+
+### Uniques con soft delete
+
+Todo `@unique` en master data debe incluir `deletedAt`:
+
+```prisma
+// Incorrecto
+email String @unique
+
+// Correcto
+@@unique([email, deletedAt])
+@@unique([companyId, code, deletedAt])
+@@unique([companyId, cedula, deletedAt])
+@@unique([companyId, name, deletedAt])
+```
+
+### Índices
+
+Todo modelo con soft delete incluye `@@index([deletedAt])`.
 
 ---
 
@@ -301,7 +363,12 @@ Relación: `Sale` 1 ──── N `Payment`.
 
 ### `NcfSequence`
 
-Secuencia autorizada DGII por empresa.
+Secuencia autorizada DGII por empresa. **Sin soft delete** — preservar historial fiscal.
+
+| Campo | Uso |
+|-------|-----|
+| `isActive` | Desactivar secuencia obsoleta o agotada |
+| `currentNumber`, `maxNumber` | Control de consecutivos |
 
 | `NcfType` | Uso típico |
 |-----------|------------|
@@ -587,7 +654,7 @@ Todos los pasos de un flujo deben ejecutarse en **una transacción** salvo consu
 | Cliente | Solo personas físicas; `firstName` y `lastName` obligatorios |
 | Descuentos | Por línea: `max()` de porcentajes producto + categorías; snapshot en `SaleItem` |
 | Multi-tenant | Filtrar siempre por `companyId` derivado de `UserCompany` / sucursal |
-| Soft delete | `softDelete` en master data; nunca en ventas, movimientos, logs |
+| Soft delete | Solo master data (ver [Política de Soft Delete](#política-de-soft-delete)); transacciones usan status |
 | Decimales | Usar `Decimal` de Prisma; no `float` en JS para dinero |
 
 ---

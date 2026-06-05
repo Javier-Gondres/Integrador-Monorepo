@@ -6,20 +6,20 @@ Este proyecto usa soft delete para master data (administrativo), no para entidad
 
 Aplicar soft delete en modelos como:
 
-- `Company`
-- `Branch`
-- `User`
-- `Role` (si aplica)
-- `UserCompany`
-- `Product`
-- `Customer`
-- `Supplier`
+- `Company`, `Branch`
+- `User`, `Role`, `UserCompany`, `Employee`
+- `Category`, `Product`, `Supplier`, `Customer`
+- `Discount`, `CashRegister`
 
 No aplicar soft delete en entidades como:
 
-- `AuditLog`
-- `RefreshToken`
-- Facturas, ventas, pagos, movimientos de inventario
+- `AuditLog`, `RefreshToken`
+- `Inventory`, `InventoryMovement`
+- `Sale`, `SaleItem`, `Payment`
+- `PurchaseOrder`, `PurchaseOrderItem`
+- `AccountReceivable`, `ReceivablePayment`, `AccountPayable`, `PayablePayment`
+- `CashShift`, `Transfer`, `TransferItem`, `Return`, `ReturnItem`
+- `NcfSequence` (usar `isActive = false`)
 
 ## 1) Cambios en Prisma Schema
 
