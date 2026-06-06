@@ -12,13 +12,56 @@
  *   cajero@ejemplo.com / Password123    (CASHIER, vinculado a Employee)
  */
 import bcrypt from "bcrypt";
-import { prisma } from "../src/client.js";
-import { RoleName } from "../src/generated/prisma/client.js";
+
+import { type ExtendedPrismaClient, prisma } from "../src/client.js";
+import {
+  InventoryMovementType,
+  NcfType,
+  PayableStatus,
+  PaymentMethod,
+  PurchaseOrderStatus,
+  ReceivableStatus,
+  ReturnReason,
+  RoleName,
+  SaleStatus,
+  TransferStatus,
+} from "../src/generated/prisma/client.js";
+import { runWithSoftDeleteQueryMode } from "../src/soft-delete/context.js";
 
 const DEMO_COMPANY_SLUG = "empresa-demo";
 const DEFAULT_SEED_PASSWORD = "Password123";
 const ALL_ROLES = Object.values(RoleName);
 const PASSWORD_HASH_ROUNDS = 10;
+
+const SEED_IDS = {
+  customerJuan: "seed-customer-juan-perez",
+  customerMaria: "seed-customer-maria-rodriguez",
+  customerPedro: "seed-customer-pedro-gomez",
+  ncfB02: "seed-ncf-sequence-b02",
+  discountSummer: "seed-discount-verano",
+  discountBebidas: "seed-discount-bebidas",
+  discountExclusion: "seed-discount-exclusion-cola-2l",
+  cashRegisterCentro: "seed-cash-register-centro",
+  cashRegisterNorte: "seed-cash-register-norte",
+  cashShiftClosedCentro: "seed-cash-shift-closed-centro",
+  cashShiftOpenNorte: "seed-cash-shift-open-norte",
+  poDraft: "seed-po-draft",
+  poApproved: "seed-po-approved",
+  poReceived: "seed-po-received",
+  poReceivedCredit: "seed-po-received-credit",
+  saleCash: "seed-sale-cash-completed",
+  saleMixed: "seed-sale-mixed-completed",
+  saleCredit: "seed-sale-credit-completed",
+  salePending: "seed-sale-pending",
+  saleCancelled: "seed-sale-cancelled",
+  transferCompleted: "seed-transfer-completed",
+  returnFromSale: "seed-return-from-sale",
+  accountReceivable: "seed-account-receivable",
+  receivablePayment: "seed-receivable-payment",
+  accountPayable: "seed-account-payable",
+  payablePayment: "seed-payable-payment",
+  movementWaste: "seed-movement-waste-cola-2l",
+} as const;
 
 type SeedUser = {
   email: string;
@@ -115,6 +158,14 @@ const DEMO_PRODUCTS: DemoProduct[] = [
     supplierName: "Bebidas Caribeña",
   },
   {
+    code: "BEB-COLA-2L",
+    name: "Coca-Cola 2 L",
+    description: "Refresco de cola familiar",
+    price: 120.0,
+    categoryNames: ["Bebidas"],
+    supplierName: "Bebidas Caribeña",
+  },
+  {
     code: "SNK-LAYS-40",
     name: "Papas Lay's clásicas 40 g",
     description: "Papas fritas individuales",
@@ -190,6 +241,25 @@ const DEMO_EMPLOYEES: DemoEmployee[] = [
   },
 ];
 
+type ProductRef = { id: string; code: string; name: string; price: number };
+type BranchRef = { id: string; name: string };
+type EmployeeRef = { id: string; name: string; email: string };
+type CustomerRef = { id: string; name: string };
+
+type SeedContext = {
+  companyId: string;
+  branches: Map<string, BranchRef>;
+  products: ProductRef[];
+  productsByCode: Map<string, ProductRef>;
+  employees: EmployeeRef[];
+  ownerUserId: string;
+};
+
+type SeedInventoryClient = Pick<
+  ExtendedPrismaClient,
+  "inventory" | "inventoryMovement"
+>;
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
@@ -206,8 +276,90 @@ function demoEmployeeSeedEmail(employee: DemoEmployee): string {
   return `${base}@empleados.seed`;
 }
 
+function productByCode(ctx: SeedContext, code: string): ProductRef {
+  const product = ctx.productsByCode.get(code);
+  if (!product) {
+    throw new Error(`Producto seed "${code}" no encontrado`);
+  }
+  return product;
+}
+
+function branchByName(ctx: SeedContext, name: string): BranchRef {
+  const branch = ctx.branches.get(name);
+  if (!branch) {
+    throw new Error(`Sucursal seed "${name}" no encontrada`);
+  }
+  return branch;
+}
+
+function employeeByEmail(ctx: SeedContext, email: string): EmployeeRef {
+  const employee = ctx.employees.find(
+    (item) => normalizeEmail(item.email) === normalizeEmail(email),
+  );
+  if (!employee) {
+    throw new Error(`Empleado seed "${email}" no encontrado`);
+  }
+  return employee;
+}
+
+function daysFromNow(days: number): Date {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date;
+}
+
+function daysAgo(days: number): Date {
+  return daysFromNow(-days);
+}
+
 async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, PASSWORD_HASH_ROUNDS);
+}
+
+async function recordMovementIfAbsent(
+  tx: SeedInventoryClient,
+  movement: {
+    id: string;
+    branchId: string;
+    productId: string;
+    type: InventoryMovementType;
+    quantity: number;
+    notes?: string;
+    purchaseOrderId?: string;
+    saleId?: string;
+    returnId?: string;
+    transferId?: string;
+    performedByEmployeeId?: string;
+  },
+  stockDelta: number,
+): Promise<boolean> {
+  const exists = await tx.inventoryMovement.findUnique({
+    where: { id: movement.id },
+    select: { id: true },
+  });
+  if (exists) {
+    return false;
+  }
+
+  await tx.inventoryMovement.create({ data: movement });
+  await tx.inventory.upsert({
+    where: {
+      branchId_productId: {
+        branchId: movement.branchId,
+        productId: movement.productId,
+      },
+    },
+    create: {
+      branchId: movement.branchId,
+      productId: movement.productId,
+      quantity: Math.max(0, stockDelta),
+    },
+    update: {
+      quantity: { increment: stockDelta },
+    },
+  });
+
+  return true;
 }
 
 async function ensureRoles(): Promise<void> {
@@ -243,7 +395,7 @@ async function ensureDemoCompany() {
 }
 
 async function ensureDemoBranches(companyId: string) {
-  const byName = new Map<string, { id: string; name: string }>();
+  const byName = new Map<string, BranchRef>();
 
   for (const branch of DEMO_BRANCHES) {
     const existing = await prisma.branch.findFirst({
@@ -398,8 +550,8 @@ async function ensureDemoProducts(
   companyId: string,
   categoriesByName: Map<string, { id: string; name: string }>,
   suppliersByName: Map<string, { id: string; name: string }>,
-) {
-  const created: { code: string; id: string; name: string }[] = [];
+): Promise<ProductRef[]> {
+  const created: ProductRef[] = [];
 
   for (const item of DEMO_PRODUCTS) {
     const categoryIds = item.categoryNames.map((name) => {
@@ -416,7 +568,7 @@ async function ensureDemoProducts(
 
     const existing = await prisma.product.findFirst({
       where: { companyId, code: item.code, deletedAt: null },
-      select: { id: true, code: true, name: true },
+      select: { id: true, code: true, name: true, price: true },
     });
 
     if (existing) {
@@ -430,7 +582,12 @@ async function ensureDemoProducts(
           categories: { set: categoryIds.map((id) => ({ id })) },
         },
       });
-      created.push(existing);
+      created.push({
+        id: existing.id,
+        code: existing.code,
+        name: item.name,
+        price: item.price,
+      });
       continue;
     }
 
@@ -446,9 +603,14 @@ async function ensureDemoProducts(
           connect: categoryIds.map((id) => ({ id })),
         },
       },
-      select: { id: true, code: true, name: true },
+      select: { id: true, code: true, name: true, price: true },
     });
-    created.push(product);
+    created.push({
+      id: product.id,
+      code: product.code,
+      name: product.name,
+      price: Number(product.price),
+    });
   }
 
   return created;
@@ -456,10 +618,10 @@ async function ensureDemoProducts(
 
 async function ensureDemoEmployees(
   companyId: string,
-  branchesByName: Map<string, { id: string; name: string }>,
+  branchesByName: Map<string, BranchRef>,
   password: string,
-) {
-  const created: { id: string; name: string; email: string }[] = [];
+): Promise<EmployeeRef[]> {
+  const created: EmployeeRef[] = [];
 
   for (const employee of DEMO_EMPLOYEES) {
     const branch = branchesByName.get(employee.branchName);
@@ -484,11 +646,6 @@ async function ensureDemoEmployees(
       );
     }
 
-    const existing = await prisma.employee.findFirst({
-      where: { companyId, userId: user.id, deletedAt: null },
-      select: { id: true },
-    });
-
     const data = {
       companyId,
       branchId: branch.id,
@@ -497,25 +654,32 @@ async function ensureDemoEmployees(
       position: employee.position,
       salary: employee.salary,
       hireDate: employee.hireDate,
+      isActive: true,
+      deletedAt: null,
     };
 
-    if (existing) {
-      await prisma.employee.update({
-        where: { id: existing.id },
-        data,
-      });
-      created.push({
-        id: existing.id,
-        name: `${employee.firstName} ${employee.lastName}`,
-        email,
-      });
-      continue;
-    }
+    const record = await runWithSoftDeleteQueryMode(
+      "includeDeleted",
+      async () => {
+        const existing = await prisma.employee.findUnique({
+          where: { userId: user.id },
+          select: { id: true },
+        });
 
-    const record = await prisma.employee.create({
-      data,
-      select: { id: true },
-    });
+        if (existing) {
+          return prisma.employee.update({
+            where: { id: existing.id },
+            data,
+            select: { id: true },
+          });
+        }
+
+        return prisma.employee.create({
+          data,
+          select: { id: true },
+        });
+      },
+    );
 
     created.push({
       id: record.id,
@@ -525,6 +689,930 @@ async function ensureDemoEmployees(
   }
 
   return created;
+}
+
+async function ensureDemoCustomers(companyId: string): Promise<CustomerRef[]> {
+  const customers = [
+    {
+      id: SEED_IDS.customerJuan,
+      firstName: "Juan",
+      lastName: "Pérez",
+      cedula: "00112345678",
+      email: "juan.perez@ejemplo.com",
+      phone: "809-555-2001",
+      address: "Calle El Sol #12, Santo Domingo",
+    },
+    {
+      id: SEED_IDS.customerMaria,
+      firstName: "María",
+      lastName: "Rodríguez",
+      cedula: "40222334455",
+      email: "maria.rodriguez@ejemplo.com",
+      phone: "809-555-2002",
+      address: "Los Jardines, Santiago",
+    },
+    {
+      id: SEED_IDS.customerPedro,
+      firstName: "Pedro",
+      lastName: "Gómez",
+      cedula: "03198765432",
+      email: "pedro.gomez@ejemplo.com",
+      phone: "809-555-2003",
+    },
+  ] as const;
+
+  const created: CustomerRef[] = [];
+
+  for (const customer of customers) {
+    const record = await prisma.customer.upsert({
+      where: { id: customer.id },
+      create: { companyId, ...customer },
+      update: {
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        cedula: customer.cedula,
+        email: customer.email,
+        phone: customer.phone,
+        address: "address" in customer ? customer.address : undefined,
+      },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    created.push({
+      id: record.id,
+      name: `${record.firstName} ${record.lastName}`,
+    });
+  }
+
+  return created;
+}
+
+async function ensureDemoNcfSequence(companyId: string) {
+  return prisma.ncfSequence.upsert({
+    where: { id: SEED_IDS.ncfB02 },
+    create: {
+      id: SEED_IDS.ncfB02,
+      companyId,
+      type: NcfType.CONSUMIDOR_FINAL,
+      prefix: "B02",
+      currentNumber: 4,
+      maxNumber: 9_999_999,
+      expirationDate: daysFromNow(365),
+      isActive: true,
+    },
+    update: {
+      expirationDate: daysFromNow(365),
+      isActive: true,
+    },
+  });
+}
+
+async function ensureDemoDiscounts(
+  companyId: string,
+  categoriesByName: Map<string, { id: string; name: string }>,
+  productsByCode: Map<string, ProductRef>,
+) {
+  const cola355 = productsByCode.get("BEB-COLA-355");
+  const cola2l = productsByCode.get("BEB-COLA-2L");
+  const bebidas = categoriesByName.get("Bebidas");
+
+  if (!cola355 || !cola2l || !bebidas) {
+    throw new Error("Faltan productos o categorías para los descuentos seed.");
+  }
+
+  const summer = await prisma.discount.upsert({
+    where: { id: SEED_IDS.discountSummer },
+    create: {
+      id: SEED_IDS.discountSummer,
+      companyId,
+      name: "Verano 20%",
+      description: "Descuento directo en Coca-Cola 355 ml",
+      percentage: 20,
+      startDate: new Date("2025-01-01"),
+      endDate: new Date("2026-12-31"),
+      products: { connect: [{ id: cola355.id }] },
+    },
+    update: {
+      name: "Verano 20%",
+      percentage: 20,
+      products: { set: [{ id: cola355.id }] },
+      categories: { set: [] },
+      excludedProducts: { deleteMany: {} },
+    },
+  });
+
+  const bebidasDiscount = await prisma.discount.upsert({
+    where: { id: SEED_IDS.discountBebidas },
+    create: {
+      id: SEED_IDS.discountBebidas,
+      companyId,
+      name: "Bebidas 15%",
+      description: "Descuento en toda la categoría Bebidas",
+      percentage: 15,
+      startDate: new Date("2025-01-01"),
+      endDate: new Date("2026-12-31"),
+      categories: { connect: [{ id: bebidas.id }] },
+    },
+    update: {
+      name: "Bebidas 15%",
+      percentage: 15,
+      categories: { set: [{ id: bebidas.id }] },
+      products: { set: [] },
+    },
+  });
+
+  await prisma.discountExcludedProduct.upsert({
+    where: { id: SEED_IDS.discountExclusion },
+    create: {
+      id: SEED_IDS.discountExclusion,
+      discountId: bebidasDiscount.id,
+      productId: cola2l.id,
+    },
+    update: {
+      discountId: bebidasDiscount.id,
+      productId: cola2l.id,
+    },
+  });
+
+  return { summer, bebidas: bebidasDiscount };
+}
+
+async function ensureDemoCashRegisters(ctx: SeedContext) {
+  const centro = branchByName(ctx, "Sucursal Centro");
+  const norte = branchByName(ctx, "Sucursal Norte");
+
+  const registers = [
+    {
+      id: SEED_IDS.cashRegisterCentro,
+      branchId: centro.id,
+      name: "Caja Principal",
+    },
+    { id: SEED_IDS.cashRegisterNorte, branchId: norte.id, name: "Caja 1" },
+  ] as const;
+
+  const created: Awaited<ReturnType<typeof prisma.cashRegister.upsert>>[] = [];
+  for (const register of registers) {
+    const record = await prisma.cashRegister.upsert({
+      where: { id: register.id },
+      create: register,
+      update: { name: register.name, branchId: register.branchId },
+    });
+    created.push(record);
+  }
+
+  return created;
+}
+
+async function ensureDemoCashShifts(ctx: SeedContext) {
+  const centro = branchByName(ctx, "Sucursal Centro");
+  const norte = branchByName(ctx, "Sucursal Norte");
+  const cashierCentro = employeeByEmail(ctx, "maria.garcia@empleados.seed");
+  const cashierNorte = employeeByEmail(ctx, "cajero@ejemplo.com");
+
+  const closedShift = await prisma.cashShift.upsert({
+    where: { id: SEED_IDS.cashShiftClosedCentro },
+    create: {
+      id: SEED_IDS.cashShiftClosedCentro,
+      cashRegisterId: SEED_IDS.cashRegisterCentro,
+      cashierId: cashierCentro.id,
+      openingAmount: 2000,
+      closingAmount: 4850,
+      openedAt: daysAgo(2),
+      closedAt: daysAgo(2),
+    },
+    update: {
+      openingAmount: 2000,
+      closingAmount: 4850,
+      closedAt: daysAgo(2),
+    },
+  });
+
+  const openShift = await prisma.cashShift.upsert({
+    where: { id: SEED_IDS.cashShiftOpenNorte },
+    create: {
+      id: SEED_IDS.cashShiftOpenNorte,
+      cashRegisterId: SEED_IDS.cashRegisterNorte,
+      cashierId: cashierNorte.id,
+      openingAmount: 1500,
+      openedAt: daysAgo(0),
+      closedAt: null,
+    },
+    update: {
+      openingAmount: 1500,
+      closedAt: null,
+      closingAmount: null,
+    },
+  });
+
+  return { closedShift, openShift, centro, norte };
+}
+
+async function ensureDemoPurchaseOrders(
+  ctx: SeedContext,
+  suppliersByName: Map<string, { id: string; name: string }>,
+) {
+  const centro = branchByName(ctx, "Sucursal Centro");
+  const distribuidora = suppliersByName.get("Distribuidora Nacional SRL");
+  const bebidas = suppliersByName.get("Bebidas Caribeña");
+  const cibao = suppliersByName.get("Alimentos del Cibao SA");
+
+  if (!distribuidora || !bebidas || !cibao) {
+    throw new Error("Proveedores seed no encontrados.");
+  }
+
+  const cola355 = productByCode(ctx, "BEB-COLA-355");
+  const cola2l = productByCode(ctx, "BEB-COLA-2L");
+  const lays = productByCode(ctx, "SNK-LAYS-40");
+  const leche = productByCode(ctx, "LAC-LECHE-1L");
+  const combo = productByCode(ctx, "COMBO-SNACK-BEB");
+
+  await prisma.purchaseOrder.upsert({
+    where: { id: SEED_IDS.poDraft },
+    create: {
+      id: SEED_IDS.poDraft,
+      branchId: centro.id,
+      supplierId: cibao.id,
+      status: PurchaseOrderStatus.DRAFT,
+      notes: "Borrador pendiente de aprobación",
+      subtotal: 5500,
+      taxAmount: 0,
+      total: 5500,
+      items: {
+        create: [
+          {
+            id: "seed-po-draft-item-leche",
+            productId: leche.id,
+            quantity: 100,
+            unitCost: 55,
+            subtotal: 5500,
+          },
+        ],
+      },
+    },
+    update: {
+      status: PurchaseOrderStatus.DRAFT,
+      subtotal: 5500,
+      total: 5500,
+    },
+  });
+
+  await prisma.purchaseOrder.upsert({
+    where: { id: SEED_IDS.poApproved },
+    create: {
+      id: SEED_IDS.poApproved,
+      branchId: centro.id,
+      supplierId: distribuidora.id,
+      status: PurchaseOrderStatus.APPROVED,
+      notes: "Aprobada, pendiente de recepción",
+      subtotal: 6500,
+      taxAmount: 0,
+      total: 6500,
+      items: {
+        create: [
+          {
+            id: "seed-po-approved-item-lays",
+            productId: lays.id,
+            quantity: 100,
+            unitCost: 65,
+            subtotal: 6500,
+          },
+        ],
+      },
+    },
+    update: {
+      status: PurchaseOrderStatus.APPROVED,
+      subtotal: 6500,
+      total: 6500,
+    },
+  });
+
+  const receivedItems = [
+    {
+      id: "seed-po-received-item-cola",
+      productId: cola355.id,
+      quantity: 200,
+      unitCost: 30,
+      subtotal: 6000,
+    },
+    {
+      id: "seed-po-received-item-cola-2l",
+      productId: cola2l.id,
+      quantity: 60,
+      unitCost: 80,
+      subtotal: 4800,
+    },
+    {
+      id: "seed-po-received-item-lays",
+      productId: lays.id,
+      quantity: 150,
+      unitCost: 45,
+      subtotal: 6750,
+    },
+    {
+      id: "seed-po-received-item-leche",
+      productId: leche.id,
+      quantity: 100,
+      unitCost: 40,
+      subtotal: 4000,
+    },
+    {
+      id: "seed-po-received-item-combo",
+      productId: combo.id,
+      quantity: 80,
+      unitCost: 70,
+      subtotal: 5600,
+    },
+  ] as const;
+
+  const receivedTotal = receivedItems.reduce(
+    (sum, item) => sum + item.subtotal,
+    0,
+  );
+
+  await prisma.purchaseOrder.upsert({
+    where: { id: SEED_IDS.poReceived },
+    create: {
+      id: SEED_IDS.poReceived,
+      branchId: centro.id,
+      supplierId: bebidas.id,
+      status: PurchaseOrderStatus.RECEIVED,
+      notes: "Recepción inicial de inventario",
+      subtotal: receivedTotal,
+      taxAmount: 0,
+      total: receivedTotal,
+      items: { create: [...receivedItems] },
+    },
+    update: {
+      status: PurchaseOrderStatus.RECEIVED,
+      subtotal: receivedTotal,
+      total: receivedTotal,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    for (const item of receivedItems) {
+      await recordMovementIfAbsent(
+        tx,
+        {
+          id: item.id.replace("item", "movement"),
+          branchId: centro.id,
+          productId: item.productId,
+          type: InventoryMovementType.PURCHASE,
+          quantity: item.quantity,
+          notes: "Recepción seed-po-received",
+          purchaseOrderId: SEED_IDS.poReceived,
+        },
+        item.quantity,
+      );
+    }
+  });
+
+  const creditItems = [
+    {
+      id: "seed-po-credit-item-combo",
+      productId: combo.id,
+      quantity: 40,
+      unitCost: 70,
+      subtotal: 2800,
+    },
+  ] as const;
+
+  await prisma.purchaseOrder.upsert({
+    where: { id: SEED_IDS.poReceivedCredit },
+    create: {
+      id: SEED_IDS.poReceivedCredit,
+      branchId: centro.id,
+      supplierId: distribuidora.id,
+      status: PurchaseOrderStatus.RECEIVED,
+      notes: "Compra a crédito con abono parcial",
+      subtotal: 2800,
+      taxAmount: 0,
+      total: 2800,
+      items: { create: [...creditItems] },
+    },
+    update: {
+      status: PurchaseOrderStatus.RECEIVED,
+      subtotal: 2800,
+      total: 2800,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    for (const item of creditItems) {
+      await recordMovementIfAbsent(
+        tx,
+        {
+          id: "seed-movement-po-credit-combo",
+          branchId: centro.id,
+          productId: item.productId,
+          type: InventoryMovementType.PURCHASE,
+          quantity: item.quantity,
+          notes: "Recepción seed-po-received-credit",
+          purchaseOrderId: SEED_IDS.poReceivedCredit,
+        },
+        item.quantity,
+      );
+    }
+  });
+
+  await prisma.accountPayable.upsert({
+    where: { id: SEED_IDS.accountPayable },
+    create: {
+      id: SEED_IDS.accountPayable,
+      supplierId: distribuidora.id,
+      purchaseOrderId: SEED_IDS.poReceivedCredit,
+      originalAmount: 2800,
+      balance: 1800,
+      dueDate: daysFromNow(30),
+      status: PayableStatus.PARTIAL,
+    },
+    update: {
+      originalAmount: 2800,
+      balance: 1800,
+      status: PayableStatus.PARTIAL,
+    },
+  });
+
+  await prisma.payablePayment.upsert({
+    where: { id: SEED_IDS.payablePayment },
+    create: {
+      id: SEED_IDS.payablePayment,
+      accountPayableId: SEED_IDS.accountPayable,
+      amount: 1000,
+      method: PaymentMethod.TRANSFER,
+      notes: "Abono inicial a proveedor",
+    },
+    update: {
+      amount: 1000,
+      method: PaymentMethod.TRANSFER,
+    },
+  });
+
+  const inventoryAssistant = employeeByEmail(ctx, "ana.lopez@empleados.seed");
+
+  await prisma.$transaction(async (tx) => {
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: SEED_IDS.movementWaste,
+        branchId: centro.id,
+        productId: cola2l.id,
+        type: InventoryMovementType.WASTE,
+        quantity: 2,
+        notes: "Merma por producto dañado",
+        performedByEmployeeId: inventoryAssistant.id,
+      },
+      -2,
+    );
+  });
+}
+
+async function ensureDemoSalesAndFinance(
+  ctx: SeedContext,
+  customers: CustomerRef[],
+) {
+  const norte = branchByName(ctx, "Sucursal Norte");
+  const cashier = employeeByEmail(ctx, "cajero@ejemplo.com");
+  const openShiftId = SEED_IDS.cashShiftOpenNorte;
+  const ncfSequenceId = SEED_IDS.ncfB02;
+
+  const cola355 = productByCode(ctx, "BEB-COLA-355");
+  const lays = productByCode(ctx, "SNK-LAYS-40");
+  const leche = productByCode(ctx, "LAC-LECHE-1L");
+  const combo = productByCode(ctx, "COMBO-SNACK-BEB");
+
+  const juan = customers.find((c) => c.id === SEED_IDS.customerJuan);
+  if (!juan) {
+    throw new Error("Cliente Juan no encontrado.");
+  }
+
+  const cashColaQty = 3;
+  const cashColaUnit = cola355.price;
+  const cashColaDiscountPct = 20;
+  const cashColaDiscountAmt =
+    (cashColaUnit * cashColaQty * cashColaDiscountPct) / 100;
+  const cashColaSubtotal = cashColaUnit * cashColaQty - cashColaDiscountAmt;
+  const cashLaysSubtotal = lays.price;
+  const cashSaleSubtotal = cashColaSubtotal + cashLaysSubtotal;
+  const cashSaleTotal = cashSaleSubtotal;
+
+  await prisma.sale.upsert({
+    where: { id: SEED_IDS.saleCash },
+    create: {
+      id: SEED_IDS.saleCash,
+      branchId: norte.id,
+      cashierId: cashier.id,
+      cashShiftId: openShiftId,
+      ncfSequenceId,
+      ncf: "B0200000001",
+      ncfType: NcfType.CONSUMIDOR_FINAL,
+      subtotal: cashSaleSubtotal,
+      taxAmount: 0,
+      total: cashSaleTotal,
+      status: SaleStatus.COMPLETED,
+      items: {
+        create: [
+          {
+            id: "seed-sale-cash-item-cola",
+            productId: cola355.id,
+            quantity: cashColaQty,
+            unitPrice: cashColaUnit,
+            discountPercentage: cashColaDiscountPct,
+            discountAmount: cashColaDiscountAmt,
+            subtotal: cashColaSubtotal,
+          },
+          {
+            id: "seed-sale-cash-item-lays",
+            productId: lays.id,
+            quantity: 1,
+            unitPrice: lays.price,
+            discountPercentage: 0,
+            discountAmount: 0,
+            subtotal: cashLaysSubtotal,
+          },
+        ],
+      },
+      payments: {
+        create: [
+          {
+            id: "seed-sale-cash-payment",
+            method: PaymentMethod.CASH,
+            amount: cashSaleTotal,
+          },
+        ],
+      },
+    },
+    update: {
+      status: SaleStatus.COMPLETED,
+      subtotal: cashSaleSubtotal,
+      total: cashSaleTotal,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: "seed-movement-sale-cash-cola",
+        branchId: norte.id,
+        productId: cola355.id,
+        type: InventoryMovementType.SALE,
+        quantity: cashColaQty,
+        saleId: SEED_IDS.saleCash,
+        performedByEmployeeId: cashier.id,
+      },
+      -cashColaQty,
+    );
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: "seed-movement-sale-cash-lays",
+        branchId: norte.id,
+        productId: lays.id,
+        type: InventoryMovementType.SALE,
+        quantity: 1,
+        saleId: SEED_IDS.saleCash,
+        performedByEmployeeId: cashier.id,
+      },
+      -1,
+    );
+  });
+
+  const mixedQty = 2;
+  const mixedSubtotal = leche.price * mixedQty;
+  const mixedCash = 60;
+  const mixedCard = mixedSubtotal - mixedCash;
+
+  await prisma.sale.upsert({
+    where: { id: SEED_IDS.saleMixed },
+    create: {
+      id: SEED_IDS.saleMixed,
+      branchId: norte.id,
+      cashierId: cashier.id,
+      cashShiftId: openShiftId,
+      ncfSequenceId,
+      ncf: "B0200000002",
+      ncfType: NcfType.CONSUMIDOR_FINAL,
+      subtotal: mixedSubtotal,
+      taxAmount: 0,
+      total: mixedSubtotal,
+      status: SaleStatus.COMPLETED,
+      items: {
+        create: [
+          {
+            id: "seed-sale-mixed-item-leche",
+            productId: leche.id,
+            quantity: mixedQty,
+            unitPrice: leche.price,
+            discountPercentage: 0,
+            discountAmount: 0,
+            subtotal: mixedSubtotal,
+          },
+        ],
+      },
+      payments: {
+        create: [
+          {
+            id: "seed-sale-mixed-payment-cash",
+            method: PaymentMethod.CASH,
+            amount: mixedCash,
+          },
+          {
+            id: "seed-sale-mixed-payment-card",
+            method: PaymentMethod.CARD,
+            amount: mixedCard,
+          },
+        ],
+      },
+    },
+    update: {
+      status: SaleStatus.COMPLETED,
+      subtotal: mixedSubtotal,
+      total: mixedSubtotal,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: "seed-movement-sale-mixed-leche",
+        branchId: norte.id,
+        productId: leche.id,
+        type: InventoryMovementType.SALE,
+        quantity: mixedQty,
+        saleId: SEED_IDS.saleMixed,
+        performedByEmployeeId: cashier.id,
+      },
+      -mixedQty,
+    );
+  });
+
+  const creditQty = 5;
+  const creditSubtotal = combo.price * creditQty;
+  const creditPayment = 2000;
+  const creditBalance = creditSubtotal - creditPayment;
+
+  await prisma.sale.upsert({
+    where: { id: SEED_IDS.saleCredit },
+    create: {
+      id: SEED_IDS.saleCredit,
+      branchId: norte.id,
+      customerId: juan.id,
+      cashierId: cashier.id,
+      cashShiftId: openShiftId,
+      ncfSequenceId,
+      ncf: "B0200000003",
+      ncfType: NcfType.CONSUMIDOR_FINAL,
+      subtotal: creditSubtotal,
+      taxAmount: 0,
+      total: creditSubtotal,
+      status: SaleStatus.COMPLETED,
+      items: {
+        create: [
+          {
+            id: "seed-sale-credit-item-combo",
+            productId: combo.id,
+            quantity: creditQty,
+            unitPrice: combo.price,
+            discountPercentage: 0,
+            discountAmount: 0,
+            subtotal: creditSubtotal,
+          },
+        ],
+      },
+      payments: {
+        create: [
+          {
+            id: "seed-sale-credit-payment",
+            method: PaymentMethod.CREDIT,
+            amount: creditSubtotal,
+          },
+        ],
+      },
+    },
+    update: {
+      status: SaleStatus.COMPLETED,
+      subtotal: creditSubtotal,
+      total: creditSubtotal,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: "seed-movement-sale-credit-combo",
+        branchId: norte.id,
+        productId: combo.id,
+        type: InventoryMovementType.SALE,
+        quantity: creditQty,
+        saleId: SEED_IDS.saleCredit,
+        performedByEmployeeId: cashier.id,
+      },
+      -creditQty,
+    );
+  });
+
+  await prisma.accountReceivable.upsert({
+    where: { id: SEED_IDS.accountReceivable },
+    create: {
+      id: SEED_IDS.accountReceivable,
+      customerId: juan.id,
+      saleId: SEED_IDS.saleCredit,
+      originalAmount: creditSubtotal,
+      balance: creditBalance,
+      dueDate: daysFromNow(30),
+      status: ReceivableStatus.PARTIAL,
+    },
+    update: {
+      originalAmount: creditSubtotal,
+      balance: creditBalance,
+      status: ReceivableStatus.PARTIAL,
+    },
+  });
+
+  await prisma.receivablePayment.upsert({
+    where: { id: SEED_IDS.receivablePayment },
+    create: {
+      id: SEED_IDS.receivablePayment,
+      accountReceivableId: SEED_IDS.accountReceivable,
+      amount: creditPayment,
+      method: PaymentMethod.CASH,
+      notes: "Abono parcial en caja",
+    },
+    update: {
+      amount: creditPayment,
+      method: PaymentMethod.CASH,
+    },
+  });
+
+  await prisma.sale.upsert({
+    where: { id: SEED_IDS.salePending },
+    create: {
+      id: SEED_IDS.salePending,
+      branchId: norte.id,
+      cashierId: cashier.id,
+      subtotal: cola355.price,
+      taxAmount: 0,
+      total: cola355.price,
+      status: SaleStatus.PENDING,
+      items: {
+        create: [
+          {
+            id: "seed-sale-pending-item-cola",
+            productId: cola355.id,
+            quantity: 1,
+            unitPrice: cola355.price,
+            subtotal: cola355.price,
+          },
+        ],
+      },
+    },
+    update: {
+      status: SaleStatus.PENDING,
+      total: cola355.price,
+    },
+  });
+
+  await prisma.sale.upsert({
+    where: { id: SEED_IDS.saleCancelled },
+    create: {
+      id: SEED_IDS.saleCancelled,
+      branchId: norte.id,
+      cashierId: cashier.id,
+      subtotal: lays.price * 2,
+      taxAmount: 0,
+      total: lays.price * 2,
+      status: SaleStatus.CANCELLED,
+      items: {
+        create: [
+          {
+            id: "seed-sale-cancelled-item-lays",
+            productId: lays.id,
+            quantity: 2,
+            unitPrice: lays.price,
+            subtotal: lays.price * 2,
+          },
+        ],
+      },
+    },
+    update: {
+      status: SaleStatus.CANCELLED,
+    },
+  });
+}
+
+async function ensureDemoTransfer(ctx: SeedContext) {
+  const centro = branchByName(ctx, "Sucursal Centro");
+  const norte = branchByName(ctx, "Sucursal Norte");
+  const cola355 = productByCode(ctx, "BEB-COLA-355");
+  const inventoryAssistant = employeeByEmail(ctx, "ana.lopez@empleados.seed");
+  const transferQty = 20;
+
+  await prisma.transfer.upsert({
+    where: { id: SEED_IDS.transferCompleted },
+    create: {
+      id: SEED_IDS.transferCompleted,
+      fromBranchId: centro.id,
+      toBranchId: norte.id,
+      status: TransferStatus.COMPLETED,
+      notes: "Traslado inicial de Coca-Cola a sucursal Norte",
+      items: {
+        create: [
+          {
+            id: "seed-transfer-item-cola",
+            productId: cola355.id,
+            quantity: transferQty,
+          },
+        ],
+      },
+    },
+    update: {
+      status: TransferStatus.COMPLETED,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: "seed-movement-transfer-out-cola",
+        branchId: centro.id,
+        productId: cola355.id,
+        type: InventoryMovementType.TRANSFER_OUT,
+        quantity: transferQty,
+        transferId: SEED_IDS.transferCompleted,
+        performedByEmployeeId: inventoryAssistant.id,
+      },
+      -transferQty,
+    );
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: "seed-movement-transfer-in-cola",
+        branchId: norte.id,
+        productId: cola355.id,
+        type: InventoryMovementType.TRANSFER_IN,
+        quantity: transferQty,
+        transferId: SEED_IDS.transferCompleted,
+        performedByEmployeeId: inventoryAssistant.id,
+      },
+      transferQty,
+    );
+  });
+}
+
+async function ensureDemoReturn(ctx: SeedContext) {
+  const norte = branchByName(ctx, "Sucursal Norte");
+  const cashier = employeeByEmail(ctx, "cajero@ejemplo.com");
+  const cola355 = productByCode(ctx, "BEB-COLA-355");
+  const returnQty = 1;
+  const returnSubtotal = cola355.price;
+
+  await prisma.return.upsert({
+    where: { id: SEED_IDS.returnFromSale },
+    create: {
+      id: SEED_IDS.returnFromSale,
+      branchId: norte.id,
+      saleId: SEED_IDS.saleCash,
+      employeeId: cashier.id,
+      reason: ReturnReason.DEFECTIVE,
+      notes: "Lata abollada — devolución parcial de venta en efectivo",
+      subtotal: returnSubtotal,
+      total: returnSubtotal,
+      items: {
+        create: [
+          {
+            id: "seed-return-item-cola",
+            productId: cola355.id,
+            quantity: returnQty,
+            subtotal: returnSubtotal,
+          },
+        ],
+      },
+    },
+    update: {
+      reason: ReturnReason.DEFECTIVE,
+      subtotal: returnSubtotal,
+      total: returnSubtotal,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: "seed-movement-return-cola",
+        branchId: norte.id,
+        productId: cola355.id,
+        type: InventoryMovementType.RETURN,
+        quantity: returnQty,
+        returnId: SEED_IDS.returnFromSale,
+        performedByEmployeeId: cashier.id,
+      },
+      returnQty,
+    );
+  });
 }
 
 async function ensureDemoRefreshTokens(ownerUserId: string) {
@@ -577,39 +1665,63 @@ async function ensureDemoRefreshTokens(ownerUserId: string) {
   return 2;
 }
 
-async function ensureDemoAuditLogs(
-  companyId: string,
-  ownerUserId: string,
-  productId: string,
-  employeeId: string,
-) {
+async function ensureDemoAuditLogs(ctx: SeedContext) {
+  const centro = branchByName(ctx, "Sucursal Centro");
+  const norte = branchByName(ctx, "Sucursal Norte");
+  const cola355 = productByCode(ctx, "BEB-COLA-355");
+
   const entries = [
     {
       id: "seed-audit-company-created",
       action: "COMPANY_CREATED",
       entity: "Company",
-      entityId: companyId,
+      entityId: ctx.companyId,
       metadata: { source: "seed", slug: DEMO_COMPANY_SLUG },
     },
     {
       id: "seed-audit-product-created",
       action: "PRODUCT_CREATED",
       entity: "Product",
-      entityId: productId,
-      metadata: { source: "seed", code: DEMO_PRODUCTS[0]?.code },
+      entityId: cola355.id,
+      metadata: { source: "seed", code: cola355.code },
     },
     {
-      id: "seed-audit-employee-created",
-      action: "EMPLOYEE_CREATED",
-      entity: "Employee",
-      entityId: employeeId,
-      metadata: { source: "seed", position: DEMO_EMPLOYEES[0]?.position },
+      id: "seed-audit-purchase-received",
+      action: "PURCHASE_RECEIVED",
+      entity: "PurchaseOrder",
+      entityId: SEED_IDS.poReceived,
+      branchId: centro.id,
+      metadata: { source: "seed", status: "RECEIVED" },
+    },
+    {
+      id: "seed-audit-sale-completed",
+      action: "SALE_COMPLETED",
+      entity: "Sale",
+      entityId: SEED_IDS.saleCash,
+      branchId: norte.id,
+      metadata: { source: "seed", ncf: "B0200000001" },
+    },
+    {
+      id: "seed-audit-transfer-completed",
+      action: "TRANSFER_COMPLETED",
+      entity: "Transfer",
+      entityId: SEED_IDS.transferCompleted,
+      branchId: centro.id,
+      metadata: { source: "seed", quantity: 20 },
+    },
+    {
+      id: "seed-audit-return-created",
+      action: "RETURN_CREATED",
+      entity: "Return",
+      entityId: SEED_IDS.returnFromSale,
+      branchId: norte.id,
+      metadata: { source: "seed", reason: "DEFECTIVE" },
     },
     {
       id: "seed-audit-user-login",
       action: "USER_LOGIN",
       entity: "User",
-      entityId: ownerUserId,
+      entityId: ctx.ownerUserId,
       metadata: { source: "seed", ip: "127.0.0.1" },
     },
   ] as const;
@@ -619,13 +1731,14 @@ async function ensureDemoAuditLogs(
       where: { id: entry.id },
       create: {
         ...entry,
-        companyId,
-        userId: ownerUserId,
+        companyId: ctx.companyId,
+        userId: ctx.ownerUserId,
       },
       update: {
         action: entry.action,
         entity: entry.entity,
         entityId: entry.entityId,
+        branchId: "branchId" in entry ? entry.branchId : undefined,
         metadata: entry.metadata,
       },
     });
@@ -670,42 +1783,73 @@ async function main(): Promise<void> {
   const suppliers = await ensureDemoSuppliers(company.id);
   const categories = await ensureDemoCategories(company.id);
   const products = await ensureDemoProducts(company.id, categories, suppliers);
-  const employees = await ensureDemoEmployees(company.id, branches, password);
-  const refreshTokens = await ensureDemoRefreshTokens(owner.id);
-  const auditLogs = await ensureDemoAuditLogs(
-    company.id,
-    owner.id,
-    products[0]?.id ?? "",
-    employees[0]?.id ?? "",
+  const productsByCode = new Map(
+    products.map((product) => [product.code, product]),
   );
+  const employees = await ensureDemoEmployees(company.id, branches, password);
+
+  const ctx: SeedContext = {
+    companyId: company.id,
+    branches,
+    products,
+    productsByCode,
+    employees,
+    ownerUserId: owner.id,
+  };
+
+  const customers = await ensureDemoCustomers(company.id);
+  await ensureDemoNcfSequence(company.id);
+  await ensureDemoDiscounts(company.id, categories, productsByCode);
+  await ensureDemoCashRegisters(ctx);
+  await ensureDemoCashShifts(ctx);
+
+  // Transferencia antes de ventas para stock en Norte
+  await ensureDemoTransfer(ctx);
+  await ensureDemoPurchaseOrders(ctx, suppliers);
+  await ensureDemoSalesAndFinance(ctx, customers);
+  await ensureDemoReturn(ctx);
+
+  const refreshTokens = await ensureDemoRefreshTokens(owner.id);
+  const auditLogs = await ensureDemoAuditLogs(ctx);
+
+  const counts = await prisma.$transaction([
+    prisma.customer.count({ where: { companyId: company.id } }),
+    prisma.ncfSequence.count({ where: { companyId: company.id } }),
+    prisma.discount.count({ where: { companyId: company.id } }),
+    prisma.discountExcludedProduct.count(),
+    prisma.inventory.count(),
+    prisma.inventoryMovement.count(),
+    prisma.cashRegister.count(),
+    prisma.cashShift.count(),
+    prisma.purchaseOrder.count(),
+    prisma.sale.count(),
+    prisma.payment.count(),
+    prisma.accountReceivable.count(),
+    prisma.receivablePayment.count(),
+    prisma.accountPayable.count(),
+    prisma.payablePayment.count(),
+    prisma.transfer.count(),
+    prisma.return.count(),
+  ]);
 
   console.log("Seed completado:");
   console.log(`  empresa: ${company.name} (${company.slug})`);
   console.log(`  sucursales: ${branches.size}`);
-  for (const branch of branches.values()) {
-    console.log(`    - ${branch.name} (${branch.id})`);
-  }
   console.log(`  usuarios: ${users.length} (password: ${password})`);
-  for (const user of users) {
-    const membership = DEMO_USERS.find((item) => item.email === user.email);
-    console.log(`    - ${user.email} [${membership?.role ?? "?"}]`);
-  }
   console.log(`  proveedores: ${suppliers.size}`);
-  for (const supplier of suppliers.values()) {
-    console.log(`    - ${supplier.name} (${supplier.id})`);
-  }
   console.log(`  categorías: ${categories.size}`);
-  for (const category of categories.values()) {
-    console.log(`    - ${category.name} (${category.id})`);
-  }
   console.log(`  productos: ${products.length}`);
-  for (const product of products) {
-    console.log(`    - ${product.code} — ${product.name} (${product.id})`);
-  }
   console.log(`  empleados: ${employees.length}`);
-  for (const employee of employees) {
-    console.log(`    - ${employee.name} <${employee.email}> (${employee.id})`);
-  }
+  console.log(`  clientes: ${counts[0]}`);
+  console.log(`  secuencias NCF: ${counts[1]}`);
+  console.log(`  descuentos: ${counts[2]} (exclusiones: ${counts[3]})`);
+  console.log(`  inventario: ${counts[4]} registros, ${counts[5]} movimientos`);
+  console.log(`  cajas: ${counts[6]}, turnos: ${counts[7]}`);
+  console.log(`  órdenes de compra: ${counts[8]}`);
+  console.log(`  ventas: ${counts[9]}, pagos: ${counts[10]}`);
+  console.log(`  CxC: ${counts[11]} (abonos: ${counts[12]})`);
+  console.log(`  CxP: ${counts[13]} (pagos: ${counts[14]})`);
+  console.log(`  transferencias: ${counts[15]}, devoluciones: ${counts[16]}`);
   console.log(`  refresh tokens: ${refreshTokens}`);
   console.log(`  audit logs: ${auditLogs}`);
   console.log("Vuelve a hacer login para refrescar el contexto JWT.");
