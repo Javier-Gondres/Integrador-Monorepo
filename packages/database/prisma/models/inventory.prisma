@@ -1,0 +1,58 @@
+enum InventoryMovementType {
+  PURCHASE
+  SALE
+  RETURN
+  TRANSFER_IN
+  TRANSFER_OUT
+  ADJUSTMENT
+  WASTE
+}
+
+model Inventory {
+  id String @id @default(cuid())
+
+  branchId  String
+  productId String
+  quantity  Decimal @default(0) @db.Decimal(12, 3)
+
+  branch  Branch  @relation(fields: [branchId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([branchId, productId])
+  @@index([productId])
+}
+
+model InventoryMovement {
+  id String @id @default(cuid())
+
+  branchId  String
+  productId String
+  type      InventoryMovementType
+  quantity  Decimal               @db.Decimal(12, 3)
+  notes     String?
+
+  saleId                String?
+  purchaseOrderId       String?
+  returnId              String?
+  transferId            String?
+  performedByEmployeeId String?
+
+  branch      Branch    @relation(fields: [branchId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+  performedBy Employee? @relation(fields: [performedByEmployeeId], references: [id])
+
+  sale          Sale?          @relation(fields: [saleId], references: [id])
+  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  return        Return?        @relation(fields: [returnId], references: [id])
+  transfer      Transfer?      @relation(fields: [transferId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([branchId, productId])
+  @@index([performedByEmployeeId])
+  @@index([type])
+  @@index([createdAt])
+}

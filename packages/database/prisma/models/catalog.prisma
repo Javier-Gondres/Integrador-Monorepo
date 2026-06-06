@@ -1,0 +1,146 @@
+enum NcfType {
+  CONSUMIDOR_FINAL
+  CREDITO_FISCAL
+  GUBERNAMENTAL
+  REGIMEN_ESPECIAL
+  EXPORTACION
+}
+
+model Category {
+  id String @id @default(cuid())
+
+  companyId   String
+  name        String
+  description String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company   Company    @relation(fields: [companyId], references: [id])
+  products  Product[]
+  discounts Discount[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+model Product {
+  id String @id @default(cuid())
+
+  companyId  String
+  supplierId String?
+
+  name        String
+  code        String
+  description String?
+  imageUrl    String?
+  price       Decimal @db.Decimal(10, 2)
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company    Company    @relation(fields: [companyId], references: [id])
+  supplier   Supplier?  @relation(fields: [supplierId], references: [id])
+  categories Category[]
+
+  inventories        Inventory[]
+  inventoryMovements InventoryMovement[]
+  saleItems          SaleItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  returnItems        ReturnItem[]
+  transferItems      TransferItem[]
+  discounts          Discount[]
+  discountExclusions DiscountExcludedProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, code, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+model Supplier {
+  id String @id @default(cuid())
+
+  companyId String
+  name      String
+
+  contactName String?
+  email       String?
+  phone       String?
+  rnc         String?
+  address     String?
+  notes       String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  products        Product[]
+  purchaseOrders  PurchaseOrder[]
+  accountsPayable AccountPayable[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+model Customer {
+  id String @id @default(cuid())
+
+  companyId String
+
+  firstName String
+  lastName  String
+
+  email   String?
+  phone   String?
+  address String?
+  cedula  String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  sales              Sale[]
+  accountsReceivable AccountReceivable[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, cedula, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+model NcfSequence {
+  id String @id @default(cuid())
+
+  companyId      String
+  type           NcfType
+  prefix         String
+  currentNumber  Int
+  maxNumber      Int
+  expirationDate DateTime
+
+  isActive Boolean @default(true)
+
+  company Company @relation(fields: [companyId], references: [id])
+  sales   Sale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, type, prefix])
+  @@index([companyId])
+}

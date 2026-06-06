@@ -1,0 +1,90 @@
+enum RoleName {
+  OWNER
+  ADMIN
+  MANAGER
+  CASHIER
+  INVENTORY_ASSISTANT
+}
+
+model User {
+  id String @id @default(cuid())
+
+  email        String
+  passwordHash String
+  firstName    String
+  lastName     String
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  lastLoginAt DateTime?
+
+  memberships   UserCompany[]
+  employee      Employee?
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email, deletedAt])
+  @@index([deletedAt])
+}
+
+model Role {
+  id String @id @default(cuid())
+
+  name        RoleName
+  description String?
+
+  deletedAt DateTime?
+
+  users UserCompany[]
+
+  @@unique([name, deletedAt])
+  @@index([deletedAt])
+}
+
+model UserCompany {
+  id String @id @default(cuid())
+
+  userId          String
+  companyId       String
+  roleId          String
+  defaultBranchId String?
+
+  deletedAt DateTime?
+
+  user          User    @relation(fields: [userId], references: [id])
+  company       Company @relation(fields: [companyId], references: [id])
+  role          Role    @relation(fields: [roleId], references: [id])
+  defaultBranch Branch? @relation(fields: [defaultBranchId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, deletedAt])
+  @@index([companyId])
+  @@index([defaultBranchId])
+  @@index([deletedAt])
+}
+
+model RefreshToken {
+  id String @id @default(cuid())
+
+  userId            String
+  hashedToken       String
+  expiresAt         DateTime
+  revoked           Boolean   @default(false)
+  revokedAt         DateTime?
+  createdByIp       String?
+  revokedByIp       String?
+  userAgent         String?
+  replacedByTokenId String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}

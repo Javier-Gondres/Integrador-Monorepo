@@ -1,6 +1,6 @@
 # Modelo de dominio ERP multiempresa
 
-Documentación de referencia para implementar servicios en `apps/api` y módulos en `apps/web`. El schema fuente está en [`prisma/schema.prisma`](../prisma/schema.prisma).
+Documentación de referencia para implementar servicios en `apps/api` y módulos en `apps/web`. El schema fuente está en [`prisma/schema.prisma`](../prisma/schema.prisma) y [`prisma/models/`](../prisma/models/) (multi-archivo por dominio).
 
 **Mercado objetivo:** República Dominicana (RNC, NCF DGII, RD$).
 
@@ -8,8 +8,8 @@ Documentación de referencia para implementar servicios en `apps/api` y módulos
 
 ## Contexto para Cursor
 
-- Cada **usuario** pertenece a **una sola empresa** (`UserCompany` con `@@unique([userId, deletedAt])`).
-- Una **empresa** tiene muchas **sucursales**; el **inventario** es por sucursal (`Inventory`: único por `branchId + productId`).
+- Cada **usuario** pertenece a **una sola empresa** activa (`UserCompany` con `@@unique([userId, deletedAt])`). La entidad `UserCompany` existe por diseño — ver [UserCompany por diseño](#usercompany-por-diseño).
+- Una **empresa** tiene muchas **sucursales**; el **inventario** es por sucursal (`Inventory`: único por `branchId + productId`). `Inventory` es proyección; `InventoryMovement` es la fuente de verdad — ver [Inventario: proyección vs. historial](#inventario-proyección-vs-historial).
 - **Nunca** actualices `Inventory.quantity` sin crear un `InventoryMovement` en la misma transacción.
 - Operaciones críticas (venta, compra, transferencia, devolución, abonos) deben ir en **`prisma.$transaction`**.
 - Master data usa **soft delete** — ver [Política de Soft Delete](#política-de-soft-delete). No uses `delete()` en esos modelos.
@@ -30,6 +30,82 @@ Documentación de referencia para implementar servicios en `apps/api` y módulos
 | Caja | `Caja Principal` en sucursal Santiago — turno con apertura RD$ 2,000 |
 | Descuento producto | "Verano 20%" vinculado directamente a Coca-Cola |
 | Descuento categoría | "Bebidas 20%" en categoría Bebidas, excluyendo Coca-Cola 2L y Pepsi 2L |
+
+---
+
+## Reglas críticas de negocio
+
+Decisiones que **no se deducen** solo leyendo los modelos Prisma. Obligatorias para cualquier servicio en `apps/api`.
+
+### UserCompany por diseño
+
+Aunque actualmente un usuario solo puede pertenecer a **una** empresa activa, se mantiene la entidad `UserCompany` para:
+
+- Separar **identidad** (`User`) de **membresía empresarial** (`Company` + `Role`).
+- Facilitar auditoría histórica de membresías desactivadas (soft delete en `UserCompany`).
+- Permitir extensiones futuras (multi-empresa, cambio de empresa, roles distintos por contexto) sin migraciones disruptivas.
+
+`User` responde *quién eres*; `UserCompany` responde *en qué empresa operas y con qué rol*. No colapsar ambos en un solo modelo.
+
+### Inventario: proyección vs. historial
+
+- **`Inventory`** es una **proyección** del stock actual por sucursal (`branchId + productId`).
+- **`InventoryMovement`** es la **fuente de verdad histórica** e inmutable de cada cambio.
+
+Toda modificación de inventario debe, en la **misma transacción**:
+
+1. Crear un `InventoryMovement`.
+2. Actualizar `Inventory`.
+
+**Prohibido:** `prisma.inventory.update(...)` sin registrar el movimiento correspondiente. Ese patrón rompe trazabilidad y conciliación de stock.
+
+### Descuentos
+
+- Un descuento puede aplicarse a **productos específicos** (`Discount` ↔ `Product`).
+- Un descuento puede aplicarse a **categorías completas** (`Discount` ↔ `Category`).
+- Un descuento puede **excluir productos** mediante `DiscountExcludedProduct`.
+- Si un producto califica por producto **y** por categoría, se aplica **únicamente el porcentaje más alto** (`max()`). Nunca sumar ni acumular descuentos.
+- Los descuentos efectivos se **persisten en `SaleItem`** (`discountPercentage`, `discountAmount`) para preservar el histórico. Las ventas completadas no recalculan promociones vigentes hoy.
+
+### Cuentas por cobrar y por pagar
+
+**Ventas a crédito:**
+
+```text
+Sale → AccountReceivable → ReceivablePayment[]
+```
+
+**Compras a crédito:**
+
+```text
+PurchaseOrder → AccountPayable → PayablePayment[]
+```
+
+**Regla de balance:** los saldos **nunca** se calculan dinámicamente sumando pagos en cada consulta. El campo `balance` se actualiza dentro de la **misma transacción** que registra cada abono (`ReceivablePayment` / `PayablePayment`). Esto garantiza rendimiento con miles de pagos históricos.
+
+### NCF (comprobantes fiscales DGII)
+
+- `NcfSequence` administra la secuencia autorizada por DGII por empresa.
+- `Sale` almacena el NCF emitido (`ncf`), su tipo (`ncfType`) y la referencia a la secuencia (`ncfSequenceId`) como snapshot histórico.
+- El NCF emitido **nunca** debe modificarse después de completar una venta (`Sale.status = COMPLETED`).
+- Las secuencias **no** usan soft delete; se desactivan con `isActive = false` para preservar historial fiscal.
+
+### Modelos históricos (inmutables)
+
+Estos modelos **nunca** usan soft delete. Los registros son inmutables; las correcciones se hacen mediante estados, movimientos compensatorios o nuevas transacciones — no borrando ni ocultando filas:
+
+```text
+Sale, SaleItem, Payment
+InventoryMovement
+AccountReceivable, ReceivablePayment
+AccountPayable, PayablePayment
+CashShift
+Transfer, TransferItem
+Return, ReturnItem
+AuditLog
+```
+
+`Inventory` tampoco usa soft delete: es proyección actualizada solo vía movimientos. Ver [Política de Soft Delete](#política-de-soft-delete) para el catálogo (master data).
 
 ---
 
@@ -146,13 +222,13 @@ Roles del sistema: `OWNER`, `ADMIN`, `MANAGER`, `CASHIER`, `INVENTORY_ASSISTANT`
 
 ### `UserCompany`
 
-Vincula un usuario a **una** empresa y un rol.
+Vincula un usuario a **una** empresa y un rol. Existe por diseño — ver [UserCompany por diseño](#usercompany-por-diseño).
 
 | Campo | Uso |
 |-------|-----|
 | `defaultBranchId` / `defaultBranch` | Sucursal por defecto en UI (relación Prisma) |
 
-**Regla:** Un usuario activo solo tiene una membresía (`@@unique([userId, deletedAt])`).
+**Regla:** Un usuario activo solo tiene una membresía (`@@unique([userId, deletedAt])`). La restricción actual es de negocio, no de modelo: `UserCompany` no sobra.
 
 ---
 
@@ -234,6 +310,8 @@ Sin `customerId` en la venta = consumidor final en POS.
 
 ### `Discount`
 
+Ver también [Descuentos](#descuentos).
+
 Promoción por **porcentaje** a nivel empresa. Modelo independiente:
 
 ```text
@@ -290,9 +368,11 @@ Al completar la venta, persistir en `SaleItem` el descuento aplicado. Las ventas
 
 ## Inventario (nivel sucursal)
 
+Ver también [Inventario: proyección vs. historial](#inventario-proyección-vs-historial).
+
 ### `Inventory`
 
-Existencia: **un registro por** `(branchId, productId)`.
+**Proyección** del stock actual: **un registro por** `(branchId, productId)`. No es la fuente de verdad histórica; se deriva de `InventoryMovement`.
 
 **Ejemplo:** Santiago 50, Santo Domingo 30 unidades de `BEB-001`.
 
@@ -378,9 +458,11 @@ Relación: `Sale` 1 ──── N `Payment`.
 
 ## Facturación fiscal
 
+Ver también [NCF (comprobantes fiscales DGII)](#ncf-comprobantes-fiscales-dgii).
+
 ### `NcfSequence`
 
-Secuencia autorizada DGII por empresa. **Sin soft delete** — preservar historial fiscal.
+Secuencia autorizada DGII por empresa. **Sin soft delete** — preservar historial fiscal; desactivar con `isActive = false`.
 
 | Campo | Uso |
 |-------|-----|
@@ -399,6 +481,8 @@ Antes de completar venta fiscal:
 2. Incrementar `currentNumber` (en transacción).
 3. Formar NCF: `prefix` + número con padding (ej. `B0200000001`).
 4. Guardar en `Sale.ncf`, `Sale.ncfType` y `Sale.ncfSequenceId`.
+
+**Inmutabilidad:** una vez `Sale.status = COMPLETED`, `ncf`, `ncfType` y `ncfSequenceId` no se modifican. Correcciones fiscales requieren flujos compensatorios (nota de crédito, anulación con reversión), no edición del NCF original.
 
 ---
 
@@ -451,6 +535,15 @@ Turno de un cajero en una caja.
 ---
 
 ## Cuentas por cobrar / pagar
+
+Ver también [Cuentas por cobrar y por pagar](#cuentas-por-cobrar-y-por-pagar).
+
+```text
+Ventas a crédito:   Sale → AccountReceivable → ReceivablePayment[]
+Compras a crédito:  PurchaseOrder → AccountPayable → PayablePayment[]
+```
+
+**Balance:** `balance` se mantiene actualizado en la misma transacción de cada abono. No recalcular sumando pagos en consultas de listado o reportes.
 
 ### `AccountReceivable`
 
@@ -677,7 +770,7 @@ Todos los pasos de un flujo deben ejecutarse en **una transacción** salvo consu
 | NCF | Validar vigencia y cupo antes de incrementar |
 | Ventas | `COMPLETED` solo cuando inventario, pagos/crédito y NCF (si aplica) estén consistentes |
 | Anulación | `Sale.status = CANCELLED` + reversar inventario con movimiento tipo `ADJUSTMENT` o `RETURN` — definir en servicio de anulación |
-| CxC / CxP | Recalcular `status` tras cada abono; job periódico para marcar `OVERDUE` |
+| CxC / CxP | Actualizar `balance` y recalcular `status` en la misma TX del abono; job periódico para `OVERDUE` |
 | Movimientos manuales | `performedByEmployeeId` obligatorio en `ADJUSTMENT`, `WASTE`, transferencias |
 | Auditoría sucursal | `AuditLog.branchId` en ventas, compras, caja, inventario, transferencias |
 | Cliente | Solo personas físicas; `firstName` y `lastName` obligatorios |
