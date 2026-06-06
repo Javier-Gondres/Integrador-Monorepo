@@ -17,19 +17,19 @@ Documentación de referencia para implementar servicios en `apps/api` y módulos
 
 ### Ejemplos de negocio (datos ficticios)
 
-| Concepto | Ejemplo |
-|--------|---------|
-| Empresa | Ferretería García SRL — RNC `131234567`, slug `ferreteria-garcia` |
-| Sucursales | Santiago (Av. Estrella Sadhalá), Santo Domingo (Zona Oriental) |
-| Producto | Coca-Cola 355 ml — código `BEB-001`, RD$ 45.00, proveedor Mercasid |
-| Categorías | Bebidas, Refrescos (many-to-many con el producto) |
-| Cliente consumidor final | Sin `customerId` en la venta, NCF tipo `CONSUMIDOR_FINAL` |
-| Cliente crédito | Juan Pérez — cédula `00112345678`, venta RD$ 10,000 a 30 días |
-| Proveedor | Induveca — órdenes de compra y `AccountPayable` si es a crédito |
-| NCF | Secuencia `B02`, consecutivos `B0200000001`, `B0200000002`… |
-| Caja | `Caja Principal` en sucursal Santiago — turno con apertura RD$ 2,000 |
-| Descuento producto | "Verano 20%" vinculado directamente a Coca-Cola |
-| Descuento categoría | "Bebidas 20%" en categoría Bebidas, excluyendo Coca-Cola 2L y Pepsi 2L |
+| Concepto                 | Ejemplo                                                                |
+| ------------------------ | ---------------------------------------------------------------------- |
+| Empresa                  | Ferretería García SRL — RNC `131234567`, slug `ferreteria-garcia`      |
+| Sucursales               | Santiago (Av. Estrella Sadhalá), Santo Domingo (Zona Oriental)         |
+| Producto                 | Coca-Cola 355 ml — código `BEB-001`, RD$ 45.00, proveedor Mercasid     |
+| Categorías               | Bebidas, Refrescos (many-to-many con el producto)                      |
+| Cliente consumidor final | Sin `customerId` en la venta, NCF tipo `CONSUMIDOR_FINAL`              |
+| Cliente crédito          | Juan Pérez — cédula `00112345678`, venta RD$ 10,000 a 30 días          |
+| Proveedor                | Induveca — órdenes de compra y `AccountPayable` si es a crédito        |
+| NCF                      | Secuencia `B02`, consecutivos `B0200000001`, `B0200000002`…            |
+| Caja                     | `Caja Principal` en sucursal Santiago — turno con apertura RD$ 2,000   |
+| Descuento producto       | "Verano 20%" vinculado directamente a Coca-Cola                        |
+| Descuento categoría      | "Bebidas 20%" en categoría Bebidas, excluyendo Coca-Cola 2L y Pepsi 2L |
 
 ---
 
@@ -45,7 +45,7 @@ Aunque actualmente un usuario solo puede pertenecer a **una** empresa activa, se
 - Facilitar auditoría histórica de membresías desactivadas (soft delete en `UserCompany`).
 - Permitir extensiones futuras (multi-empresa, cambio de empresa, roles distintos por contexto) sin migraciones disruptivas.
 
-`User` responde *quién eres*; `UserCompany` responde *en qué empresa operas y con qué rol*. No colapsar ambos en un solo modelo.
+`User` responde _quién eres_; `UserCompany` responde _en qué empresa operas y con qué rol_. No colapsar ambos en un solo modelo.
 
 ### Inventario: proyección vs. historial
 
@@ -119,36 +119,36 @@ Mecanismo estándar: `deletedAt DateTime?`. Configuración en [`src/soft-delete/
 
 ### Con soft delete (`deletedAt`)
 
-| Modelo | Motivo |
-|--------|--------|
-| `Company` | Empresa desactivada; mantener historial |
-| `Branch` | Sucursal cerrada |
-| `User` | Usuario deja de trabajar |
-| `Role` | Rol obsoleto |
-| `UserCompany` | Membresía desactivada |
-| `Employee` | Empleado desvinculado |
-| `Category` | Categoría obsoleta |
-| `Product` | Producto descontinuado |
-| `Supplier` | Proveedor inactivo |
-| `Customer` | Cliente inactivo |
-| `Discount` | Promoción retirada |
-| `CashRegister` | Caja fuera de servicio |
+| Modelo         | Motivo                                  |
+| -------------- | --------------------------------------- |
+| `Company`      | Empresa desactivada; mantener historial |
+| `Branch`       | Sucursal cerrada                        |
+| `User`         | Usuario deja de trabajar                |
+| `Role`         | Rol obsoleto                            |
+| `UserCompany`  | Membresía desactivada                   |
+| `Employee`     | Empleado desvinculado                   |
+| `Category`     | Categoría obsoleta                      |
+| `Product`      | Producto descontinuado                  |
+| `Supplier`     | Proveedor inactivo                      |
+| `Customer`     | Cliente inactivo                        |
+| `Discount`     | Promoción retirada                      |
+| `CashRegister` | Caja fuera de servicio                  |
 
 ### Sin soft delete (histórico)
 
-| Modelo | Alternativa |
-|--------|-------------|
-| `Inventory`, `InventoryMovement` | Fuente de verdad del stock |
-| `Sale`, `SaleItem`, `Payment` | `SaleStatus` (`PENDING`, `COMPLETED`, `CANCELLED`) |
-| `PurchaseOrder`, `PurchaseOrderItem` | `PurchaseOrderStatus` |
-| `AccountReceivable`, `ReceivablePayment` | `ReceivableStatus` |
-| `AccountPayable`, `PayablePayment` | `PayableStatus` |
-| `CashShift` | `closedAt` / arqueo histórico |
-| `Transfer`, `TransferItem` | `TransferStatus` |
-| `Return`, `ReturnItem` | Registro permanente |
-| `NcfSequence` | `isActive = false` si deja de usarse |
-| `AuditLog` | Append-only |
-| `RefreshToken` | `revoked` + `revokedAt` |
+| Modelo                                   | Alternativa                                        |
+| ---------------------------------------- | -------------------------------------------------- |
+| `Inventory`, `InventoryMovement`         | Fuente de verdad del stock                         |
+| `Sale`, `SaleItem`, `Payment`            | `SaleStatus` (`PENDING`, `COMPLETED`, `CANCELLED`) |
+| `PurchaseOrder`, `PurchaseOrderItem`     | `PurchaseOrderStatus`                              |
+| `AccountReceivable`, `ReceivablePayment` | `ReceivableStatus`                                 |
+| `AccountPayable`, `PayablePayment`       | `PayableStatus`                                    |
+| `CashShift`                              | `closedAt` / arqueo histórico                      |
+| `Transfer`, `TransferItem`               | `TransferStatus`                                   |
+| `Return`, `ReturnItem`                   | Registro permanente                                |
+| `NcfSequence`                            | `isActive = false` si deja de usarse               |
+| `AuditLog`                               | Append-only                                        |
+| `RefreshToken`                           | `revoked` + `revokedAt`                            |
 
 ### Uniques con soft delete
 
@@ -177,12 +177,12 @@ Todo modelo con soft delete incluye `@@index([deletedAt])`.
 
 Empresa propietaria: datos fiscales, catálogo maestro, clientes, proveedores, secuencias NCF.
 
-| Campo | Uso |
-|-------|-----|
-| `name`, `slug` | Identificación y rutas multi-tenant |
-| `rnc` | Registro nacional del contribuyente |
-| `email`, `phone` | Contacto |
-| `isActive`, `deletedAt` | Soft delete |
+| Campo                   | Uso                                 |
+| ----------------------- | ----------------------------------- |
+| `name`, `slug`          | Identificación y rutas multi-tenant |
+| `rnc`                   | Registro nacional del contribuyente |
+| `email`, `phone`        | Contacto                            |
+| `isActive`, `deletedAt` | Soft delete                         |
 
 **Relaciones:** `branches`, `products`, `customers`, `suppliers`, `ncfSequences`, `discounts`, `users` (vía `UserCompany`).
 
@@ -194,11 +194,11 @@ Empresa propietaria: datos fiscales, catálogo maestro, clientes, proveedores, s
 
 Sucursal física: inventario, ventas, compras, cajas, transferencias.
 
-| Campo | Uso |
-|-------|-----|
-| `companyId` | Pertenencia a la empresa |
-| `name`, `address` | Identificación |
-| `isActive`, `deletedAt` | Soft delete |
+| Campo                   | Uso                      |
+| ----------------------- | ------------------------ |
+| `companyId`             | Pertenencia a la empresa |
+| `name`, `address`       | Identificación           |
+| `isActive`, `deletedAt` | Soft delete              |
 
 **Ejemplo:** Sucursal La Vega con su propio stock de herramientas y su `CashRegister` "Caja 1".
 
@@ -224,8 +224,8 @@ Roles del sistema: `OWNER`, `ADMIN`, `MANAGER`, `CASHIER`, `INVENTORY_ASSISTANT`
 
 Vincula un usuario a **una** empresa y un rol. Existe por diseño — ver [UserCompany por diseño](#usercompany-por-diseño).
 
-| Campo | Uso |
-|-------|-----|
+| Campo                               | Uso                                          |
+| ----------------------------------- | -------------------------------------------- |
 | `defaultBranchId` / `defaultBranch` | Sucursal por defecto en UI (relación Prisma) |
 
 **Regla:** Un usuario activo solo tiene una membresía (`@@unique([userId, deletedAt])`). La restricción actual es de negocio, no de modelo: `UserCompany` no sobra.
@@ -236,11 +236,11 @@ Vincula un usuario a **una** empresa y un rol. Existe por diseño — ver [UserC
 
 Empleado operativo: siempre ligado a `User`, `Company` y `Branch`.
 
-| Campo | Uso |
-|-------|-----|
-| `position` | Cargo |
-| `salary`, `hireDate`, `terminationDate` | Datos laborales |
-| `userId` | `@unique` — un empleado por usuario |
+| Campo                                   | Uso                                 |
+| --------------------------------------- | ----------------------------------- |
+| `position`                              | Cargo                               |
+| `salary`, `hireDate`, `terminationDate` | Datos laborales                     |
+| `userId`                                | `@unique` — un empleado por usuario |
 
 **Ejemplo:** Carlos es `CASHIER` en sucursal Santiago; sus ventas usan `cashierId = Employee.id`.
 
@@ -266,11 +266,11 @@ Clasificación de productos. Relación **many-to-many** implícita con `Product`
 
 Artículo vendible/comprable por empresa.
 
-| Campo | Uso |
-|-------|-----|
-| `code` | Único por empresa (`@@unique([companyId, code, deletedAt])`) |
-| `price` | Precio de referencia / lista |
-| `supplierId` | Proveedor principal opcional |
+| Campo        | Uso                                                          |
+| ------------ | ------------------------------------------------------------ |
+| `code`       | Único por empresa (`@@unique([companyId, code, deletedAt])`) |
+| `price`      | Precio de referencia / lista                                 |
+| `supplierId` | Proveedor principal opcional                                 |
 
 El stock real vive en `Inventory` por sucursal.
 
@@ -288,11 +288,11 @@ Proveedor: compras y cuentas por pagar.
 
 Cliente del sistema: **únicamente personas físicas**.
 
-| Campo | Uso |
-|-------|-----|
-| `firstName`, `lastName` | Obligatorios |
-| `cedula` | Opcional |
-| `email`, `phone`, `address` | Contacto |
+| Campo                       | Uso          |
+| --------------------------- | ------------ |
+| `firstName`, `lastName`     | Obligatorios |
+| `cedula`                    | Opcional     |
+| `email`, `phone`, `address` | Contacto     |
 
 **Válidos:** Juan Pérez, María Rodríguez, Pedro Gómez.
 
@@ -320,13 +320,13 @@ Discount ←→ Category         (categorías incluidas)
 Discount ←→ DiscountExcludedProduct ←→ Product   (exclusiones)
 ```
 
-| Campo / relación | Uso |
-|------------------|-----|
-| `percentage` | Porcentaje (ej. 20.00 = 20%) |
+| Campo / relación       | Uso                                                                 |
+| ---------------------- | ------------------------------------------------------------------- |
+| `percentage`           | Porcentaje (ej. 20.00 = 20%)                                        |
 | `startDate`, `endDate` | Vigencia opcional (indexados para consultas de promociones activas) |
-| `products` | Productos con descuento directo |
-| `categories` | Categorías completas con descuento |
-| `excludedProducts` | Productos excluidos de **este** descuento |
+| `products`             | Productos con descuento directo                                     |
+| `categories`           | Categorías completas con descuento                                  |
+| `excludedProducts`     | Productos excluidos de **este** descuento                           |
 
 **Ejemplos de configuración:**
 
@@ -382,21 +382,21 @@ Ver también [Inventario: proyección vs. historial](#inventario-proyección-vs-
 
 Historial inmutable de cambios de stock.
 
-| `InventoryMovementType` | Origen típico |
-|-------------------------|---------------|
-| `PURCHASE` | Recepción de compra |
-| `SALE` | Venta completada |
-| `RETURN` | Devolución |
+| `InventoryMovementType`        | Origen típico                  |
+| ------------------------------ | ------------------------------ |
+| `PURCHASE`                     | Recepción de compra            |
+| `SALE`                         | Venta completada               |
+| `RETURN`                       | Devolución                     |
 | `TRANSFER_OUT` / `TRANSFER_IN` | Transferencia entre sucursales |
-| `ADJUSTMENT` | Ajuste manual autorizado |
-| `WASTE` | Merma / vencimiento |
+| `ADJUSTMENT`                   | Ajuste manual autorizado       |
+| `WASTE`                        | Merma / vencimiento            |
 
 Campos opcionales de trazabilidad: `saleId`, `purchaseOrderId`, `returnId`, `transferId`, `performedByEmployeeId`.
 
-| Responsable | Regla |
-|-------------|-------|
-| `ADJUSTMENT`, `WASTE`, `TRANSFER_OUT`, `TRANSFER_IN` | `performedByEmployeeId` **obligatorio** |
-| `SALE`, `PURCHASE`, `RETURN` | Opcional; inferir desde `Sale.cashierId`, compra o `Return.employeeId` |
+| Responsable                                          | Regla                                                                  |
+| ---------------------------------------------------- | ---------------------------------------------------------------------- |
+| `ADJUSTMENT`, `WASTE`, `TRANSFER_OUT`, `TRANSFER_IN` | `performedByEmployeeId` **obligatorio**                                |
+| `SALE`, `PURCHASE`, `RETURN`                         | Opcional; inferir desde `Sale.cashierId`, compra o `Return.employeeId` |
 
 **Regla de oro:** Toda variación de `Inventory.quantity` debe tener su `InventoryMovement` correspondiente.
 
@@ -408,13 +408,13 @@ Campos opcionales de trazabilidad: `saleId`, `purchaseOrderId`, `returnId`, `tra
 
 Cabecera de venta en una sucursal.
 
-| Campo | Uso |
-|-------|-----|
-| `status` | `PENDING` → `COMPLETED` o `CANCELLED` |
-| `cashierId` | `Employee` que opera la venta |
-| `cashShiftId` | Turno de caja abierto (opcional pero recomendado en POS) |
+| Campo                             | Uso                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------- |
+| `status`                          | `PENDING` → `COMPLETED` o `CANCELLED`                                           |
+| `cashierId`                       | `Employee` que opera la venta                                                   |
+| `cashShiftId`                     | Turno de caja abierto (opcional pero recomendado en POS)                        |
 | `ncf`, `ncfType`, `ncfSequenceId` | Comprobante fiscal; `ncfType` es snapshot histórico (reportes B01/B02 sin join) |
-| `subtotal`, `taxAmount`, `total` | Montos en RD$ |
+| `subtotal`, `taxAmount`, `total`  | Montos en RD$                                                                   |
 
 ---
 
@@ -422,12 +422,12 @@ Cabecera de venta en una sucursal.
 
 Línea: producto, cantidad, precio unitario, descuento aplicado y subtotal.
 
-| Campo | Uso |
-|-------|-----|
-| `unitPrice` | Precio de lista al momento de la venta |
-| `discountPercentage` | Snapshot del % aplicado (ej. 20.00) |
-| `discountAmount` | Snapshot del monto descontado en RD$ (ej. 20.00) |
-| `subtotal` | Total de línea **después** del descuento |
+| Campo                | Uso                                              |
+| -------------------- | ------------------------------------------------ |
+| `unitPrice`          | Precio de lista al momento de la venta           |
+| `discountPercentage` | Snapshot del % aplicado (ej. 20.00)              |
+| `discountAmount`     | Snapshot del monto descontado en RD$ (ej. 20.00) |
+| `subtotal`           | Total de línea **después** del descuento         |
 
 **Ejemplo:** Producto RD$ 100, descuento 20% → `discountPercentage = 20`, `discountAmount = 20`, `subtotal = 80`.
 
@@ -439,10 +439,10 @@ Línea: producto, cantidad, precio unitario, descuento aplicado y subtotal.
 
 Una venta puede tener **varios** pagos (efectivo + tarjeta). La venta mixta se modela con múltiples registros `Payment`, **no** con un método `MIXED`.
 
-| `PaymentMethod` | Uso |
-|-----------------|-----|
-| `CASH`, `CARD`, `TRANSFER` | Contado |
-| `CREDIT` | Dispara creación de `AccountReceivable` |
+| `PaymentMethod`            | Uso                                     |
+| -------------------------- | --------------------------------------- |
+| `CASH`, `CARD`, `TRANSFER` | Contado                                 |
+| `CREDIT`                   | Dispara creación de `AccountReceivable` |
 
 **Ejemplo venta mixta (Venta #1001):**
 
@@ -464,16 +464,16 @@ Ver también [NCF (comprobantes fiscales DGII)](#ncf-comprobantes-fiscales-dgii)
 
 Secuencia autorizada DGII por empresa. **Sin soft delete** — preservar historial fiscal; desactivar con `isActive = false`.
 
-| Campo | Uso |
-|-------|-----|
-| `isActive` | Desactivar secuencia obsoleta o agotada |
-| `currentNumber`, `maxNumber` | Control de consecutivos |
+| Campo                        | Uso                                     |
+| ---------------------------- | --------------------------------------- |
+| `isActive`                   | Desactivar secuencia obsoleta o agotada |
+| `currentNumber`, `maxNumber` | Control de consecutivos                 |
 
-| `NcfType` | Uso típico |
-|-----------|------------|
-| `CONSUMIDOR_FINAL` | B02 — venta al público |
-| `CREDITO_FISCAL` | B01 — casos fiscales específicos (no aplica a clientes empresa; clientes son personas) |
-| `GUBERNAMENTAL`, `REGIMEN_ESPECIAL`, `EXPORTACION` | Según régimen |
+| `NcfType`                                          | Uso típico                                                                             |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `CONSUMIDOR_FINAL`                                 | B02 — venta al público                                                                 |
+| `CREDITO_FISCAL`                                   | B01 — casos fiscales específicos (no aplica a clientes empresa; clientes son personas) |
+| `GUBERNAMENTAL`, `REGIMEN_ESPECIAL`, `EXPORTACION` | Según régimen                                                                          |
 
 Antes de completar venta fiscal:
 
@@ -492,12 +492,12 @@ Antes de completar venta fiscal:
 
 Orden en sucursal con proveedor.
 
-| `PurchaseOrderStatus` | Significado |
-|-----------------------|-------------|
-| `DRAFT` | Borrador editable |
-| `APPROVED` | Aprobada, pendiente de recepción |
-| `RECEIVED` | Mercancía recibida — aquí se mueve inventario |
-| `CANCELLED` | Anulada |
+| `PurchaseOrderStatus` | Significado                                   |
+| --------------------- | --------------------------------------------- |
+| `DRAFT`               | Borrador editable                             |
+| `APPROVED`            | Aprobada, pendiente de recepción              |
+| `RECEIVED`            | Mercancía recibida — aquí se mueve inventario |
+| `CANCELLED`           | Anulada                                       |
 
 ---
 
@@ -519,17 +519,17 @@ Caja física por sucursal (ej. "Caja 1", "Caja Principal").
 
 Turno de un cajero en una caja.
 
-| Campo | Uso |
-|-------|-----|
-| `openingAmount` | Fondo de caja al abrir |
-| `closingAmount` | Contado al cerrar |
-| `openedAt` / `closedAt` | Tiempos del turno |
+| Campo                   | Uso                    |
+| ----------------------- | ---------------------- |
+| `openingAmount`         | Fondo de caja al abrir |
+| `closingAmount`         | Contado al cerrar      |
+| `openedAt` / `closedAt` | Tiempos del turno      |
 
 **Estados derivados (lógica de servicio, no enum en schema hoy):**
 
-| Estado | Condición |
-|--------|-----------|
-| `OPEN` | `closedAt == null` |
+| Estado   | Condición                                       |
+| -------- | ----------------------------------------------- |
+| `OPEN`   | `closedAt == null`                              |
 | `CLOSED` | `closedAt != null` y `closingAmount` registrado |
 
 ---
@@ -549,19 +549,19 @@ Compras a crédito:  PurchaseOrder → AccountPayable → PayablePayment[]
 
 Generada en venta a crédito (`Payment` con `CREDIT` o flujo sin pago contado según reglas de negocio).
 
-| Campo | Uso |
-|-------|-----|
+| Campo            | Uso                                           |
+| ---------------- | --------------------------------------------- |
 | `originalAmount` | Deuda inicial (= total a crédito de la venta) |
-| `balance` | Saldo pendiente |
-| `dueDate` | Vencimiento |
-| `status` | `ReceivableStatus` persistido |
+| `balance`        | Saldo pendiente                               |
+| `dueDate`        | Vencimiento                                   |
+| `status`         | `ReceivableStatus` persistido                 |
 
-| `ReceivableStatus` | Condición |
-|--------------------|-----------|
-| `OPEN` | Sin pagos registrados |
-| `PARTIAL` | Tiene pagos y `balance > 0` |
-| `PAID` | `balance == 0` |
-| `OVERDUE` | `balance > 0` y `dueDate < hoy` |
+| `ReceivableStatus` | Condición                       |
+| ------------------ | ------------------------------- |
+| `OPEN`             | Sin pagos registrados           |
+| `PARTIAL`          | Tiene pagos y `balance > 0`     |
+| `PAID`             | `balance == 0`                  |
+| `OVERDUE`          | `balance > 0` y `dueDate < hoy` |
 
 Recalcular `status` después de cada `ReceivablePayment` (y en jobs de vencimiento para `OVERDUE`).
 
@@ -571,10 +571,10 @@ Recalcular `status` después de cada `ReceivablePayment` (y en jobs de vencimien
 
 Abono que reduce `balance`. Validar que `amount <= balance`.
 
-| Campo | Uso |
-|-------|-----|
+| Campo    | Uso                                                |
+| -------- | -------------------------------------------------- |
 | `method` | `CASH`, `CARD` o `TRANSFER` (cómo pagó el cliente) |
-| `amount` | Monto del abono |
+| `amount` | Monto del abono                                    |
 
 ---
 
@@ -582,19 +582,19 @@ Abono que reduce `balance`. Validar que `amount <= balance`.
 
 Análogo con proveedores cuando la compra queda a crédito. `purchaseOrderId` es único por cuenta.
 
-| `PayableStatus` | Condición |
-|-----------------|-----------|
-| `OPEN` | Sin pagos registrados |
-| `PARTIAL` | Tiene pagos y `balance > 0` |
-| `PAID` | `balance == 0` |
-| `OVERDUE` | `balance > 0` y `dueDate < hoy` |
+| `PayableStatus` | Condición                       |
+| --------------- | ------------------------------- |
+| `OPEN`          | Sin pagos registrados           |
+| `PARTIAL`       | Tiene pagos y `balance > 0`     |
+| `PAID`          | `balance == 0`                  |
+| `OVERDUE`       | `balance > 0` y `dueDate < hoy` |
 
 Recalcular `status` después de cada `PayablePayment`.
 
-| Campo en `PayablePayment` | Uso |
-|---------------------------|-----|
-| `method` | `CASH`, `CARD` o `TRANSFER` (cómo se pagó al proveedor) |
-| `amount` | Monto del pago |
+| Campo en `PayablePayment` | Uso                                                     |
+| ------------------------- | ------------------------------------------------------- |
+| `method`                  | `CASH`, `CARD` o `TRANSFER` (cómo se pagó al proveedor) |
+| `amount`                  | Monto del pago                                          |
 
 ---
 
@@ -604,12 +604,12 @@ Recalcular `status` después de cada `PayablePayment`.
 
 Devolución en sucursal; opcionalmente ligada a `Sale`.
 
-| `ReturnReason` | Ejemplo |
-|----------------|---------|
-| `DEFECTIVE` | Producto dañado |
-| `SALES_ERROR` | Cobro o producto equivocado |
-| `EXPIRED` | Vencido |
-| `OTHER` | Otro motivo (detalle en `notes`) |
+| `ReturnReason` | Ejemplo                          |
+| -------------- | -------------------------------- |
+| `DEFECTIVE`    | Producto dañado                  |
+| `SALES_ERROR`  | Cobro o producto equivocado      |
+| `EXPIRED`      | Vencido                          |
+| `OTHER`        | Otro motivo (detalle en `notes`) |
 
 ---
 
@@ -617,12 +617,12 @@ Devolución en sucursal; opcionalmente ligada a `Sale`.
 
 Movimiento entre sucursales (`fromBranchId` → `toBranchId`).
 
-| `TransferStatus` | Flujo |
-|------------------|-------|
-| `PENDING` | Creada |
-| `IN_TRANSIT` | Enviada desde origen |
-| `COMPLETED` | Recibida en destino |
-| `CANCELLED` | Anulada |
+| `TransferStatus` | Flujo                |
+| ---------------- | -------------------- |
+| `PENDING`        | Creada               |
+| `IN_TRANSIT`     | Enviada desde origen |
+| `COMPLETED`      | Recibida en destino  |
+| `CANCELLED`      | Anulada              |
 
 ---
 
@@ -763,21 +763,21 @@ Todos los pasos de un flujo deben ejecutarse en **una transacción** salvo consu
 
 ## Reglas transversales para servicios
 
-| Regla | Detalle |
-|-------|---------|
-| Inventario | Siempre movimiento + actualización de `Inventory` en la misma TX |
-| Stock negativo | No permitir venta/transferencia si cantidad insuficiente |
-| NCF | Validar vigencia y cupo antes de incrementar |
-| Ventas | `COMPLETED` solo cuando inventario, pagos/crédito y NCF (si aplica) estén consistentes |
-| Anulación | `Sale.status = CANCELLED` + reversar inventario con movimiento tipo `ADJUSTMENT` o `RETURN` — definir en servicio de anulación |
-| CxC / CxP | Actualizar `balance` y recalcular `status` en la misma TX del abono; job periódico para `OVERDUE` |
-| Movimientos manuales | `performedByEmployeeId` obligatorio en `ADJUSTMENT`, `WASTE`, transferencias |
-| Auditoría sucursal | `AuditLog.branchId` en ventas, compras, caja, inventario, transferencias |
-| Cliente | Solo personas físicas; `firstName` y `lastName` obligatorios |
-| Descuentos | Por línea: candidatos producto + categorías, filtrar exclusiones, `max()` de %; snapshot en `SaleItem` |
-| Multi-tenant | Filtrar siempre por `companyId` derivado de `UserCompany` / sucursal |
-| Soft delete | Solo master data (ver [Política de Soft Delete](#política-de-soft-delete)); transacciones usan status |
-| Decimales | Usar `Decimal` de Prisma; no `float` en JS para dinero |
+| Regla                | Detalle                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Inventario           | Siempre movimiento + actualización de `Inventory` en la misma TX                                                               |
+| Stock negativo       | No permitir venta/transferencia si cantidad insuficiente                                                                       |
+| NCF                  | Validar vigencia y cupo antes de incrementar                                                                                   |
+| Ventas               | `COMPLETED` solo cuando inventario, pagos/crédito y NCF (si aplica) estén consistentes                                         |
+| Anulación            | `Sale.status = CANCELLED` + reversar inventario con movimiento tipo `ADJUSTMENT` o `RETURN` — definir en servicio de anulación |
+| CxC / CxP            | Actualizar `balance` y recalcular `status` en la misma TX del abono; job periódico para `OVERDUE`                              |
+| Movimientos manuales | `performedByEmployeeId` obligatorio en `ADJUSTMENT`, `WASTE`, transferencias                                                   |
+| Auditoría sucursal   | `AuditLog.branchId` en ventas, compras, caja, inventario, transferencias                                                       |
+| Cliente              | Solo personas físicas; `firstName` y `lastName` obligatorios                                                                   |
+| Descuentos           | Por línea: candidatos producto + categorías, filtrar exclusiones, `max()` de %; snapshot en `SaleItem`                         |
+| Multi-tenant         | Filtrar siempre por `companyId` derivado de `UserCompany` / sucursal                                                           |
+| Soft delete          | Solo master data (ver [Política de Soft Delete](#política-de-soft-delete)); transacciones usan status                          |
+| Decimales            | Usar `Decimal` de Prisma; no `float` en JS para dinero                                                                         |
 
 ---
 
