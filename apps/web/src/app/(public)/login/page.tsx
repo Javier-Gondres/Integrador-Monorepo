@@ -82,7 +82,7 @@ export default function page() {
 
         {/* seccion de fondo/logo */}
         <section
-          className="row-start-2 row-end-3 flex mx-5 mt-10 max-w-full max-h-[80%]
+          className="row-start-2 row-end-3 flex mx-5 mt-4 max-w-full max-h-[80%]
                       max-sm:row-start-1 max-sm:row-end-2 max-sm:max-h-full max-sm:border-none max-sm:rounded-none max-sm:m-0 
                       border-x border-x-transparent rounded-sm bg-linear-to-b from-sky-500 to-[#3C50E0]"
         >
