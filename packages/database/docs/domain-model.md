@@ -25,7 +25,7 @@ Documentación de referencia para implementar servicios en `apps/api` y módulos
 | Categorías               | Bebidas, Refrescos (many-to-many con el producto)                      |
 | Cliente consumidor final | Sin `customerId` en la venta, NCF tipo `CONSUMIDOR_FINAL`              |
 | Cliente crédito          | Juan Pérez — cédula `00112345678`, venta RD$ 10,000 a 30 días          |
-| Proveedor                | Induveca — órdenes de compra y `AccountPayable` si es a crédito        |
+| Proveedor                | Induveca — compras registradas y `AccountPayable` si es a crédito       |
 | NCF                      | Secuencia `B02`, consecutivos `B0200000001`, `B0200000002`…            |
 | Caja                     | `Caja Principal` en sucursal Santiago — turno con apertura RD$ 2,000   |
 | Descuento producto       | "Verano 20%" vinculado directamente a Coca-Cola                        |
@@ -78,7 +78,7 @@ Sale → AccountReceivable → ReceivablePayment[]
 **Compras a crédito:**
 
 ```text
-PurchaseOrder → AccountPayable → PayablePayment[]
+Purchase → AccountPayable → PayablePayment[]
 ```
 
 **Regla de balance:** los saldos **nunca** se calculan dinámicamente sumando pagos en cada consulta. El campo `balance` se actualiza dentro de la **misma transacción** que registra cada abono (`ReceivablePayment` / `PayablePayment`). Esto garantiza rendimiento con miles de pagos históricos.
@@ -99,6 +99,7 @@ Sale, SaleItem, Payment
 InventoryMovement
 AccountReceivable, ReceivablePayment
 AccountPayable, PayablePayment
+Purchase, PurchaseItem
 CashShift
 Transfer, TransferItem
 Return, ReturnItem
@@ -140,7 +141,7 @@ Mecanismo estándar: `deletedAt DateTime?`. Configuración en [`src/soft-delete/
 | ---------------------------------------- | -------------------------------------------------- |
 | `Inventory`, `InventoryMovement`         | Fuente de verdad del stock                         |
 | `Sale`, `SaleItem`, `Payment`            | `SaleStatus` (`PENDING`, `COMPLETED`, `CANCELLED`) |
-| `PurchaseOrder`, `PurchaseOrderItem`     | `PurchaseOrderStatus`                              |
+| `Purchase`, `PurchaseItem`               | Registro histórico inmutable                       |
 | `AccountReceivable`, `ReceivablePayment` | `ReceivableStatus`                                 |
 | `AccountPayable`, `PayablePayment`       | `PayableStatus`                                    |
 | `CashShift`                              | `closedAt` / arqueo histórico                      |
@@ -305,7 +306,7 @@ El índice parcial actúa como protección final contra errores de código, conc
 
 Proveedor: compras y cuentas por pagar.
 
-**Ejemplo:** Mercasid suministra abarrotes; `PurchaseOrder` y `AccountPayable` apuntan aquí. Los productos que ofrece se listan vía `ProductSupplier`.
+**Ejemplo:** Mercasid suministra abarrotes; `Purchase` y `AccountPayable` apuntan aquí. Los productos que ofrece se listan vía `ProductSupplier`.
 
 ---
 
@@ -416,7 +417,7 @@ Historial inmutable de cambios de stock.
 | `ADJUSTMENT`                   | Ajuste manual autorizado       |
 | `WASTE`                        | Merma / vencimiento            |
 
-Campos opcionales de trazabilidad: `saleId`, `purchaseOrderId`, `returnId`, `transferId`, `performedByEmployeeId`.
+Campos opcionales de trazabilidad: `saleId`, `purchaseId`, `returnId`, `transferId`, `performedByEmployeeId`.
 
 | Responsable                                          | Regla                                                                  |
 | ---------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -513,22 +514,50 @@ Antes de completar venta fiscal:
 
 ## Compras
 
-### `PurchaseOrder`
+El sistema **no gestiona órdenes de compra**. No existen borradores, aprobaciones ni recepciones pendientes. Solo se registran **compras ya recibidas** cuando la mercancía llega al negocio.
 
-Orden en sucursal con proveedor.
+### Flujo de negocio
 
-| `PurchaseOrderStatus` | Significado                                   |
-| --------------------- | --------------------------------------------- |
-| `DRAFT`               | Borrador editable                             |
-| `APPROVED`            | Aprobada, pendiente de recepción              |
-| `RECEIVED`            | Mercancía recibida — aquí se mueve inventario |
-| `CANCELLED`           | Anulada                                       |
+```text
+Proveedor entrega mercancía
+        ↓
+Empleado registra la compra
+        ↓
+Se crean Purchase y PurchaseItem
+        ↓
+Se crean InventoryMovement tipo PURCHASE
+        ↓
+Se actualiza Inventory
+        ↓
+Si quedó pendiente de pago:
+        ↓
+AccountPayable
+```
 
 ---
 
-### `PurchaseOrderItem`
+### `Purchase`
 
-Detalle: producto, cantidad, costo unitario, subtotal.
+Registro de una compra ya recibida en una sucursal.
+
+| Campo                  | Uso                                                        |
+| ---------------------- | ---------------------------------------------------------- |
+| `branchId`             | Sucursal que recibió la mercancía                          |
+| `supplierId`           | Proveedor que entregó                                      |
+| `invoiceNumber`        | Número de factura del proveedor (opcional)                 |
+| `invoiceDate`          | Fecha de la factura del proveedor (opcional)               |
+| `receivedByEmployeeId` | Empleado que registró la recepción (opcional)              |
+| `subtotal`, `taxAmount`, `total` | Montos en RD$                                   |
+
+**Relaciones:** `PurchaseItem[]`, `InventoryMovement[]`, `AccountPayable?` (si quedó a crédito), `receivedBy` → `Employee`.
+
+`createdAt` registra cuándo se ingresó al sistema; `invoiceDate` es la fecha fiscal/documental del proveedor (pueden diferir).
+
+---
+
+### `PurchaseItem`
+
+Detalle de la compra: producto, cantidad, costo unitario, subtotal.
 
 ---
 
@@ -565,7 +594,7 @@ Ver también [Cuentas por cobrar y por pagar](#cuentas-por-cobrar-y-por-pagar).
 
 ```text
 Ventas a crédito:   Sale → AccountReceivable → ReceivablePayment[]
-Compras a crédito:  PurchaseOrder → AccountPayable → PayablePayment[]
+Compras a crédito:  Purchase → AccountPayable → PayablePayment[]
 ```
 
 **Balance:** `balance` se mantiene actualizado en la misma transacción de cada abono. No recalcular sumando pagos en consultas de listado o reportes.
@@ -605,7 +634,7 @@ Abono que reduce `balance`. Validar que `amount <= balance`.
 
 ### `AccountPayable` / `PayablePayment`
 
-Análogo con proveedores cuando la compra queda a crédito. `purchaseOrderId` es único por cuenta.
+Análogo con proveedores cuando la compra queda a crédito. `purchaseId` es único por cuenta.
 
 | `PayableStatus` | Condición                       |
 | --------------- | ------------------------------- |
@@ -721,17 +750,18 @@ Todos los pasos de un flujo deben ejecutarse en **una transacción** salvo consu
 
 ---
 
-### Compra (recepción de mercancía)
+### Registro de compra (recepción de mercancía)
 
-1. Crear `PurchaseOrder` (`DRAFT`) y `PurchaseOrderItem`(s).
-2. Al aprobar/recibir: según política, pasar a `RECEIVED`.
-3. Por ítem: **aumentar** `Inventory` en la sucursal de la orden (crear fila si no existe).
-4. Crear `InventoryMovement(PURCHASE)` vinculado a `purchaseOrderId`.
-5. Si es **a crédito**: crear `AccountPayable` con `originalAmount`, `balance`, `dueDate` y `status = OPEN`.
-6. Si es contado: registrar pago al proveedor fuera de CxP o con `PayablePayment` inmediato (actualizar `status = PAID`).
-7. `AuditLog` con `branchId`.
+1. Crear `Purchase` y `PurchaseItem`(s) con los productos recibidos.
+2. Por ítem: **aumentar** `Inventory` en la sucursal (crear fila si no existe).
+3. Crear `InventoryMovement(PURCHASE)` vinculado a `purchaseId`.
+4. Si es **a crédito**: crear `AccountPayable` con `originalAmount`, `balance`, `dueDate` y `status = OPEN`.
+5. Si es contado: registrar pago al proveedor fuera de CxP o con `PayablePayment` inmediato (actualizar `status = PAID`).
+6. `AuditLog` con `branchId`.
 
-**Ejemplo:** Orden a Induveca por RD$ 50,000 — al recibir, stock sube y queda CxP si no se pagó al contado.
+Todo en **una transacción**. No existen compras pendientes de recepción.
+
+**Ejemplo:** Induveca entrega mercancía por RD$ 50,000 — el empleado registra la compra, sube el stock y queda CxP si no se pagó al contado.
 
 ---
 
@@ -816,7 +846,6 @@ ReceivableStatus: OPEN | PARTIAL | PAID | OVERDUE
 PayableStatus: OPEN | PARTIAL | PAID | OVERDUE
 InventoryMovementType: PURCHASE | SALE | RETURN | TRANSFER_IN | TRANSFER_OUT | ADJUSTMENT | WASTE
 NcfType: CONSUMIDOR_FINAL | CREDITO_FISCAL | GUBERNAMENTAL | REGIMEN_ESPECIAL | EXPORTACION
-PurchaseOrderStatus: DRAFT | APPROVED | RECEIVED | CANCELLED
 TransferStatus: PENDING | IN_TRANSIT | COMPLETED | CANCELLED
 ReturnReason: DEFECTIVE | SALES_ERROR | EXPIRED | OTHER
 ```

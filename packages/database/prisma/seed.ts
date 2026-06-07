@@ -19,7 +19,6 @@ import {
   NcfType,
   PayableStatus,
   PaymentMethod,
-  PurchaseOrderStatus,
   ReceivableStatus,
   ReturnReason,
   RoleName,
@@ -45,10 +44,8 @@ const SEED_IDS = {
   cashRegisterNorte: "seed-cash-register-norte",
   cashShiftClosedCentro: "seed-cash-shift-closed-centro",
   cashShiftOpenNorte: "seed-cash-shift-open-norte",
-  poDraft: "seed-po-draft",
-  poApproved: "seed-po-approved",
-  poReceived: "seed-po-received",
-  poReceivedCredit: "seed-po-received-credit",
+  purchaseInitial: "seed-purchase-initial",
+  purchaseCredit: "seed-purchase-credit",
   saleCash: "seed-sale-cash-completed",
   saleMixed: "seed-sale-mixed-completed",
   saleCredit: "seed-sale-credit-completed",
@@ -382,7 +379,7 @@ async function recordMovementIfAbsent(
     type: InventoryMovementType;
     quantity: number;
     notes?: string;
-    purchaseOrderId?: string;
+    purchaseId?: string;
     saleId?: string;
     returnId?: string;
     transferId?: string;
@@ -1008,16 +1005,15 @@ async function ensureDemoCashShifts(ctx: SeedContext) {
   return { closedShift, openShift, centro, norte };
 }
 
-async function ensureDemoPurchaseOrders(
+async function ensureDemoPurchases(
   ctx: SeedContext,
   suppliersByName: Map<string, { id: string; name: string }>,
 ) {
   const centro = branchByName(ctx, "Sucursal Centro");
   const distribuidora = suppliersByName.get("Distribuidora Nacional SRL");
   const bebidas = suppliersByName.get("Bebidas Caribeña");
-  const cibao = suppliersByName.get("Alimentos del Cibao SA");
 
-  if (!distribuidora || !bebidas || !cibao) {
+  if (!distribuidora || !bebidas) {
     throw new Error("Proveedores seed no encontrados.");
   }
 
@@ -1026,98 +1022,39 @@ async function ensureDemoPurchaseOrders(
   const lays = productByCode(ctx, "SNK-LAYS-40");
   const leche = productByCode(ctx, "LAC-LECHE-1L");
   const combo = productByCode(ctx, "COMBO-SNACK-BEB");
+  const receivedBy = employeeByEmail(ctx, "ana.lopez@empleados.seed");
 
-  await prisma.purchaseOrder.upsert({
-    where: { id: SEED_IDS.poDraft },
-    create: {
-      id: SEED_IDS.poDraft,
-      branchId: centro.id,
-      supplierId: cibao.id,
-      status: PurchaseOrderStatus.DRAFT,
-      notes: "Borrador pendiente de aprobación",
-      subtotal: 5500,
-      taxAmount: 0,
-      total: 5500,
-      items: {
-        create: [
-          {
-            id: "seed-po-draft-item-leche",
-            productId: leche.id,
-            quantity: 100,
-            unitCost: 55,
-            subtotal: 5500,
-          },
-        ],
-      },
-    },
-    update: {
-      status: PurchaseOrderStatus.DRAFT,
-      subtotal: 5500,
-      total: 5500,
-    },
-  });
-
-  await prisma.purchaseOrder.upsert({
-    where: { id: SEED_IDS.poApproved },
-    create: {
-      id: SEED_IDS.poApproved,
-      branchId: centro.id,
-      supplierId: distribuidora.id,
-      status: PurchaseOrderStatus.APPROVED,
-      notes: "Aprobada, pendiente de recepción",
-      subtotal: 6500,
-      taxAmount: 0,
-      total: 6500,
-      items: {
-        create: [
-          {
-            id: "seed-po-approved-item-lays",
-            productId: lays.id,
-            quantity: 100,
-            unitCost: 65,
-            subtotal: 6500,
-          },
-        ],
-      },
-    },
-    update: {
-      status: PurchaseOrderStatus.APPROVED,
-      subtotal: 6500,
-      total: 6500,
-    },
-  });
-
-  const receivedItems = [
+  const initialItems = [
     {
-      id: "seed-po-received-item-cola",
+      id: "seed-purchase-initial-item-cola",
       productId: cola355.id,
       quantity: 200,
       unitCost: 30,
       subtotal: 6000,
     },
     {
-      id: "seed-po-received-item-cola-2l",
+      id: "seed-purchase-initial-item-cola-2l",
       productId: cola2l.id,
       quantity: 60,
       unitCost: 80,
       subtotal: 4800,
     },
     {
-      id: "seed-po-received-item-lays",
+      id: "seed-purchase-initial-item-lays",
       productId: lays.id,
       quantity: 150,
       unitCost: 45,
       subtotal: 6750,
     },
     {
-      id: "seed-po-received-item-leche",
+      id: "seed-purchase-initial-item-leche",
       productId: leche.id,
       quantity: 100,
       unitCost: 40,
       subtotal: 4000,
     },
     {
-      id: "seed-po-received-item-combo",
+      id: "seed-purchase-initial-item-combo",
       productId: combo.id,
       quantity: 80,
       unitCost: 70,
@@ -1125,33 +1062,36 @@ async function ensureDemoPurchaseOrders(
     },
   ] as const;
 
-  const receivedTotal = receivedItems.reduce(
+  const initialTotal = initialItems.reduce(
     (sum, item) => sum + item.subtotal,
     0,
   );
 
-  await prisma.purchaseOrder.upsert({
-    where: { id: SEED_IDS.poReceived },
+  await prisma.purchase.upsert({
+    where: { id: SEED_IDS.purchaseInitial },
     create: {
-      id: SEED_IDS.poReceived,
+      id: SEED_IDS.purchaseInitial,
       branchId: centro.id,
       supplierId: bebidas.id,
-      status: PurchaseOrderStatus.RECEIVED,
-      notes: "Recepción inicial de inventario",
-      subtotal: receivedTotal,
+      invoiceNumber: "FAC-BC-2026-001",
+      invoiceDate: daysAgo(14),
+      receivedByEmployeeId: receivedBy.id,
+      subtotal: initialTotal,
       taxAmount: 0,
-      total: receivedTotal,
-      items: { create: [...receivedItems] },
+      total: initialTotal,
+      items: { create: [...initialItems] },
     },
     update: {
-      status: PurchaseOrderStatus.RECEIVED,
-      subtotal: receivedTotal,
-      total: receivedTotal,
+      invoiceNumber: "FAC-BC-2026-001",
+      invoiceDate: daysAgo(14),
+      receivedByEmployeeId: receivedBy.id,
+      subtotal: initialTotal,
+      total: initialTotal,
     },
   });
 
   await prisma.$transaction(async (tx) => {
-    for (const item of receivedItems) {
+    for (const item of initialItems) {
       await recordMovementIfAbsent(
         tx,
         {
@@ -1160,8 +1100,8 @@ async function ensureDemoPurchaseOrders(
           productId: item.productId,
           type: InventoryMovementType.PURCHASE,
           quantity: item.quantity,
-          notes: "Recepción seed-po-received",
-          purchaseOrderId: SEED_IDS.poReceived,
+          notes: "Compra registrada seed-purchase-initial",
+          purchaseId: SEED_IDS.purchaseInitial,
         },
         item.quantity,
       );
@@ -1170,7 +1110,7 @@ async function ensureDemoPurchaseOrders(
 
   const creditItems = [
     {
-      id: "seed-po-credit-item-combo",
+      id: "seed-purchase-credit-item-combo",
       productId: combo.id,
       quantity: 40,
       unitCost: 70,
@@ -1178,21 +1118,24 @@ async function ensureDemoPurchaseOrders(
     },
   ] as const;
 
-  await prisma.purchaseOrder.upsert({
-    where: { id: SEED_IDS.poReceivedCredit },
+  await prisma.purchase.upsert({
+    where: { id: SEED_IDS.purchaseCredit },
     create: {
-      id: SEED_IDS.poReceivedCredit,
+      id: SEED_IDS.purchaseCredit,
       branchId: centro.id,
       supplierId: distribuidora.id,
-      status: PurchaseOrderStatus.RECEIVED,
-      notes: "Compra a crédito con abono parcial",
+      invoiceNumber: "FAC-DN-2026-042",
+      invoiceDate: daysAgo(7),
+      receivedByEmployeeId: receivedBy.id,
       subtotal: 2800,
       taxAmount: 0,
       total: 2800,
       items: { create: [...creditItems] },
     },
     update: {
-      status: PurchaseOrderStatus.RECEIVED,
+      invoiceNumber: "FAC-DN-2026-042",
+      invoiceDate: daysAgo(7),
+      receivedByEmployeeId: receivedBy.id,
       subtotal: 2800,
       total: 2800,
     },
@@ -1203,13 +1146,13 @@ async function ensureDemoPurchaseOrders(
       await recordMovementIfAbsent(
         tx,
         {
-          id: "seed-movement-po-credit-combo",
+          id: "seed-movement-purchase-credit-combo",
           branchId: centro.id,
           productId: item.productId,
           type: InventoryMovementType.PURCHASE,
           quantity: item.quantity,
-          notes: "Recepción seed-po-received-credit",
-          purchaseOrderId: SEED_IDS.poReceivedCredit,
+          notes: "Compra registrada seed-purchase-credit",
+          purchaseId: SEED_IDS.purchaseCredit,
         },
         item.quantity,
       );
@@ -1221,7 +1164,7 @@ async function ensureDemoPurchaseOrders(
     create: {
       id: SEED_IDS.accountPayable,
       supplierId: distribuidora.id,
-      purchaseOrderId: SEED_IDS.poReceivedCredit,
+      purchaseId: SEED_IDS.purchaseCredit,
       originalAmount: 2800,
       balance: 1800,
       dueDate: daysFromNow(30),
@@ -1788,12 +1731,12 @@ async function ensureDemoAuditLogs(ctx: SeedContext) {
       metadata: { source: "seed", code: cola355.code },
     },
     {
-      id: "seed-audit-purchase-received",
-      action: "PURCHASE_RECEIVED",
-      entity: "PurchaseOrder",
-      entityId: SEED_IDS.poReceived,
+      id: "seed-audit-purchase-registered",
+      action: "PURCHASE_REGISTERED",
+      entity: "Purchase",
+      entityId: SEED_IDS.purchaseInitial,
       branchId: centro.id,
-      metadata: { source: "seed", status: "RECEIVED" },
+      metadata: { source: "seed", invoiceNumber: "FAC-BC-2026-001" },
     },
     {
       id: "seed-audit-sale-completed",
@@ -1907,7 +1850,7 @@ async function main(): Promise<void> {
 
   // Transferencia antes de ventas para stock en Norte
   await ensureDemoTransfer(ctx);
-  await ensureDemoPurchaseOrders(ctx, suppliers);
+  await ensureDemoPurchases(ctx, suppliers);
   await ensureDemoSalesAndFinance(ctx, customers);
   await ensureDemoReturn(ctx);
 
@@ -1923,7 +1866,7 @@ async function main(): Promise<void> {
     prisma.inventoryMovement.count(),
     prisma.cashRegister.count(),
     prisma.cashShift.count(),
-    prisma.purchaseOrder.count(),
+    prisma.purchase.count(),
     prisma.sale.count(),
     prisma.payment.count(),
     prisma.accountReceivable.count(),
@@ -1947,7 +1890,7 @@ async function main(): Promise<void> {
   console.log(`  descuentos: ${counts[2]} (exclusiones: ${counts[3]})`);
   console.log(`  inventario: ${counts[4]} registros, ${counts[5]} movimientos`);
   console.log(`  cajas: ${counts[6]}, turnos: ${counts[7]}`);
-  console.log(`  órdenes de compra: ${counts[8]}`);
+  console.log(`  compras registradas: ${counts[8]}`);
   console.log(`  ventas: ${counts[9]}, pagos: ${counts[10]}`);
   console.log(`  CxC: ${counts[11]} (abonos: ${counts[12]})`);
   console.log(`  CxP: ${counts[13]} (pagos: ${counts[14]})`);

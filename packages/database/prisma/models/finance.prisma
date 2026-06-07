@@ -55,7 +55,7 @@ model AccountPayable {
   id String @id @default(cuid())
 
   supplierId      String
-  purchaseOrderId String @unique
+  purchaseId String @unique
 
   originalAmount Decimal       @db.Decimal(10, 2)
   balance        Decimal       @db.Decimal(10, 2)
@@ -63,7 +63,7 @@ model AccountPayable {
   status         PayableStatus @default(OPEN)
 
   supplier      Supplier      @relation(fields: [supplierId], references: [id])
-  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchase Purchase @relation(fields: [purchaseId], references: [id])
 
   payments PayablePayment[]
 

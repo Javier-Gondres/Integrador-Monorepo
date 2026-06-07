@@ -44,7 +44,7 @@ model Branch {
   inventories          Inventory[]
   inventoryMovements   InventoryMovement[]
   sales                Sale[]
-  purchaseOrders       PurchaseOrder[]
+  purchases            Purchase[]
   cashRegisters        CashRegister[]
   transfersFrom        Transfer[]          @relation("TransferFrom")
   transfersTo          Transfer[]          @relation("TransferTo")
@@ -83,6 +83,7 @@ model Employee {
   sales                       Sale[]
   cashShifts                  CashShift[]
   returns                     Return[]
+  purchasesReceived           Purchase[]
   inventoryMovementsPerformed InventoryMovement[]
 
   createdAt DateTime @default(now())

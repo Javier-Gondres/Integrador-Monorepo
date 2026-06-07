@@ -35,7 +35,7 @@ model InventoryMovement {
   notes     String?
 
   saleId                String?
-  purchaseOrderId       String?
+  purchaseId            String?
   returnId              String?
   transferId            String?
   performedByEmployeeId String?
@@ -45,7 +45,7 @@ model InventoryMovement {
   performedBy Employee? @relation(fields: [performedByEmployeeId], references: [id])
 
   sale          Sale?          @relation(fields: [saleId], references: [id])
-  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  purchase      Purchase?      @relation(fields: [purchaseId], references: [id])
   return        Return?        @relation(fields: [returnId], references: [id])
   transfer      Transfer?      @relation(fields: [transferId], references: [id])
 

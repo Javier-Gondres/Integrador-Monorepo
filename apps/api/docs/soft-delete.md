@@ -16,7 +16,7 @@ No aplicar soft delete en entidades como:
 - `AuditLog`, `RefreshToken`
 - `Inventory`, `InventoryMovement`
 - `Sale`, `SaleItem`, `Payment`
-- `PurchaseOrder`, `PurchaseOrderItem`
+- `Purchase`, `PurchaseItem`
 - `AccountReceivable`, `ReceivablePayment`, `AccountPayable`, `PayablePayment`
 - `CashShift`, `Transfer`, `TransferItem`, `Return`, `ReturnItem`
 - `NcfSequence` (usar `isActive = false`)

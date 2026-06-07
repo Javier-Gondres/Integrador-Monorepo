@@ -49,7 +49,7 @@ model Product {
   inventories        Inventory[]
   inventoryMovements InventoryMovement[]
   saleItems          SaleItem[]
-  purchaseOrderItems PurchaseOrderItem[]
+  purchaseItems PurchaseItem[]
   returnItems        ReturnItem[]
   transferItems      TransferItem[]
   discounts          Discount[]
@@ -101,7 +101,7 @@ model Supplier {
   company Company @relation(fields: [companyId], references: [id])
 
   products        ProductSupplier[]
-  purchaseOrders  PurchaseOrder[]
+  purchases       Purchase[]
   accountsPayable AccountPayable[]
 
   createdAt DateTime @default(now())
