@@ -8,3 +8,17 @@ export interface LoginCredentials {
 export interface LoginResponse {
   accessToken: string;
 }
+
+export interface AuthMeResponse {
+  auth: {
+    userId: string;
+    companyId: string | null;
+    branchId: string | null;
+    role: string | null;
+  };
+  company: {
+    companyId: string;
+    branchId: string | null;
+    role: string;
+  };
+}

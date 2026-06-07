@@ -12,6 +12,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useAuth } from "@/modules/auth";
+
 const navItems = [
   { section: "General" },
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -25,6 +27,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   return (
     <aside className="sidebar">
@@ -75,7 +78,7 @@ export function Sidebar() {
             <p className="user-role">Administrador</p>
           </div>
         </div>
-        <button className="logout-btn">
+        <button className="logout-btn" onClick={() => logout()}>
           <LogOut size={14} />
           <span>Cerrar Sesión</span>
         </button>

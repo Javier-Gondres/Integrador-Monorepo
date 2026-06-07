@@ -1,46 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
 
-import { getAccessToken } from "@/lib/api/access-token";
-import { useLogin, useLogout } from "@/modules/auth";
+import { useAuth } from "@/modules/auth";
 import { DEV_TEST_USER } from "@/modules/auth/constants";
 
 import styles from "./page.module.css";
 
 export function DevLoginButton() {
   const router = useRouter();
-  const [hasSession, setHasSession] = useState(false);
-  const login = useLogin();
-  const logout = useLogout();
+  const { isAuthenticated, login, logout, isLoggingIn, isLoggingOut } =
+    useAuth();
 
-  const refreshSession = useCallback(() => {
-    setHasSession(Boolean(getAccessToken()));
-  }, []);
-
-  useEffect(() => {
-    refreshSession();
-  }, [refreshSession]);
-
-  function handleDevLogin() {
-    login.mutate(DEV_TEST_USER, {
-      onSuccess: () => {
-        refreshSession();
-        router.push("/products");
-      },
-    });
+  async function handleDevLogin() {
+    await login(DEV_TEST_USER);
+    router.push("/products");
   }
 
-  function handleLogout() {
-    logout.mutate(undefined, {
-      onSuccess: () => {
-        refreshSession();
-      },
-    });
+  async function handleLogout() {
+    await logout();
   }
 
-  if (hasSession) {
+  if (isAuthenticated) {
     return (
       <div className={styles.authBox}>
         <p className={styles.authHint}>
@@ -49,10 +30,10 @@ export function DevLoginButton() {
         <button
           type="button"
           className={styles.authSecondary}
-          disabled={logout.isPending}
+          disabled={isLoggingOut}
           onClick={handleLogout}
         >
-          {logout.isPending ? "Cerrando…" : "Cerrar sesión"}
+          {isLoggingOut ? "Cerrando…" : "Cerrar sesión"}
         </button>
       </div>
     );
@@ -68,10 +49,10 @@ export function DevLoginButton() {
       <button
         type="button"
         className={styles.authPrimary}
-        disabled={login.isPending}
+        disabled={isLoggingIn}
         onClick={handleDevLogin}
       >
-        {login.isPending
+        {isLoggingIn
           ? "Iniciando sesión…"
           : "Iniciar sesión (usuario demo)"}
       </button>
