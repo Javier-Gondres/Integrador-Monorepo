@@ -1,0 +1,44 @@
+model CashRegister {
+  id String @id @default(cuid())
+
+  branchId String
+  name     String
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  shifts CashShift[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([branchId, name, deletedAt])
+  @@index([branchId])
+  @@index([deletedAt])
+}
+
+model CashShift {
+  id String @id @default(cuid())
+
+  cashRegisterId String
+  cashierId      String
+
+  openingAmount Decimal   @db.Decimal(10, 2)
+  closingAmount Decimal?  @db.Decimal(10, 2)
+  openedAt      DateTime  @default(now())
+  closedAt      DateTime?
+
+  cashRegister CashRegister @relation(fields: [cashRegisterId], references: [id])
+  cashier      Employee     @relation(fields: [cashierId], references: [id])
+
+  sales Sale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cashRegisterId])
+  @@index([cashierId])
+  @@index([openedAt])
+}

@@ -21,6 +21,7 @@
     "db:generate:production": "dotenv -e .env.production -- prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:dev": "dotenv -e .env.development -- prisma migrate dev",
+    "db:reset": "dotenv -e .env.development -- prisma migrate reset",
     "db:deploy": "prisma migrate deploy",
     "db:deploy:dev": "dotenv -e .env.development -- prisma migrate deploy",
     "db:deploy:staging": "dotenv -e .env.staging -- prisma migrate deploy",

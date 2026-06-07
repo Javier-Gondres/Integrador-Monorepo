@@ -1,0 +1,91 @@
+enum ReceivableStatus {
+  OPEN
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+enum PayableStatus {
+  OPEN
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+model AccountReceivable {
+  id String @id @default(cuid())
+
+  customerId String
+  saleId     String @unique
+
+  originalAmount Decimal          @db.Decimal(10, 2)
+  balance        Decimal          @db.Decimal(10, 2)
+  dueDate        DateTime
+  status         ReceivableStatus @default(OPEN)
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  sale     Sale     @relation(fields: [saleId], references: [id])
+
+  payments ReceivablePayment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model ReceivablePayment {
+  id String @id @default(cuid())
+
+  accountReceivableId String
+  amount              Decimal       @db.Decimal(10, 2)
+  method              PaymentMethod
+  notes               String?
+
+  accountReceivable AccountReceivable @relation(fields: [accountReceivableId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([accountReceivableId])
+}
+
+model AccountPayable {
+  id String @id @default(cuid())
+
+  supplierId      String
+  purchaseId String @unique
+
+  originalAmount Decimal       @db.Decimal(10, 2)
+  balance        Decimal       @db.Decimal(10, 2)
+  dueDate        DateTime
+  status         PayableStatus @default(OPEN)
+
+  supplier      Supplier      @relation(fields: [supplierId], references: [id])
+  purchase Purchase @relation(fields: [purchaseId], references: [id])
+
+  payments PayablePayment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([supplierId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model PayablePayment {
+  id String @id @default(cuid())
+
+  accountPayableId String
+  amount           Decimal       @db.Decimal(10, 2)
+  method           PaymentMethod
+  notes            String?
+
+  accountPayable AccountPayable @relation(fields: [accountPayableId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([accountPayableId])
+}

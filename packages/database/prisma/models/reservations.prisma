@@ -1,0 +1,53 @@
+enum ReservationStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+/// Documento de reserva multiproducto. Bloquea disponibilidad sin mover stock físico.
+model Reservation {
+  id String @id @default(cuid())
+
+  companyId String
+  branchId  String
+
+  customerId          String?
+  createdByEmployeeId String?
+
+  expiresAt DateTime?
+  notes     String?
+
+  status ReservationStatus @default(ACTIVE)
+
+  company   Company   @relation(fields: [companyId], references: [id])
+  branch    Branch    @relation(fields: [branchId], references: [id])
+  customer  Customer? @relation(fields: [customerId], references: [id])
+  createdBy Employee? @relation(fields: [createdByEmployeeId], references: [id])
+
+  items ReservationItem[]
+  sales Sale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([customerId])
+  @@index([status])
+}
+
+model ReservationItem {
+  id String @id @default(cuid())
+
+  reservationId String
+  productId     String
+
+  quantity Decimal @db.Decimal(12, 3)
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id])
+
+  @@index([reservationId])
+  @@index([productId])
+}
