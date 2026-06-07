@@ -311,7 +311,6 @@ Vínculo explícito producto ↔ proveedor (`@@id([productId, supplierId])`).
 | -------------- | ------------------------------------------------ |
 | `isPreferred`  | Proveedor preferido al generar órdenes de compra |
 | `lastCost`     | Último costo registrado con ese proveedor        |
-| `supplierCode` | Código/SKU del proveedor para el producto        |
 
 **Regla:** por cada producto solo puede existir un `ProductSupplier` con `isPreferred = true`. Esta restricción está protegida tanto por lógica de aplicación como por un índice parcial único en PostgreSQL (`product_supplier_preferred_idx`).
 

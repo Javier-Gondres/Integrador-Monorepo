@@ -152,7 +152,6 @@ type DemoProductSupplier = {
   supplierName: string;
   isPreferred?: boolean;
   lastCost?: number;
-  supplierCode?: string;
 };
 
 type DemoProduct = {
@@ -176,12 +175,10 @@ const DEMO_PRODUCTS: DemoProduct[] = [
         supplierName: "Bebidas Caribeña",
         isPreferred: true,
         lastCost: 30,
-        supplierCode: "BC-COLA-355",
       },
       {
         supplierName: "Distribuidora Nacional SRL",
         lastCost: 32,
-        supplierCode: "DN-BEB-001",
       },
     ],
   },
@@ -196,7 +193,6 @@ const DEMO_PRODUCTS: DemoProduct[] = [
         supplierName: "Bebidas Caribeña",
         isPreferred: true,
         lastCost: 80,
-        supplierCode: "BC-COLA-2L",
       },
     ],
   },
@@ -211,12 +207,10 @@ const DEMO_PRODUCTS: DemoProduct[] = [
         supplierName: "Distribuidora Nacional SRL",
         isPreferred: true,
         lastCost: 45,
-        supplierCode: "DN-SNACK-040",
       },
       {
         supplierName: "Alimentos del Cibao SA",
         lastCost: 47,
-        supplierCode: "AC-LAYS-40",
       },
     ],
   },
@@ -231,7 +225,6 @@ const DEMO_PRODUCTS: DemoProduct[] = [
         supplierName: "Alimentos del Cibao SA",
         isPreferred: true,
         lastCost: 40,
-        supplierCode: "AC-LECHE-1L",
       },
     ],
   },
@@ -246,12 +239,10 @@ const DEMO_PRODUCTS: DemoProduct[] = [
         supplierName: "Distribuidora Nacional SRL",
         isPreferred: true,
         lastCost: 70,
-        supplierCode: "DN-COMBO-01",
       },
       {
         supplierName: "Bebidas Caribeña",
         lastCost: 72,
-        supplierCode: "BC-COMBO-01",
       },
     ],
   },
@@ -649,12 +640,10 @@ async function ensureProductSuppliers(
           supplierId: supplier.id,
           isPreferred,
           lastCost: link.lastCost,
-          supplierCode: link.supplierCode,
         },
         update: {
           isPreferred,
           lastCost: link.lastCost,
-          supplierCode: link.supplierCode,
         },
       });
     });

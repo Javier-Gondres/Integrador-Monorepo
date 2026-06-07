@@ -24,3 +24,11 @@ ALTER INDEX "AccountPayable_purchaseOrderId_key" RENAME TO "AccountPayable_purch
 CREATE INDEX "Purchase_createdAt_idx" ON "Purchase"("createdAt");
 
 DROP TYPE "PurchaseOrderStatus";
+
+-- Rename FK constraints to match Purchase / PurchaseItem table names.
+ALTER TABLE "AccountPayable" RENAME CONSTRAINT "AccountPayable_purchaseOrderId_fkey" TO "AccountPayable_purchaseId_fkey";
+ALTER TABLE "InventoryMovement" RENAME CONSTRAINT "InventoryMovement_purchaseOrderId_fkey" TO "InventoryMovement_purchaseId_fkey";
+ALTER TABLE "Purchase" RENAME CONSTRAINT "PurchaseOrder_branchId_fkey" TO "Purchase_branchId_fkey";
+ALTER TABLE "Purchase" RENAME CONSTRAINT "PurchaseOrder_supplierId_fkey" TO "Purchase_supplierId_fkey";
+ALTER TABLE "PurchaseItem" RENAME CONSTRAINT "PurchaseOrderItem_productId_fkey" TO "PurchaseItem_productId_fkey";
+ALTER TABLE "PurchaseItem" RENAME CONSTRAINT "PurchaseOrderItem_purchaseOrderId_fkey" TO "PurchaseItem_purchaseId_fkey";
