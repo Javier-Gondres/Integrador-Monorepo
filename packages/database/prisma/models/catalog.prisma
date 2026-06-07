@@ -48,6 +48,7 @@ model Product {
   suppliers          ProductSupplier[]
   inventories        Inventory[]
   inventoryMovements InventoryMovement[]
+  reservationItems   ReservationItem[]
   saleItems          SaleItem[]
   purchaseItems PurchaseItem[]
   returnItems        ReturnItem[]
@@ -132,6 +133,7 @@ model Customer {
 
   sales              Sale[]
   accountsReceivable AccountReceivable[]
+  reservations       Reservation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

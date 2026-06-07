@@ -19,6 +19,7 @@ model Sale {
   cashierId     String
   cashShiftId   String?
   ncfSequenceId String?
+  reservationId String?
 
   ncf       String?
   ncfType   NcfType?
@@ -32,6 +33,7 @@ model Sale {
   cashier     Employee     @relation(fields: [cashierId], references: [id])
   cashShift   CashShift?   @relation(fields: [cashShiftId], references: [id])
   ncfSequence NcfSequence? @relation(fields: [ncfSequenceId], references: [id])
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
 
   items              SaleItem[]
   payments           Payment[]
@@ -45,6 +47,7 @@ model Sale {
   @@index([branchId])
   @@index([customerId])
   @@index([cashierId])
+  @@index([reservationId])
   @@index([status])
   @@index([ncfType])
   @@index([createdAt])

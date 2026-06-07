@@ -49,8 +49,9 @@ Aunque actualmente un usuario solo puede pertenecer a **una** empresa activa, se
 
 ### Inventario: proyección vs. historial
 
-- **`Inventory`** es una **proyección** del stock actual por sucursal (`branchId + productId`).
-- **`InventoryMovement`** es la **fuente de verdad histórica** e inmutable de cada cambio.
+- **`Inventory`** es una **proyección** del stock **físico** por sucursal (`branchId + productId`).
+- **`Reservation`** / **`ReservationItem`** bloquean disponibilidad sin mover stock físico — ver [Reservas de inventario](#reservas-de-inventario).
+- **`InventoryMovement`** es la **fuente de verdad histórica** e inmutable de cada cambio físico.
 
 Toda modificación de inventario debe, en la **misma transacción**:
 
@@ -58,6 +59,28 @@ Toda modificación de inventario debe, en la **misma transacción**:
 2. Actualizar `Inventory`.
 
 **Prohibido:** `prisma.inventory.update(...)` sin registrar el movimiento correspondiente. Ese patrón rompe trazabilidad y conciliación de stock.
+
+### Reservas de inventario
+
+Una reserva es un **documento multiproducto** (`Reservation` + `ReservationItem`), alineado con `Sale`/`SaleItem`, `Purchase`/`PurchaseItem`, etc. Bloquea stock disponible sin modificar la existencia física ni generar `InventoryMovement`.
+
+```text
+stock físico     = Inventory.quantity
+stock reservado  = SUM(ReservationItem.quantity WHERE Reservation.status = ACTIVE)
+stock disponible = stock físico - stock reservado
+```
+
+**Ejemplo:** `Inventory.quantity = 100` de martillos. Reserva A (línea martillos = 20) + Reserva B (línea martillos = 15) → disponible = 65.
+
+| Acción | Efecto |
+|--------|--------|
+| Crear reserva | `Reservation` + `ReservationItem`(s) con `status = ACTIVE`; `Inventory` sin cambios |
+| Convertir en venta | `Sale.reservationId = reservation.id` + `Reservation.status = COMPLETED` + `SaleItem`(s) + `InventoryMovement(SALE)` + bajar `Inventory` (misma transacción) |
+| Cancelar / expirar | `status = CANCELLED` o `EXPIRED`; disponible se libera |
+
+**Prohibido:** usar `InventoryMovement` para reservas. Los movimientos representan solo cambios físicos reales (`PURCHASE`, `SALE`, `RETURN`, transferencias, `ADJUSTMENT`, `WASTE`).
+
+Antes de vender o reservar, validar: `quantity solicitada <= stock disponible`.
 
 ### Descuentos
 
@@ -103,6 +126,7 @@ Purchase, PurchaseItem
 CashShift
 Transfer, TransferItem
 Return, ReturnItem
+Reservation, ReservationItem
 AuditLog
 ```
 
@@ -139,7 +163,8 @@ Mecanismo estándar: `deletedAt DateTime?`. Configuración en [`src/soft-delete/
 
 | Modelo                                   | Alternativa                                        |
 | ---------------------------------------- | -------------------------------------------------- |
-| `Inventory`, `InventoryMovement`         | Fuente de verdad del stock                         |
+| `Inventory`, `InventoryMovement`         | Fuente de verdad del stock físico                  |
+| `Reservation`, `ReservationItem`         | `ReservationStatus` (no mueve stock físico)        |
 | `Sale`, `SaleItem`, `Payment`            | `SaleStatus` (`PENDING`, `COMPLETED`, `CANCELLED`) |
 | `Purchase`, `PurchaseItem`               | Registro histórico inmutable                       |
 | `AccountReceivable`, `ReceivablePayment` | `ReceivableStatus`                                 |
@@ -398,9 +423,36 @@ Ver también [Inventario: proyección vs. historial](#inventario-proyección-vs-
 
 ### `Inventory`
 
-**Proyección** del stock actual: **un registro por** `(branchId, productId)`. No es la fuente de verdad histórica; se deriva de `InventoryMovement`.
+**Proyección** del stock **físico** actual: **un registro por** `(branchId, productId)`. No incluye reservas; se deriva de `InventoryMovement`.
 
-**Ejemplo:** Santiago 50, Santo Domingo 30 unidades de `BEB-001`.
+**Ejemplo:** Santiago 50 unidades físicas de `BEB-001`. Si hay 10 reservadas activas, el disponible para vender es 40.
+
+---
+
+### `Reservation` / `ReservationItem`
+
+Documento de reserva multiproducto. Consistente con el patrón cabecera/líneas del ERP (`Sale`/`SaleItem`, `Purchase`/`PurchaseItem`, etc.).
+
+**`Reservation`** — cabecera del documento:
+
+| Campo                 | Uso                                              |
+| --------------------- | ------------------------------------------------ |
+| `companyId`, `branchId` | Alcance multiempresa / sucursal                |
+| `customerId`          | Cliente opcional                                 |
+| `createdByEmployeeId` | Empleado que registró la reserva                 |
+| `expiresAt`           | Vencimiento opcional                             |
+| `status`              | `ACTIVE`, `COMPLETED`, `CANCELLED`, `EXPIRED`    |
+
+**`ReservationItem`** — cada producto reservado:
+
+| Campo        | Uso                    |
+| ------------ | ---------------------- |
+| `productId`  | Producto reservado     |
+| `quantity`   | Unidades bloqueadas    |
+
+**Trazabilidad con ventas:** `Reservation` 1 ── N `Sale` vía `Sale.reservationId` (opcional). Solo auditoría; no afecta disponibilidad ni inventario. Una reserva puede originar varias ventas (p. ej. consumos parciales futuros).
+
+**No genera** `InventoryMovement`. Ver [Reservas de inventario](#reservas-de-inventario).
 
 ---
 
@@ -437,6 +489,7 @@ Cabecera de venta en una sucursal.
 | Campo                             | Uso                                                                             |
 | --------------------------------- | ------------------------------------------------------------------------------- |
 | `status`                          | `PENDING` → `COMPLETED` o `CANCELLED`                                           |
+| `reservationId`                   | Reserva de origen (opcional; solo trazabilidad/auditoría)                       |
 | `cashierId`                       | `Employee` que opera la venta                                                   |
 | `cashShiftId`                     | Turno de caja abierto (opcional pero recomendado en POS)                        |
 | `ncf`, `ncfType`, `ncfSequenceId` | Comprobante fiscal; `ncfType` es snapshot histórico (reportes B01/B02 sin join) |
@@ -779,6 +832,18 @@ Todo en **una transacción**. No existen compras pendientes de recepción.
 
 ---
 
+### Reserva de inventario
+
+1. Calcular disponible por producto: `Inventory.quantity - SUM(ReservationItem.quantity WHERE Reservation.status = ACTIVE)` en la sucursal.
+2. Validar cada línea: `quantity solicitada <= disponible` para ese producto.
+3. Crear `Reservation` + `ReservationItem`(s) con `status = ACTIVE` (opcional `customerId`, `createdByEmployeeId`, `expiresAt`).
+4. **No** crear `InventoryMovement` ni modificar `Inventory`.
+5. `AuditLog` con `branchId`.
+
+**Convertir en venta (misma transacción):** crear `Sale` con `reservationId` + `SaleItem`(s) + `InventoryMovement(SALE)` + bajar `Inventory` + marcar `Reservation.status = COMPLETED`. Las ventas directas dejan `reservationId = null`. **Cancelar:** `status = CANCELLED`. Job periódico puede marcar `EXPIRED` cuando `expiresAt < hoy`.
+
+---
+
 ### Devolución
 
 1. Crear `Return` + `ReturnItem`(s) (vincular `saleId` si aplica).
@@ -821,7 +886,9 @@ Todo en **una transacción**. No existen compras pendientes de recepción.
 | Regla                | Detalle                                                                                                                        |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Inventario           | Siempre movimiento + actualización de `Inventory` en la misma TX                                                               |
-| Stock negativo       | No permitir venta/transferencia si cantidad insuficiente                                                                       |
+| Disponibilidad       | Validar `disponible = Inventory.quantity - reservas ACTIVE` antes de venta, reserva o transferencia                              |
+| Reservas             | No generan `InventoryMovement`; liberar con `COMPLETED`, `CANCELLED` o `EXPIRED`                                               |
+| Stock negativo       | No permitir venta/transferencia/reserva si cantidad disponible insuficiente                                                    |
 | NCF                  | Validar vigencia y cupo antes de incrementar                                                                                   |
 | Ventas               | `COMPLETED` solo cuando inventario, pagos/crédito y NCF (si aplica) estén consistentes                                         |
 | Anulación            | `Sale.status = CANCELLED` + reversar inventario con movimiento tipo `ADJUSTMENT` o `RETURN` — definir en servicio de anulación |
@@ -845,6 +912,7 @@ PaymentMethod: CASH | CARD | TRANSFER | CREDIT
 ReceivableStatus: OPEN | PARTIAL | PAID | OVERDUE
 PayableStatus: OPEN | PARTIAL | PAID | OVERDUE
 InventoryMovementType: PURCHASE | SALE | RETURN | TRANSFER_IN | TRANSFER_OUT | ADJUSTMENT | WASTE
+ReservationStatus: ACTIVE | COMPLETED | CANCELLED | EXPIRED
 NcfType: CONSUMIDOR_FINAL | CREDITO_FISCAL | GUBERNAMENTAL | REGIMEN_ESPECIAL | EXPORTACION
 TransferStatus: PENDING | IN_TRANSIT | COMPLETED | CANCELLED
 ReturnReason: DEFECTIVE | SALES_ERROR | EXPIRED | OTHER

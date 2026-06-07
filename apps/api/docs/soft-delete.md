@@ -14,7 +14,7 @@ Aplicar soft delete en modelos como:
 No aplicar soft delete en entidades como:
 
 - `AuditLog`, `RefreshToken`
-- `Inventory`, `InventoryMovement`
+- `Inventory`, `InventoryMovement`, `Reservation`, `ReservationItem`
 - `Sale`, `SaleItem`, `Payment`
 - `Purchase`, `PurchaseItem`
 - `AccountReceivable`, `ReceivablePayment`, `AccountPayable`, `PayablePayment`

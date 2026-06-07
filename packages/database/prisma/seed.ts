@@ -17,6 +17,7 @@ import { type ExtendedPrismaClient, prisma } from "../src/client.js";
 import {
   InventoryMovementType,
   NcfType,
+  ReservationStatus,
   PayableStatus,
   PaymentMethod,
   ReceivableStatus,
@@ -51,6 +52,7 @@ const SEED_IDS = {
   saleCredit: "seed-sale-credit-completed",
   salePending: "seed-sale-pending",
   saleCancelled: "seed-sale-cancelled",
+  saleFromReservation: "seed-sale-from-reservation-lays",
   transferCompleted: "seed-transfer-completed",
   returnFromSale: "seed-return-from-sale",
   accountReceivable: "seed-account-receivable",
@@ -58,6 +60,16 @@ const SEED_IDS = {
   accountPayable: "seed-account-payable",
   payablePayment: "seed-payable-payment",
   movementWaste: "seed-movement-waste-cola-2l",
+  reservationActiveJuan: "seed-reservation-active-juan",
+  reservationActiveJuanCola: "seed-reservation-active-juan-item-cola",
+  reservationActiveJuanLays: "seed-reservation-active-juan-item-lays",
+  reservationActiveJuanCombo: "seed-reservation-active-juan-item-combo",
+  reservationCompleted: "seed-reservation-completed-lays",
+  reservationCompletedItem: "seed-reservation-completed-item-lays",
+  reservationCancelled: "seed-reservation-cancelled-leche",
+  reservationCancelledItem: "seed-reservation-cancelled-item-leche",
+  reservationExpired: "seed-reservation-expired-combo",
+  reservationExpiredItem: "seed-reservation-expired-item-combo",
 } as const;
 
 type SeedUser = {
@@ -1211,6 +1223,137 @@ async function ensureDemoPurchases(
   });
 }
 
+async function upsertReservationItem(
+  id: string,
+  reservationId: string,
+  productId: string,
+  quantity: number,
+) {
+  await prisma.reservationItem.upsert({
+    where: { id },
+    create: { id, reservationId, productId, quantity },
+    update: { quantity },
+  });
+}
+
+async function ensureDemoReservations(
+  ctx: SeedContext,
+  customers: CustomerRef[],
+) {
+  const norte = branchByName(ctx, "Sucursal Norte");
+  const cola355 = productByCode(ctx, "BEB-COLA-355");
+  const lays = productByCode(ctx, "SNK-LAYS-40");
+  const leche = productByCode(ctx, "LAC-LECHE-1L");
+  const combo = productByCode(ctx, "COMBO-SNACK-BEB");
+
+  const juan = customers.find((c) => c.id === SEED_IDS.customerJuan);
+  const maria = customers.find((c) => c.id === SEED_IDS.customerMaria);
+  if (!juan || !maria) {
+    throw new Error("Clientes seed no encontrados para reservas.");
+  }
+
+  const cashier = employeeByEmail(ctx, "cajero@ejemplo.com");
+
+  await prisma.reservation.upsert({
+    where: { id: SEED_IDS.reservationActiveJuan },
+    create: {
+      id: SEED_IDS.reservationActiveJuan,
+      companyId: ctx.companyId,
+      branchId: norte.id,
+      customerId: juan.id,
+      createdByEmployeeId: cashier.id,
+      expiresAt: daysFromNow(7),
+      notes:
+        "Cliente retira el lunes — 10 Coca-Cola 355ml, 5 Lays, 3 combos snack+beb",
+      status: ReservationStatus.ACTIVE,
+    },
+    update: {
+      expiresAt: daysFromNow(7),
+      status: ReservationStatus.ACTIVE,
+      notes:
+        "Cliente retira el lunes — 10 Coca-Cola 355ml, 5 Lays, 3 combos snack+beb",
+    },
+  });
+
+  await upsertReservationItem(
+    SEED_IDS.reservationActiveJuanCola,
+    SEED_IDS.reservationActiveJuan,
+    cola355.id,
+    10,
+  );
+  await upsertReservationItem(
+    SEED_IDS.reservationActiveJuanLays,
+    SEED_IDS.reservationActiveJuan,
+    lays.id,
+    5,
+  );
+  await upsertReservationItem(
+    SEED_IDS.reservationActiveJuanCombo,
+    SEED_IDS.reservationActiveJuan,
+    combo.id,
+    3,
+  );
+
+  await prisma.reservation.upsert({
+    where: { id: SEED_IDS.reservationCompleted },
+    create: {
+      id: SEED_IDS.reservationCompleted,
+      companyId: ctx.companyId,
+      branchId: norte.id,
+      customerId: maria.id,
+      createdByEmployeeId: cashier.id,
+      notes: "Convertida en venta en efectivo",
+      status: ReservationStatus.COMPLETED,
+    },
+    update: { status: ReservationStatus.COMPLETED },
+  });
+  await upsertReservationItem(
+    SEED_IDS.reservationCompletedItem,
+    SEED_IDS.reservationCompleted,
+    lays.id,
+    5,
+  );
+
+  await prisma.reservation.upsert({
+    where: { id: SEED_IDS.reservationCancelled },
+    create: {
+      id: SEED_IDS.reservationCancelled,
+      companyId: ctx.companyId,
+      branchId: norte.id,
+      customerId: juan.id,
+      createdByEmployeeId: cashier.id,
+      notes: "Cliente no retiró — reserva cancelada",
+      status: ReservationStatus.CANCELLED,
+    },
+    update: { status: ReservationStatus.CANCELLED },
+  });
+  await upsertReservationItem(
+    SEED_IDS.reservationCancelledItem,
+    SEED_IDS.reservationCancelled,
+    leche.id,
+    3,
+  );
+
+  await prisma.reservation.upsert({
+    where: { id: SEED_IDS.reservationExpired },
+    create: {
+      id: SEED_IDS.reservationExpired,
+      companyId: ctx.companyId,
+      branchId: norte.id,
+      expiresAt: daysAgo(3),
+      notes: "Venció sin retiro",
+      status: ReservationStatus.EXPIRED,
+    },
+    update: { status: ReservationStatus.EXPIRED },
+  });
+  await upsertReservationItem(
+    SEED_IDS.reservationExpiredItem,
+    SEED_IDS.reservationExpired,
+    combo.id,
+    2,
+  );
+}
+
 async function ensureDemoSalesAndFinance(
   ctx: SeedContext,
   customers: CustomerRef[],
@@ -1545,6 +1688,72 @@ async function ensureDemoSalesAndFinance(
       status: SaleStatus.CANCELLED,
     },
   });
+
+  const maria = customers.find((c) => c.id === SEED_IDS.customerMaria);
+  if (!maria) {
+    throw new Error("Cliente Maria no encontrado.");
+  }
+
+  const reservationLaysQty = 5;
+  const reservationSaleSubtotal = lays.price * reservationLaysQty;
+
+  await prisma.sale.upsert({
+    where: { id: SEED_IDS.saleFromReservation },
+    create: {
+      id: SEED_IDS.saleFromReservation,
+      branchId: norte.id,
+      customerId: maria.id,
+      cashierId: cashier.id,
+      cashShiftId: openShiftId,
+      reservationId: SEED_IDS.reservationCompleted,
+      subtotal: reservationSaleSubtotal,
+      taxAmount: 0,
+      total: reservationSaleSubtotal,
+      status: SaleStatus.COMPLETED,
+      items: {
+        create: [
+          {
+            id: "seed-sale-from-reservation-item-lays",
+            productId: lays.id,
+            quantity: reservationLaysQty,
+            unitPrice: lays.price,
+            discountPercentage: 0,
+            discountAmount: 0,
+            subtotal: reservationSaleSubtotal,
+          },
+        ],
+      },
+      payments: {
+        create: [
+          {
+            id: "seed-sale-from-reservation-payment",
+            method: PaymentMethod.CASH,
+            amount: reservationSaleSubtotal,
+          },
+        ],
+      },
+    },
+    update: {
+      reservationId: SEED_IDS.reservationCompleted,
+      status: SaleStatus.COMPLETED,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await recordMovementIfAbsent(
+      tx,
+      {
+        id: "seed-movement-sale-from-reservation-lays",
+        branchId: norte.id,
+        productId: lays.id,
+        type: InventoryMovementType.SALE,
+        quantity: reservationLaysQty,
+        saleId: SEED_IDS.saleFromReservation,
+        performedByEmployeeId: cashier.id,
+      },
+      -reservationLaysQty,
+    );
+  });
 }
 
 async function ensureDemoTransfer(ctx: SeedContext) {
@@ -1851,6 +2060,7 @@ async function main(): Promise<void> {
   // Transferencia antes de ventas para stock en Norte
   await ensureDemoTransfer(ctx);
   await ensureDemoPurchases(ctx, suppliers);
+  await ensureDemoReservations(ctx, customers);
   await ensureDemoSalesAndFinance(ctx, customers);
   await ensureDemoReturn(ctx);
 
@@ -1864,6 +2074,8 @@ async function main(): Promise<void> {
     prisma.discountExcludedProduct.count(),
     prisma.inventory.count(),
     prisma.inventoryMovement.count(),
+    prisma.reservation.count(),
+    prisma.reservationItem.count(),
     prisma.cashRegister.count(),
     prisma.cashShift.count(),
     prisma.purchase.count(),
@@ -1888,13 +2100,15 @@ async function main(): Promise<void> {
   console.log(`  clientes: ${counts[0]}`);
   console.log(`  secuencias NCF: ${counts[1]}`);
   console.log(`  descuentos: ${counts[2]} (exclusiones: ${counts[3]})`);
-  console.log(`  inventario: ${counts[4]} registros, ${counts[5]} movimientos`);
-  console.log(`  cajas: ${counts[6]}, turnos: ${counts[7]}`);
-  console.log(`  compras registradas: ${counts[8]}`);
-  console.log(`  ventas: ${counts[9]}, pagos: ${counts[10]}`);
-  console.log(`  CxC: ${counts[11]} (abonos: ${counts[12]})`);
-  console.log(`  CxP: ${counts[13]} (pagos: ${counts[14]})`);
-  console.log(`  transferencias: ${counts[15]}, devoluciones: ${counts[16]}`);
+  console.log(
+    `  inventario: ${counts[4]} registros, ${counts[5]} movimientos, ${counts[6]} reservas (${counts[7]} líneas)`,
+  );
+  console.log(`  cajas: ${counts[8]}, turnos: ${counts[9]}`);
+  console.log(`  compras registradas: ${counts[10]}`);
+  console.log(`  ventas: ${counts[11]}, pagos: ${counts[12]}`);
+  console.log(`  CxC: ${counts[13]} (abonos: ${counts[14]})`);
+  console.log(`  CxP: ${counts[15]} (pagos: ${counts[16]})`);
+  console.log(`  transferencias: ${counts[17]}, devoluciones: ${counts[18]}`);
   console.log(`  refresh tokens: ${refreshTokens}`);
   console.log(`  audit logs: ${auditLogs}`);
   console.log("Vuelve a hacer login para refrescar el contexto JWT.");
