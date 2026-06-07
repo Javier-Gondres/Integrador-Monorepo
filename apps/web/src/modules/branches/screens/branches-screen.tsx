@@ -72,14 +72,11 @@ export function BranchesScreen() {
   // Fetch del nombre de la empresa (solo para el breadcrumb)
   const cargarCompanyName = async (signal?: AbortSignal) => {
     try {
-      const companies = await apiFetch<MyCompanyListItem[]>("/me/companies", {
+      const company = await apiFetch<MyCompanyListItem>("/me/company", {
         signal,
       });
-      const currentCompany = companies.find(
-        (company) => company.slug === companySlug,
-      );
-      if (currentCompany) {
-        setCompanyName(currentCompany.name);
+      if (company.slug === companySlug) {
+        setCompanyName(company.name);
       }
     } catch (e: unknown) {
       if (e instanceof Error && e.name === "AbortError") return;

@@ -1,0 +1,217 @@
+# Flujo de registro: Employee y User
+
+Este documento describe cómo el ERP multiempresa modela a los **empleados operativos**: personas que utilizan el sistema y tienen registro laboral en la empresa.
+
+---
+
+## Decisión de negocio
+
+```text
+Todo Employee tiene acceso al ERP.
+```
+
+`Employee` representa exclusivamente usuarios operativos del sistema. No se registran choferes, mensajeros ni personal externo sin interacción con el ERP.
+
+Cada alta de empleado crea obligatoriamente:
+
+```text
+User → UserCompany → Employee
+```
+
+en una sola transacción.
+
+---
+
+## 1. Responsabilidades por modelo
+
+| Modelo        | Responsabilidad                                                       |
+| ------------- | --------------------------------------------------------------------- |
+| `User`        | Autenticación: email, contraseña, nombre de sesión, `lastLoginAt`     |
+| `UserCompany` | Autorización tenant: empresa, rol, sucursal por defecto               |
+| `Employee`    | Datos laborales: teléfono, puesto, salario, fechas, sucursal asignada |
+
+### User
+
+```text
+email
+passwordHash
+firstName
+lastName
+lastLoginAt
+```
+
+### UserCompany
+
+```text
+companyId
+roleId
+defaultBranchId
+```
+
+### Employee
+
+```text
+companyId   (obligatorio)
+branchId      (obligatorio)
+userId        (obligatorio, único)
+phone
+position
+salary
+hireDate
+terminationDate
+```
+
+---
+
+## 2. Arquitectura de relaciones
+
+```text
+Company
+ └── Branch
+      └── Employee
+           └── User (1:1)
+                └── UserCompany (membresía en la empresa)
+```
+
+```mermaid
+erDiagram
+  Company ||--o{ Branch : branches
+  Company ||--o{ Employee : employees
+  Branch ||--o{ Employee : staff
+  User ||--o| Employee : employee
+  User ||--o{ UserCompany : memberships
+  UserCompany }o--|| Company : company
+  UserCompany }o--|| Role : role
+```
+
+---
+
+## 3. Reglas de integridad
+
+| Estado                              | Válido |
+| ----------------------------------- | ------ |
+| `companyId` + `branchId` + `userId` | Sí     |
+| `userId = null`                     | **No** |
+| `branchId = null`                   | **No** |
+| `companyId = null`                  | **No** |
+
+---
+
+## 4. Crear empleado
+
+**Endpoint único:**
+
+```http
+POST /employees
+```
+
+Requiere `@RequireCompany()` (JWT + empresa activa).
+
+### Body
+
+```json
+{
+  "firstName": "Maria",
+  "lastName": "Rodriguez",
+  "phone": "8095559999",
+  "email": "maria@empresa.com",
+  "password": "12345678",
+  "roleId": "clxxxxxxxx",
+  "branchId": "branch_id",
+  "position": "Cajera",
+  "salary": 25000,
+  "hireDate": "2026-01-15"
+}
+```
+
+> `roleId` es el id del rol (`GET /users/roles`), no el nombre del enum.
+
+### Flujo transaccional
+
+```mermaid
+flowchart TD
+  A[Admin] --> B[POST /employees]
+  B --> C[Create User]
+  C --> D[Create UserCompany]
+  D --> E[Create Employee]
+  E --> F[Empleado listo]
+```
+
+Pasos internos:
+
+```text
+BEGIN TRANSACTION
+1. Validar roleId y branchId ∈ companyId
+2. INSERT User
+3. INSERT UserCompany (companyId, roleId, defaultBranchId)
+4. INSERT Employee (companyId, branchId, userId, datos laborales)
+COMMIT
+```
+
+Si cualquier paso falla → `ROLLBACK`.
+
+---
+
+## 5. Endpoints vigentes
+
+| Método   | Ruta                     | Descripción                         |
+| -------- | ------------------------ | ----------------------------------- |
+| `GET`    | `/employees`             | Listado paginado (`companyId`)      |
+| `GET`    | `/employees/:id`         | Detalle                             |
+| `POST`   | `/employees`             | Crear User + UserCompany + Employee |
+| `PATCH`  | `/employees/:id`         | Actualizar datos laborales          |
+| `DELETE` | `/employees/:id`         | Soft delete                         |
+| `PATCH`  | `/employees/:id/restore` | Restaurar eliminado                 |
+
+### Endpoints eliminados (ya no aplican)
+
+```http
+POST   /employees/create-user      (fusionado en POST /employees)
+POST   /employees/:id/link-user
+DELETE /employees/:id/unlink-user
+```
+
+No existe el concepto de empleado sin usuario.
+
+---
+
+## 6. Listado y búsqueda
+
+`GET /employees` filtra por `companyId` del contexto.
+
+Query opcional: `page`, `take`, `search`, `isActive`, `branchId`.
+
+La búsqueda incluye nombre, teléfono, puesto y **email del usuario** vinculado.
+
+---
+
+## 7. Soft delete
+
+Al eliminar un empleado:
+
+- `deletedAt` se establece
+- `isActive` pasa a `false`
+
+`PATCH /employees/:id/restore` revierte `deletedAt` sin reactivar `isActive` automáticamente.
+
+---
+
+## 8. Frontend
+
+Módulo: `src/modules/employees/`
+
+- Un solo flujo de alta: modal **Nuevo Empleado** con email, contraseña, rol y datos laborales.
+- Edición: solo datos laborales; el email se muestra en solo lectura.
+- Tabla: nombre, email, sucursal, puesto, estado.
+
+---
+
+## 9. Roadmap futuro (no implementado)
+
+Administración de plataforma con `SUPER_ADMIN` para crear empresas y owners iniciales. Ver `docs/platform-admin-roadmap.md`.
+
+---
+
+## 10. Justificación
+
+El ERP solo gestiona personas que interactúan con el sistema. Esto simplifica schema, API, validaciones, permisos y frontend, y mantiene una base limpia para RBAC y extensiones de RRHH.

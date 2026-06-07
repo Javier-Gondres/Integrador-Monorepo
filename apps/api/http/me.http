@@ -1,0 +1,76 @@
+# Me API — contexto del usuario autenticado (REST Client)
+#
+# Requisitos:
+#   1. API en marcha → pnpm --filter api run dev
+#   2. Login en auth.http o abajo → @accessToken
+#   3. GET/PATCH /me requieren empresa en el JWT (@RequireCompany)
+
+@baseUrl = http://localhost:3001
+@email = prueba@ejemplo.com
+@password = Password123
+@branchId = reemplazar-con-id-de-sucursal
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###
+
+@accessToken = {{login.response.body.$.data.accessToken}}
+
+### Mi perfil (usuario + membership en empresa activa)
+GET {{baseUrl}}/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Mi empresa (única membership)
+GET {{baseUrl}}/me/company
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Mi sucursal por defecto
+GET {{baseUrl}}/me/branch
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Actualizar mi perfil
+PATCH {{baseUrl}}/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Javier",
+  "lastName": "Actualizado"
+}
+
+###
+
+### Cambiar mi contraseña (revoca todas las sesiones refresh)
+PATCH {{baseUrl}}/me/password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "{{password}}",
+  "newPassword": "NuevaPassword123"
+}
+
+###
+
+### Cambiar sucursal por defecto
+POST {{baseUrl}}/me/switch-branch
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "branchId": "{{branchId}}"
+}

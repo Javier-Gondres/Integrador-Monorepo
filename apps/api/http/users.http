@@ -35,39 +35,9 @@ Authorization: Bearer {{accessToken}}
 
 ###
 
-### Mi perfil (mismo shape que GET /users/:id)
-GET {{baseUrl}}/users/me
-Authorization: Bearer {{accessToken}}
-
-###
-
 ### Roles disponibles (formularios)
 GET {{baseUrl}}/users/roles
 Authorization: Bearer {{accessToken}}
-
-###
-
-### Actualizar mi perfil (nombre / apellido)
-PATCH {{baseUrl}}/users/me
-Authorization: Bearer {{accessToken}}
-Content-Type: application/json
-
-{
-  "firstName": "Javier",
-  "lastName": "Actualizado"
-}
-
-###
-
-### Cambiar mi contraseña (revoca refresh tokens)
-PATCH {{baseUrl}}/users/me/password
-Authorization: Bearer {{accessToken}}
-Content-Type: application/json
-
-{
-  "currentPassword": "{{password}}",
-  "newPassword": "NuevaPassword123"
-}
 
 ###
 

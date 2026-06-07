@@ -167,6 +167,8 @@ src/app/
 └── (dashboard)/
     ├── categories/page.tsx
     ├── products/page.tsx
+    ├── employees/page.tsx
+    ├── suppliers/page.tsx
     ├── companies/page.tsx
     └── companies/[slug]/branch/page.tsx
 ```
@@ -195,6 +197,8 @@ export default function CategoriesPage() {
 | `/`                        | `(public)/page.tsx`                            | Home + links dev   |
 | `/categories`              | `(dashboard)/categories/page.tsx`              | `CategoriesScreen` |
 | `/products`                | `(dashboard)/products/page.tsx`                | `ProductsScreen`   |
+| `/employees`               | `(dashboard)/employees/page.tsx`               | `EmployeesScreen`  |
+| `/suppliers`               | `(dashboard)/suppliers/page.tsx`               | `SuppliersScreen`  |
 | `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`  |
 | `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`   |
 
@@ -206,16 +210,18 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 
 ### Módulos implementados
 
-| Módulo        | Estado                                        |
-| ------------- | --------------------------------------------- |
-| `categories`  | Completo (CRUD + tabla)                       |
-| `products`    | Completo (CRUD + tabla + combobox categorías) |
-| `companies`   | Pantalla legacy migrada (lista + CRUD básico) |
-| `branches`    | Pantalla legacy migrada (lista + CRUD básico) |
-| `auth`        | Scaffold (API hooks, sin UI de login aún)     |
-| `users`       | Scaffold RBAC                                 |
-| `roles`       | Scaffold RBAC                                 |
-| `permissions` | Scaffold RBAC                                 |
+| Módulo        | Estado                                              |
+| ------------- | --------------------------------------------------- |
+| `categories`  | Completo (CRUD + tabla)                             |
+| `products`    | Completo (CRUD + tabla + combobox categorías)       |
+| `employees`   | Completo (CRUD transaccional User+Employee + tabla) |
+| `suppliers`   | Completo (CRUD + tabla)                             |
+| `companies`   | Pantalla legacy migrada (lista + CRUD básico)       |
+| `branches`    | Pantalla legacy migrada (lista + CRUD básico)       |
+| `auth`        | Scaffold (API hooks, sin UI de login aún)           |
+| `users`       | Scaffold RBAC                                       |
+| `roles`       | Scaffold RBAC                                       |
+| `permissions` | Scaffold RBAC                                       |
 
 ### Convención obligatoria de carpeta
 
@@ -319,7 +325,7 @@ export async function apiFetch<T>(
 
 - Base URL: `NEXT_PUBLIC_API_URL` (default `http://localhost:3001`)
 - Envía cookies: `credentials: "include"`
-- Si existe `NEXT_PUBLIC_API_TOKEN`, agrega `Authorization: Bearer ...`
+- Si hay token de acceso en `sessionStorage` (tras login), agrega `Authorization: Bearer ...`
 - Desempaqueta respuestas NestJS `{ data: T }`
 - Si `!response.ok`, lanza `ApiError`
 
@@ -706,7 +712,6 @@ import type { Category } from "@/modules/categories/types/category.types";
 // src/config/env.ts
 export const env = {
   apiUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001",
-  apiToken: process.env.NEXT_PUBLIC_API_TOKEN,
 };
 ```
 
@@ -946,10 +951,9 @@ const canEdit = useHasPermission("products:update");
 
 Archivo: `apps/web/.env.development`
 
-| Variable                | Descripción                                           |
-| ----------------------- | ----------------------------------------------------- |
-| `NEXT_PUBLIC_API_URL`   | URL base del API NestJS (ej. `http://localhost:3001`) |
-| `NEXT_PUBLIC_API_TOKEN` | Token Bearer opcional para dev                        |
+| Variable              | Descripción                                           |
+| --------------------- | ----------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL` | URL base del API NestJS (ej. `http://localhost:3001`) |
 
 Ejemplos en `.env.development.example` y `.env.staging.example`.
 

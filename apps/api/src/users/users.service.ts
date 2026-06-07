@@ -54,10 +54,6 @@ export class UsersService {
     return user;
   }
 
-  findMe(userId: string, companyId: string) {
-    return this.findByIdInCompany(userId, companyId);
-  }
-
   listRoles() {
     return this.usersRepository.findAllRoles();
   }

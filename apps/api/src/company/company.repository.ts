@@ -78,21 +78,30 @@ export class CompanyRepository {
     });
   }
 
+  private readonly myCompanyMembershipSelect = {
+    defaultBranchId: true,
+    role: { select: { name: true } },
+    company: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        isActive: true,
+      },
+    },
+  } as const;
+
+  findMyCompanyForUser(userId: string) {
+    return prisma.userCompany.findFirst({
+      where: { userId },
+      select: this.myCompanyMembershipSelect,
+    });
+  }
+
   findMyCompaniesForUser(userId: string) {
     return prisma.userCompany.findMany({
       where: { userId },
-      select: {
-        defaultBranchId: true,
-        role: { select: { name: true } },
-        company: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            isActive: true,
-          },
-        },
-      },
+      select: this.myCompanyMembershipSelect,
       orderBy: { company: { name: 'asc' } },
     });
   }
