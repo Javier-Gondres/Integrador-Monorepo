@@ -25,7 +25,7 @@ Documentación de referencia para implementar servicios en `apps/api` y módulos
 | Categorías               | Bebidas, Refrescos (many-to-many con el producto)                      |
 | Cliente consumidor final | Sin `customerId` en la venta, NCF tipo `CONSUMIDOR_FINAL`              |
 | Cliente crédito          | Juan Pérez — cédula `00112345678`, venta RD$ 10,000 a 30 días          |
-| Proveedor                | Induveca — compras registradas y `AccountPayable` si es a crédito       |
+| Proveedor                | Induveca — compras registradas y `AccountPayable` si es a crédito      |
 | NCF                      | Secuencia `B02`, consecutivos `B0200000001`, `B0200000002`…            |
 | Caja                     | `Caja Principal` en sucursal Santiago — turno con apertura RD$ 2,000   |
 | Descuento producto       | "Verano 20%" vinculado directamente a Coca-Cola                        |
@@ -72,11 +72,11 @@ stock disponible = stock físico - stock reservado
 
 **Ejemplo:** `Inventory.quantity = 100` de martillos. Reserva A (línea martillos = 20) + Reserva B (línea martillos = 15) → disponible = 65.
 
-| Acción | Efecto |
-|--------|--------|
-| Crear reserva | `Reservation` + `ReservationItem`(s) con `status = ACTIVE`; `Inventory` sin cambios |
+| Acción             | Efecto                                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Crear reserva      | `Reservation` + `ReservationItem`(s) con `status = ACTIVE`; `Inventory` sin cambios                                                                          |
 | Convertir en venta | `Sale.reservationId = reservation.id` + `Reservation.status = COMPLETED` + `SaleItem`(s) + `InventoryMovement(SALE)` + bajar `Inventory` (misma transacción) |
-| Cancelar / expirar | `status = CANCELLED` o `EXPIRED`; disponible se libera |
+| Cancelar / expirar | `status = CANCELLED` o `EXPIRED`; disponible se libera                                                                                                       |
 
 **Prohibido:** usar `InventoryMovement` para reservas. Los movimientos representan solo cambios físicos reales (`PURCHASE`, `SALE`, `RETURN`, transferencias, `ADJUSTMENT`, `WASTE`).
 
@@ -307,10 +307,10 @@ El stock real vive en `Inventory` por sucursal.
 
 Vínculo explícito producto ↔ proveedor (`@@id([productId, supplierId])`).
 
-| Campo          | Uso                                              |
-| -------------- | ------------------------------------------------ |
-| `isPreferred`  | Proveedor preferido al generar órdenes de compra |
-| `lastCost`     | Último costo registrado con ese proveedor        |
+| Campo         | Uso                                              |
+| ------------- | ------------------------------------------------ |
+| `isPreferred` | Proveedor preferido al generar órdenes de compra |
+| `lastCost`    | Último costo registrado con ese proveedor        |
 
 **Regla:** por cada producto solo puede existir un `ProductSupplier` con `isPreferred = true`. Esta restricción está protegida tanto por lógica de aplicación como por un índice parcial único en PostgreSQL (`product_supplier_preferred_idx`).
 
@@ -434,20 +434,20 @@ Documento de reserva multiproducto. Consistente con el patrón cabecera/líneas 
 
 **`Reservation`** — cabecera del documento:
 
-| Campo                 | Uso                                              |
-| --------------------- | ------------------------------------------------ |
-| `companyId`, `branchId` | Alcance multiempresa / sucursal                |
-| `customerId`          | Cliente opcional                                 |
-| `createdByEmployeeId` | Empleado que registró la reserva                 |
-| `expiresAt`           | Vencimiento opcional                             |
-| `status`              | `ACTIVE`, `COMPLETED`, `CANCELLED`, `EXPIRED`    |
+| Campo                   | Uso                                           |
+| ----------------------- | --------------------------------------------- |
+| `companyId`, `branchId` | Alcance multiempresa / sucursal               |
+| `customerId`            | Cliente opcional                              |
+| `createdByEmployeeId`   | Empleado que registró la reserva              |
+| `expiresAt`             | Vencimiento opcional                          |
+| `status`                | `ACTIVE`, `COMPLETED`, `CANCELLED`, `EXPIRED` |
 
 **`ReservationItem`** — cada producto reservado:
 
-| Campo        | Uso                    |
-| ------------ | ---------------------- |
-| `productId`  | Producto reservado     |
-| `quantity`   | Unidades bloqueadas    |
+| Campo       | Uso                 |
+| ----------- | ------------------- |
+| `productId` | Producto reservado  |
+| `quantity`  | Unidades bloqueadas |
 
 **Trazabilidad con ventas:** `Reservation` 1 ── N `Sale` vía `Sale.reservationId` (opcional). Solo auditoría; no afecta disponibilidad ni inventario. Una reserva puede originar varias ventas (p. ej. consumos parciales futuros).
 
@@ -592,14 +592,14 @@ AccountPayable
 
 Registro de una compra ya recibida en una sucursal.
 
-| Campo                  | Uso                                                        |
-| ---------------------- | ---------------------------------------------------------- |
-| `branchId`             | Sucursal que recibió la mercancía                          |
-| `supplierId`           | Proveedor que entregó                                      |
-| `invoiceNumber`        | Número de factura del proveedor (opcional)                 |
-| `invoiceDate`          | Fecha de la factura del proveedor (opcional)               |
-| `receivedByEmployeeId` | Empleado que registró la recepción (opcional)              |
-| `subtotal`, `taxAmount`, `total` | Montos en RD$                                   |
+| Campo                            | Uso                                           |
+| -------------------------------- | --------------------------------------------- |
+| `branchId`                       | Sucursal que recibió la mercancía             |
+| `supplierId`                     | Proveedor que entregó                         |
+| `invoiceNumber`                  | Número de factura del proveedor (opcional)    |
+| `invoiceDate`                    | Fecha de la factura del proveedor (opcional)  |
+| `receivedByEmployeeId`           | Empleado que registró la recepción (opcional) |
+| `subtotal`, `taxAmount`, `total` | Montos en RD$                                 |
 
 **Relaciones:** `PurchaseItem[]`, `InventoryMovement[]`, `AccountPayable?` (si quedó a crédito), `receivedBy` → `Employee`.
 
@@ -885,7 +885,7 @@ Todo en **una transacción**. No existen compras pendientes de recepción.
 | Regla                | Detalle                                                                                                                        |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Inventario           | Siempre movimiento + actualización de `Inventory` en la misma TX                                                               |
-| Disponibilidad       | Validar `disponible = Inventory.quantity - reservas ACTIVE` antes de venta, reserva o transferencia                              |
+| Disponibilidad       | Validar `disponible = Inventory.quantity - reservas ACTIVE` antes de venta, reserva o transferencia                            |
 | Reservas             | No generan `InventoryMovement`; liberar con `COMPLETED`, `CANCELLED` o `EXPIRED`                                               |
 | Stock negativo       | No permitir venta/transferencia/reserva si cantidad disponible insuficiente                                                    |
 | NCF                  | Validar vigencia y cupo antes de incrementar                                                                                   |

@@ -681,7 +681,11 @@ async function ensureDemoProducts(
           categories: { set: categoryIds.map((id) => ({ id })) },
         },
       });
-      await ensureProductSuppliers(existing.id, item.suppliers, suppliersByName);
+      await ensureProductSuppliers(
+        existing.id,
+        item.suppliers,
+        suppliersByName,
+      );
       created.push({
         id: existing.id,
         code: existing.code,
