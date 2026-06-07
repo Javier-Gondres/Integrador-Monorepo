@@ -28,7 +28,7 @@ export function LoginForm({
   });
 
   return (
-    <div className="w-full text-black space-y-2">
+    <div className="w-full text-black space-y-2 p-6">
       <h1 className="text-3xl font-semibold text-center">Iniciar Sesión</h1>
       <p className="text-sm text-center">
         Bienvenido. Ingrese sus credenciales para continuar.
@@ -54,7 +54,7 @@ export function LoginForm({
           {...register("password")}
         />
 
-        <div className="flex justify-between max-sm:flex-col max-sm:gap-2 pt-2">
+        <div className="flex justify-between max-sm:gap-3 pt-2">
           <div className="flex gap-2 items-center">
             <input type="checkbox" id="remember_ps" />
             <label htmlFor="remember_ps" className="text-sm">
@@ -62,7 +62,7 @@ export function LoginForm({
             </label>
           </div>
 
-          <a href="#" className="text-sm hover:underline">
+          <a href="#" className="text-sm hover:underline text-end">
             Contraseña olvidada?
           </a>
         </div>
