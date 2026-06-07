@@ -8,6 +8,15 @@ enum InventoryMovementType {
   WASTE
 }
 
+enum InventoryAdjustmentReason {
+  DAMAGE
+  THEFT
+  EXPIRED
+  COUNT_DIFFERENCE
+  INTERNAL_USE
+  OTHER
+}
+
 model Inventory {
   id String @id @default(cuid())
 
@@ -32,7 +41,11 @@ model InventoryMovement {
   productId String
   type      InventoryMovementType
   quantity  Decimal               @db.Decimal(12, 3)
-  notes     String?
+
+  adjustmentReason InventoryAdjustmentReason?
+  referenceNumber  String?
+
+  notes String?
 
   saleId                String?
   purchaseId            String?
@@ -54,5 +67,6 @@ model InventoryMovement {
   @@index([branchId, productId])
   @@index([performedByEmployeeId])
   @@index([type])
+  @@index([adjustmentReason])
   @@index([createdAt])
 }

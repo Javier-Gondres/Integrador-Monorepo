@@ -1,4 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
+import type { InventoryMovementType } from '@repo/db';
 
 import { ErrorCodes } from '../constants/error-codes';
 import { BusinessException } from './business.exception';
@@ -30,6 +31,26 @@ export class InventoryException extends BusinessException {
       ErrorCodes.BOX_CLOSED,
       'La caja está cerrada; no se pueden registrar movimientos',
       HttpStatus.CONFLICT,
+    );
+  }
+
+  static adjustmentReasonRequired(
+    type: InventoryMovementType,
+  ): InventoryException {
+    return new InventoryException(
+      ErrorCodes.ADJUSTMENT_REASON_REQUIRED,
+      `adjustmentReason es obligatorio para movimientos de tipo ${type}`,
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+
+  static adjustmentReasonNotAllowed(
+    type: InventoryMovementType,
+  ): InventoryException {
+    return new InventoryException(
+      ErrorCodes.ADJUSTMENT_REASON_NOT_ALLOWED,
+      `adjustmentReason no aplica para movimientos de tipo ${type}`,
+      HttpStatus.BAD_REQUEST,
     );
   }
 }

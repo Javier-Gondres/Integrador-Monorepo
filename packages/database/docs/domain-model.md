@@ -466,9 +466,35 @@ Historial inmutable de cambios de stock.
 | `RETURN`                       | Devolución                     |
 | `TRANSFER_OUT` / `TRANSFER_IN` | Transferencia entre sucursales |
 | `ADJUSTMENT`                   | Ajuste manual autorizado       |
-| `WASTE`                        | Merma / vencimiento            |
+| `WASTE`                        | Merma / consumo interno        |
 
-Campos opcionales de trazabilidad: `saleId`, `purchaseId`, `returnId`, `transferId`, `performedByEmployeeId`.
+Campos opcionales de trazabilidad: `saleId`, `purchaseId`, `returnId`, `transferId`, `performedByEmployeeId`, `referenceNumber` (p. ej. `ACTA-MERMA-001`, `AJUSTE-2026-015`).
+
+#### Razón de ajuste (`adjustmentReason`)
+
+La merma y los ajustes de inventario **no** son documentos independientes: siguen siendo un `InventoryMovement` con una razón identificada.
+
+| `InventoryAdjustmentReason` | Uso típico                                              |
+| --------------------------- | ------------------------------------------------------- |
+| `DAMAGE`                    | Mercancía dañada                                        |
+| `THEFT`                     | Mercancía robada                                        |
+| `EXPIRED`                   | Mercancía descartada por vencimiento                    |
+| `COUNT_DIFFERENCE`          | Conteo físico no coincide / error de captura / corrección |
+| `INTERNAL_USE`              | Consumo interno (pruebas, material de oficina, etc.)  |
+| `OTHER`                     | Caso no clasificado                                     |
+
+| Tipo de movimiento | `adjustmentReason` | Razones esperadas                                     |
+| ------------------ | -------------------- | ----------------------------------------------------- |
+| `WASTE`            | **Obligatorio**      | `DAMAGE`, `THEFT`, `EXPIRED`, `INTERNAL_USE`, `OTHER` |
+| `ADJUSTMENT`       | **Obligatorio**      | `COUNT_DIFFERENCE`, `OTHER`                           |
+| Otros tipos        | **Debe ser `null`**  | —                                                     |
+
+Prisma no puede expresar esta regla condicional en el schema. La API debe validarla antes de crear el movimiento (helper `normalizeAdjustmentReason` en `apps/api/src/common/inventory/`):
+
+- `WASTE` / `ADJUSTMENT` sin razón → error `ADJUSTMENT_REASON_REQUIRED`.
+- `PURCHASE`, `SALE`, `RETURN`, `TRANSFER_IN`, `TRANSFER_OUT` con razón → error `ADJUSTMENT_REASON_NOT_ALLOWED`; en caso contrario, forzar `adjustmentReason = null`.
+
+**Reportes habilitados:** mermas por daño, robo, vencimiento; consumo interno; ajustes por diferencias de inventario.
 
 | Responsable                                          | Regla                                                                  |
 | ---------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -911,6 +937,7 @@ PaymentMethod: CASH | CARD | TRANSFER | CREDIT
 ReceivableStatus: OPEN | PARTIAL | PAID | OVERDUE
 PayableStatus: OPEN | PARTIAL | PAID | OVERDUE
 InventoryMovementType: PURCHASE | SALE | RETURN | TRANSFER_IN | TRANSFER_OUT | ADJUSTMENT | WASTE
+InventoryAdjustmentReason: DAMAGE | THEFT | EXPIRED | COUNT_DIFFERENCE | INTERNAL_USE | OTHER
 ReservationStatus: ACTIVE | COMPLETED | CANCELLED | EXPIRED
 NcfType: CONSUMIDOR_FINAL | CREDITO_FISCAL | GUBERNAMENTAL | REGIMEN_ESPECIAL | EXPORTACION
 TransferStatus: PENDING | IN_TRANSIT | COMPLETED | CANCELLED

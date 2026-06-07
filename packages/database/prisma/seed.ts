@@ -15,12 +15,13 @@ import bcrypt from "bcrypt";
 
 import { type ExtendedPrismaClient, prisma } from "../src/client.js";
 import {
+  InventoryAdjustmentReason,
   InventoryMovementType,
   NcfType,
-  ReservationStatus,
   PayableStatus,
   PaymentMethod,
   ReceivableStatus,
+  ReservationStatus,
   ReturnReason,
   RoleName,
   SaleStatus,
@@ -381,6 +382,8 @@ async function recordMovementIfAbsent(
     productId: string;
     type: InventoryMovementType;
     quantity: number;
+    adjustmentReason?: InventoryAdjustmentReason;
+    referenceNumber?: string;
     notes?: string;
     purchaseId?: string;
     saleId?: string;
@@ -1208,6 +1211,8 @@ async function ensureDemoPurchases(
         productId: cola2l.id,
         type: InventoryMovementType.WASTE,
         quantity: 2,
+        adjustmentReason: InventoryAdjustmentReason.DAMAGE,
+        referenceNumber: "ACTA-MERMA-001",
         notes: "Merma por producto dañado",
         performedByEmployeeId: inventoryAssistant.id,
       },

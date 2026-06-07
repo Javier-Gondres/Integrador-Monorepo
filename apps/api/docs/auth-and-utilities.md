@@ -538,6 +538,7 @@ export class LoginDto {
 - [ ] ¿Listados filtrados por `companyId`?
 - [ ] ¿Recursos por ID validados con `assertCompanyAccess`?
 - [ ] ¿Errores de negocio con `AuthException` / `BusinessException` / `InventoryException`?
+- [ ] ¿Movimientos de inventario? → `normalizeAdjustmentReason()` antes de persistir
 - [ ] ¿Prisma sin try/catch innecesario?
 
 ---
