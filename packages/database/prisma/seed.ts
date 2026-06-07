@@ -139,13 +139,20 @@ const DEMO_CATEGORIES = [
   { name: "Lácteos", description: "Leche, queso y yogurt" },
 ] as const;
 
+type DemoProductSupplier = {
+  supplierName: string;
+  isPreferred?: boolean;
+  lastCost?: number;
+  supplierCode?: string;
+};
+
 type DemoProduct = {
   code: string;
   name: string;
   description: string;
   price: number;
   categoryNames: string[];
-  supplierName?: string;
+  suppliers: DemoProductSupplier[];
 };
 
 const DEMO_PRODUCTS: DemoProduct[] = [
@@ -155,7 +162,19 @@ const DEMO_PRODUCTS: DemoProduct[] = [
     description: "Refresco de cola lata",
     price: 45.0,
     categoryNames: ["Bebidas"],
-    supplierName: "Bebidas Caribeña",
+    suppliers: [
+      {
+        supplierName: "Bebidas Caribeña",
+        isPreferred: true,
+        lastCost: 30,
+        supplierCode: "BC-COLA-355",
+      },
+      {
+        supplierName: "Distribuidora Nacional SRL",
+        lastCost: 32,
+        supplierCode: "DN-BEB-001",
+      },
+    ],
   },
   {
     code: "BEB-COLA-2L",
@@ -163,7 +182,14 @@ const DEMO_PRODUCTS: DemoProduct[] = [
     description: "Refresco de cola familiar",
     price: 120.0,
     categoryNames: ["Bebidas"],
-    supplierName: "Bebidas Caribeña",
+    suppliers: [
+      {
+        supplierName: "Bebidas Caribeña",
+        isPreferred: true,
+        lastCost: 80,
+        supplierCode: "BC-COLA-2L",
+      },
+    ],
   },
   {
     code: "SNK-LAYS-40",
@@ -171,7 +197,19 @@ const DEMO_PRODUCTS: DemoProduct[] = [
     description: "Papas fritas individuales",
     price: 65.0,
     categoryNames: ["Snacks"],
-    supplierName: "Distribuidora Nacional SRL",
+    suppliers: [
+      {
+        supplierName: "Distribuidora Nacional SRL",
+        isPreferred: true,
+        lastCost: 45,
+        supplierCode: "DN-SNACK-040",
+      },
+      {
+        supplierName: "Alimentos del Cibao SA",
+        lastCost: 47,
+        supplierCode: "AC-LAYS-40",
+      },
+    ],
   },
   {
     code: "LAC-LECHE-1L",
@@ -179,7 +217,14 @@ const DEMO_PRODUCTS: DemoProduct[] = [
     description: "Leche UHT entera",
     price: 55.0,
     categoryNames: ["Lácteos"],
-    supplierName: "Alimentos del Cibao SA",
+    suppliers: [
+      {
+        supplierName: "Alimentos del Cibao SA",
+        isPreferred: true,
+        lastCost: 40,
+        supplierCode: "AC-LECHE-1L",
+      },
+    ],
   },
   {
     code: "COMBO-SNACK-BEB",
@@ -187,7 +232,19 @@ const DEMO_PRODUCTS: DemoProduct[] = [
     description: "Promoción: papas + refresco",
     price: 99.0,
     categoryNames: ["Snacks", "Bebidas"],
-    supplierName: "Distribuidora Nacional SRL",
+    suppliers: [
+      {
+        supplierName: "Distribuidora Nacional SRL",
+        isPreferred: true,
+        lastCost: 70,
+        supplierCode: "DN-COMBO-01",
+      },
+      {
+        supplierName: "Bebidas Caribeña",
+        lastCost: 72,
+        supplierCode: "BC-COMBO-01",
+      },
+    ],
   },
 ];
 
@@ -546,6 +603,55 @@ async function ensureDemoCategories(companyId: string) {
   return byName;
 }
 
+async function ensureProductSuppliers(
+  productId: string,
+  suppliers: DemoProductSupplier[],
+  suppliersByName: Map<string, { id: string; name: string }>,
+): Promise<void> {
+  for (const link of suppliers) {
+    const supplier = suppliersByName.get(link.supplierName);
+    if (!supplier) {
+      throw new Error(`Proveedor seed "${link.supplierName}" no encontrado`);
+    }
+
+    const isPreferred = link.isPreferred ?? false;
+
+    await prisma.$transaction(async (tx) => {
+      if (isPreferred) {
+        await tx.productSupplier.updateMany({
+          where: {
+            productId,
+            isPreferred: true,
+            supplierId: { not: supplier.id },
+          },
+          data: { isPreferred: false },
+        });
+      }
+
+      await tx.productSupplier.upsert({
+        where: {
+          productId_supplierId: {
+            productId,
+            supplierId: supplier.id,
+          },
+        },
+        create: {
+          productId,
+          supplierId: supplier.id,
+          isPreferred,
+          lastCost: link.lastCost,
+          supplierCode: link.supplierCode,
+        },
+        update: {
+          isPreferred,
+          lastCost: link.lastCost,
+          supplierCode: link.supplierCode,
+        },
+      });
+    });
+  }
+}
+
 async function ensureDemoProducts(
   companyId: string,
   categoriesByName: Map<string, { id: string; name: string }>,
@@ -562,10 +668,6 @@ async function ensureDemoProducts(
       return category.id;
     });
 
-    const supplierId = item.supplierName
-      ? suppliersByName.get(item.supplierName)?.id
-      : undefined;
-
     const existing = await prisma.product.findFirst({
       where: { companyId, code: item.code, deletedAt: null },
       select: { id: true, code: true, name: true, price: true },
@@ -578,10 +680,10 @@ async function ensureDemoProducts(
           name: item.name,
           description: item.description,
           price: item.price,
-          supplierId,
           categories: { set: categoryIds.map((id) => ({ id })) },
         },
       });
+      await ensureProductSuppliers(existing.id, item.suppliers, suppliersByName);
       created.push({
         id: existing.id,
         code: existing.code,
@@ -598,13 +700,13 @@ async function ensureDemoProducts(
         name: item.name,
         description: item.description,
         price: item.price,
-        supplierId,
         categories: {
           connect: categoryIds.map((id) => ({ id })),
         },
       },
       select: { id: true, code: true, name: true, price: true },
     });
+    await ensureProductSuppliers(product.id, item.suppliers, suppliersByName);
     created.push({
       id: product.id,
       code: product.code,

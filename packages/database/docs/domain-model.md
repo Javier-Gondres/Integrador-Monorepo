@@ -266,13 +266,38 @@ Clasificación de productos. Relación **many-to-many** implícita con `Product`
 
 Artículo vendible/comprable por empresa.
 
-| Campo        | Uso                                                          |
-| ------------ | ------------------------------------------------------------ |
-| `code`       | Único por empresa (`@@unique([companyId, code, deletedAt])`) |
-| `price`      | Precio de referencia / lista                                 |
-| `supplierId` | Proveedor principal opcional                                 |
+| Campo   | Uso                                                          |
+| ------- | ------------------------------------------------------------ |
+| `code`  | Único por empresa (`@@unique([companyId, code, deletedAt])`) |
+| `price` | Precio de referencia / lista                                 |
+
+Los proveedores del producto se modelan en `ProductSupplier` (M:N). Un mismo artículo puede abastecerse de varios proveedores; `isPreferred` marca el preferido para compras.
 
 El stock real vive en `Inventory` por sucursal.
+
+---
+
+### `ProductSupplier`
+
+Vínculo explícito producto ↔ proveedor (`@@id([productId, supplierId])`).
+
+| Campo          | Uso                                              |
+| -------------- | ------------------------------------------------ |
+| `isPreferred`  | Proveedor preferido al generar órdenes de compra |
+| `lastCost`     | Último costo registrado con ese proveedor        |
+| `supplierCode` | Código/SKU del proveedor para el producto        |
+
+**Regla:** por cada producto solo puede existir un `ProductSupplier` con `isPreferred = true`. Esta restricción está protegida tanto por lógica de aplicación como por un índice parcial único en PostgreSQL (`product_supplier_preferred_idx`).
+
+**Implementación en servicios:** al marcar un proveedor como preferido:
+
+1. Desmarcar cualquier otro proveedor preferido del mismo `productId`.
+2. Marcar el nuevo vínculo con `isPreferred = true`.
+3. Ejecutar ambos pasos en la **misma transacción**.
+
+El índice parcial actúa como protección final contra errores de código, concurrencia o modificaciones directas en la base de datos.
+
+**Ejemplo:** Coca-Cola 355 ml la venden Bebidas Caribeña (preferido) y Distribuidora Nacional (alternativo).
 
 ---
 
@@ -280,7 +305,7 @@ El stock real vive en `Inventory` por sucursal.
 
 Proveedor: compras y cuentas por pagar.
 
-**Ejemplo:** Mercasid suministra abarrotes; `PurchaseOrder` y `AccountPayable` apuntan aquí.
+**Ejemplo:** Mercasid suministra abarrotes; `PurchaseOrder` y `AccountPayable` apuntan aquí. Los productos que ofrece se listan vía `ProductSupplier`.
 
 ---
 
