@@ -2,6 +2,7 @@
 
 import {
   Box,
+  Percent,
   Grid2x2,
   LayoutDashboard,
   LogOut,
@@ -18,6 +19,7 @@ const navItems = [
   { section: "Catálogo" },
   { label: "Productos", icon: Box, href: "/products" },
   { label: "Categorías", icon: Tag, href: "/categories" },
+  { label: "Descuentos", icon: Percent, href: "/discounts" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
   { label: "Proveedores", icon: Truck, href: "/suppliers" },
