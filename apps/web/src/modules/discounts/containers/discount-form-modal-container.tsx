@@ -1,7 +1,6 @@
 "use client";
 
 import { DiscountForm } from "../components/discount-form";
-import { EntitySelectorContainer } from "./entity-selector-container";
 import { useCreateDiscount } from "../hooks/use-create-discount";
 import { useUpdateDiscount } from "../hooks/use-update-discount";
 import {
@@ -10,6 +9,7 @@ import {
 } from "../mappers/discount-form.mapper";
 import type { DiscountFormSchema } from "../schemas/discount.schema";
 import type { Discount } from "../types/discount.types";
+import { EntitySelectorContainer } from "./entity-selector-container";
 
 interface DiscountFormModalContainerProps {
   discount: Discount | null;

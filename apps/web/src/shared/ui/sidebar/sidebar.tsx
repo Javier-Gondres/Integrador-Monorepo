@@ -2,10 +2,10 @@
 
 import {
   Box,
-  Percent,
   Grid2x2,
   LayoutDashboard,
   LogOut,
+  Percent,
   Tag,
   Truck,
   Users,

@@ -2,8 +2,8 @@ import { Pencil, Trash2 } from "lucide-react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import type { DataTableColumn } from "@/shared/data-table";
-import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { StatusToggle } from "@/shared/ui/status-toggle";
 
 import type { Discount } from "../types/discount.types";
