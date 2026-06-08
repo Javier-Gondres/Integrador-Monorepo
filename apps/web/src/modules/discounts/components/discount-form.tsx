@@ -89,7 +89,13 @@ export function DiscountForm({
           {...register("description")}
         />
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: "12px",
+          }}
+        >
           <Input
             label="Porcentaje"
             required
@@ -117,10 +123,32 @@ export function DiscountForm({
           />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "16px", borderRadius: "10px", border: `1px solid ${C.divider}`, backgroundColor: C.tableHead }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            padding: "16px",
+            borderRadius: "10px",
+            border: `1px solid ${C.divider}`,
+            backgroundColor: C.tableHead,
+          }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: C.bodyText }}>Alcance del descuento</h4>
-            <p style={{ margin: 0, fontSize: "12px", color: C.headText }}>Selecciona los productos o categorías a los que se aplicará el descuento.</p>
+            <h4
+              style={{
+                margin: 0,
+                fontSize: "14px",
+                fontWeight: 700,
+                color: C.bodyText,
+              }}
+            >
+              Alcance del descuento
+            </h4>
+            <p style={{ margin: 0, fontSize: "12px", color: C.headText }}>
+              Selecciona los productos o categorías a los que se aplicará el
+              descuento.
+            </p>
           </div>
 
           <Controller
@@ -146,11 +174,31 @@ export function DiscountForm({
           />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "16px", borderRadius: "10px", border: `1px solid ${C.divider}`, backgroundColor: C.cardBg }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            padding: "16px",
+            borderRadius: "10px",
+            border: `1px solid ${C.divider}`,
+            backgroundColor: C.cardBg,
+          }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: C.bodyText }}>Exclusiones</h4>
+            <h4
+              style={{
+                margin: 0,
+                fontSize: "14px",
+                fontWeight: 700,
+                color: C.bodyText,
+              }}
+            >
+              Exclusiones
+            </h4>
             <p style={{ margin: 0, fontSize: "12px", color: C.headText }}>
-              Los productos excluidos no recibirán el descuento aunque estén dentro de una categoría aplicable.
+              Los productos excluidos no recibirán el descuento aunque estén
+              dentro de una categoría aplicable.
             </p>
           </div>
 

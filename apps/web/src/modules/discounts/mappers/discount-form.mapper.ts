@@ -1,8 +1,5 @@
 import type { DiscountFormSchema } from "../schemas/discount.schema";
-import type {
-  Discount,
-  DiscountFormValuesDto,
-} from "../types/discount.types";
+import type { Discount, DiscountFormValuesDto } from "../types/discount.types";
 
 export function mapDiscountToFormValues(
   discount: Discount | null,

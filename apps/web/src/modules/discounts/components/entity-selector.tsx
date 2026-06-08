@@ -211,7 +211,10 @@ export function EntitySelector({
               )}
             </div>
 
-            <div onScroll={onListScroll} style={{ maxHeight: "220px", overflowY: "auto" }}>
+            <div
+              onScroll={onListScroll}
+              style={{ maxHeight: "220px", overflowY: "auto" }}
+            >
               {loading && options.length === 0 ? (
                 <div
                   style={{
@@ -257,7 +260,9 @@ export function EntitySelector({
                             height: "16px",
                             borderRadius: "4px",
                             border: `1.5px solid ${selected ? C.primary : C.grayBorder}`,
-                            backgroundColor: selected ? C.primary : "transparent",
+                            backgroundColor: selected
+                              ? C.primary
+                              : "transparent",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",

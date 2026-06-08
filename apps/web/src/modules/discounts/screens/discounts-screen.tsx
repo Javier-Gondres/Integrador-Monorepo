@@ -10,9 +10,9 @@ import { DiscountsTableContainer } from "../containers/discounts-table-container
 import type { Discount } from "../types/discount.types";
 
 export function DiscountsScreen() {
-  const [modalDiscount, setModalDiscount] = useState<Discount | null | undefined>(
-    undefined,
-  );
+  const [modalDiscount, setModalDiscount] = useState<
+    Discount | null | undefined
+  >(undefined);
 
   return (
     <main

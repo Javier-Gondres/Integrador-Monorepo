@@ -25,7 +25,12 @@ function formatDate(value: string | null) {
 
 function joinNames(items: { name: string }[]) {
   if (items.length === 0) return "Ninguno";
-  return items.slice(0, 3).map((item) => item.name).join(", ") + (items.length > 3 ? ` +${items.length - 3}` : "");
+  return (
+    items
+      .slice(0, 3)
+      .map((item) => item.name)
+      .join(", ") + (items.length > 3 ? ` +${items.length - 3}` : "")
+  );
 }
 
 export function getDiscountsTableColumns(
@@ -59,7 +64,9 @@ export function getDiscountsTableColumns(
       header: "Vigencia",
       cell: (discount) => (
         <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-          <span style={{ fontWeight: 500 }}>{formatDate(discount.startDate)}</span>
+          <span style={{ fontWeight: 500 }}>
+            {formatDate(discount.startDate)}
+          </span>
           <span style={{ fontSize: "12px", color: C.headText }}>
             Hasta {formatDate(discount.endDate)}
           </span>
@@ -71,9 +78,17 @@ export function getDiscountsTableColumns(
       header: "Alcance",
       align: "left",
       cell: (discount) => (
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px", maxWidth: "360px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px",
+            maxWidth: "360px",
+          }}
+        >
           <span style={{ fontSize: "13px", color: C.bodyText }}>
-            Productos: {discount.products.length} | Categorías: {discount.categories.length}
+            Productos: {discount.products.length} | Categorías:{" "}
+            {discount.categories.length}
           </span>
           <span style={{ fontSize: "12px", color: C.headText }}>
             Excluidos: {joinNames(discount.excludedProducts)}
@@ -87,7 +102,9 @@ export function getDiscountsTableColumns(
       cell: (discount) => (
         <StatusToggle
           isActive={discount.isActive}
-          onToggle={() => actions.onToggleStatus(discount.id, discount.isActive)}
+          onToggle={() =>
+            actions.onToggleStatus(discount.id, discount.isActive)
+          }
         />
       ),
     },

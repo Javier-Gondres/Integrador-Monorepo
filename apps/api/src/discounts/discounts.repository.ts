@@ -101,10 +101,7 @@ export class DiscountsRepository {
     });
   }
 
-  create(
-    companyId: string,
-    data: CreateDiscountData,
-  ): Promise<DiscountRecord> {
+  create(companyId: string, data: CreateDiscountData): Promise<DiscountRecord> {
     return prisma.discount.create({
       data: {
         companyId,
@@ -134,7 +131,10 @@ export class DiscountsRepository {
     });
   }
 
-  update(id: string, data: Prisma.DiscountUpdateInput): Promise<DiscountRecord> {
+  update(
+    id: string,
+    data: Prisma.DiscountUpdateInput,
+  ): Promise<DiscountRecord> {
     return prisma.discount.update({
       where: { id },
       data,

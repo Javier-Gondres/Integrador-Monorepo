@@ -3,7 +3,10 @@ import { z } from "zod";
 export const discountFormSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().optional(),
-  percentage: z.number().min(0, "El porcentaje no puede ser menor que 0").max(100, "El porcentaje no puede ser mayor que 100"),
+  percentage: z
+    .number()
+    .min(0, "El porcentaje no puede ser menor que 0")
+    .max(100, "El porcentaje no puede ser mayor que 100"),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   productIds: z.array(z.string()),

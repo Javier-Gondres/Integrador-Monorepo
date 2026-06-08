@@ -52,9 +52,8 @@ export class DiscountsService {
   }
 
   async findCurrentByCompany(companyId: string) {
-    const discounts = await this.discountsRepository.findCurrentByCompany(
-      companyId,
-    );
+    const discounts =
+      await this.discountsRepository.findCurrentByCompany(companyId);
 
     return discounts.map(mapDiscount);
   }
@@ -133,8 +132,7 @@ export class DiscountsService {
     const nextCategoryIds =
       dto.categoryIds ?? current.categories.map((category) => category.id);
     const nextExcludedProductIds =
-      dto.excludedProductIds ??
-      current.excludedProducts.map((item) => item.id);
+      dto.excludedProductIds ?? current.excludedProducts.map((item) => item.id);
 
     this.assertHasScope(nextProductIds, nextCategoryIds);
     this.assertExclusionsRequireCategories(
@@ -147,7 +145,9 @@ export class DiscountsService {
         ? new Date(dto.startDate)
         : currentDiscount.startDate;
     const nextEndDate =
-      dto.endDate !== undefined ? new Date(dto.endDate) : currentDiscount.endDate;
+      dto.endDate !== undefined
+        ? new Date(dto.endDate)
+        : currentDiscount.endDate;
 
     this.validateDateRange(
       nextStartDate ? nextStartDate.toISOString() : undefined,
@@ -155,7 +155,10 @@ export class DiscountsService {
     );
 
     if (dto.productIds !== undefined && dto.productIds.length > 0) {
-      await this.productsService.assertAllExistInCompany(dto.productIds, companyId);
+      await this.productsService.assertAllExistInCompany(
+        dto.productIds,
+        companyId,
+      );
     }
     if (dto.categoryIds !== undefined && dto.categoryIds.length > 0) {
       await this.categoriesService.assertAllExistInCompany(
@@ -163,7 +166,10 @@ export class DiscountsService {
         companyId,
       );
     }
-    if (dto.excludedProductIds !== undefined && dto.excludedProductIds.length > 0) {
+    if (
+      dto.excludedProductIds !== undefined &&
+      dto.excludedProductIds.length > 0
+    ) {
       await this.productsService.assertAllExistInCompany(
         dto.excludedProductIds,
         companyId,
@@ -173,7 +179,10 @@ export class DiscountsService {
     const data: Prisma.DiscountUpdateInput = {
       ...getDefinedData({
         name: dto.name?.trim(),
-        description: dto.description !== undefined ? dto.description?.trim() || null : undefined,
+        description:
+          dto.description !== undefined
+            ? dto.description?.trim() || null
+            : undefined,
         percentage: dto.percentage,
         startDate:
           dto.startDate !== undefined ? new Date(dto.startDate) : undefined,
@@ -181,7 +190,9 @@ export class DiscountsService {
         isActive: dto.isActive,
       }),
       ...(dto.productIds !== undefined && {
-        products: { set: dto.productIds.map((productId) => ({ id: productId })) },
+        products: {
+          set: dto.productIds.map((productId) => ({ id: productId })),
+        },
       }),
       ...(dto.categoryIds !== undefined && {
         categories: {
@@ -240,13 +251,18 @@ export class DiscountsService {
       product.categories.map((category) => category.id),
     );
 
-    const bestDiscount = discounts.reduce<DiscountRecord | null>((best, item) => {
-      if (!best) return item;
-      return Number(item.percentage) > Number(best.percentage) ? item : best;
-    }, null);
+    const bestDiscount = discounts.reduce<DiscountRecord | null>(
+      (best, item) => {
+        if (!best) return item;
+        return Number(item.percentage) > Number(best.percentage) ? item : best;
+      },
+      null,
+    );
 
     const precioOriginal = Number(product.price);
-    const porcentajeDescuento = bestDiscount ? Number(bestDiscount.percentage) : 0;
+    const porcentajeDescuento = bestDiscount
+      ? Number(bestDiscount.percentage)
+      : 0;
     const montoDescuento = roundToTwo(
       (precioOriginal * porcentajeDescuento) / 100,
     );
