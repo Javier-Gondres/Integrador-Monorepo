@@ -54,15 +54,8 @@ export function LoginForm({
           {...register("password")}
         />
 
-        <div className="flex justify-between max-sm:gap-3 pt-2">
-          <div className="flex gap-2 items-center">
-            <input type="checkbox" id="remember_ps" />
-            <label htmlFor="remember_ps" className="text-sm">
-              Recordarme
-            </label>
-          </div>
-
-          <a href="#" className="text-sm hover:underline text-end">
+        <div className="flex justify-center max-sm:gap-3 pt-2">
+          <a href="#" className="text-sm hover:underline text-center">
             Contraseña olvidada?
           </a>
         </div>

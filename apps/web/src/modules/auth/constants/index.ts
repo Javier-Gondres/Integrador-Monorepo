@@ -5,6 +5,6 @@ export const DEV_TEST_USER = {
 } as const;
 
 export const AUTH_ROUTES = {
-  login: "/login",
+  login: "/",
   dashboard: "/dashboard",
 } as const;

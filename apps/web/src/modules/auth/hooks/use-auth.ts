@@ -51,7 +51,6 @@ export function useAuth() {
     onSuccess: () => {
       clearAuth();
       queryClient.clear();
-      router.replace(AUTH_ROUTES.login);
       toast.success("Sesión cerrada");
     },
     onError: (error) => {
@@ -64,14 +63,9 @@ export function useAuth() {
       const { accessToken: token } = await refreshTokenApi();
       setAccessToken(token);
 
-      try {
-        const session = await getSession();
-        setUser(session.user);
-        return session;
-      } catch (error) {
-        clearAuth();
-        throw error;
-      }
+      const session = await getSession();
+      setUser(session.user);
+      return session;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authKeys.all });
