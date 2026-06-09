@@ -93,16 +93,18 @@ export function EntitySelectorContainer({
   const categoryQuery = useCategoryOptions(open && isCategory, debouncedSearch);
   const productQuery = useProductOptions(open && !isCategory, debouncedSearch);
 
-  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } = isCategory
-    ? categoryQuery
-    : productQuery;
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
+    isCategory ? categoryQuery : productQuery;
 
   const options: EntityOption[] =
     data?.pages.flatMap((page) => {
       if (isCategory) {
         return (page.items as CategoryDto[]).map((dto) => {
           const category = mapCategoryDtoToUi(dto);
-          return { id: category.id, name: category.name } satisfies EntityOption;
+          return {
+            id: category.id,
+            name: category.name,
+          } satisfies EntityOption;
         });
       }
       return (page.items as ProductDto[]).map((dto) => {

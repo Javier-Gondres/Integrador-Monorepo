@@ -291,7 +291,9 @@ export function EntitySelector({
                           {option.name}
                         </span>
                         {option.subtitle && (
-                          <span style={{ fontSize: "12px", color: C.mutedText }}>
+                          <span
+                            style={{ fontSize: "12px", color: C.mutedText }}
+                          >
                             {option.subtitle}
                           </span>
                         )}
