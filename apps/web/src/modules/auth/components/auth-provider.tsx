@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { getSession, refreshToken } from "../api/get-session";
+import { restoreSession } from "../services/restore-session";
 import { useAuthStore } from "../store/auth-store";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -15,22 +15,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initialized.current = true;
 
-    const { accessToken, setAccessToken, setUser, clearAuth, setAuthReady } =
-      useAuthStore.getState();
+    const { accessToken, setAuthReady, clearAuth } = useAuthStore.getState();
 
     if (accessToken) {
       setAuthReady(true);
       return;
     }
 
-    void refreshToken()
-      .then(({ accessToken: token }) => {
-        setAccessToken(token);
-        return getSession();
-      })
-      .then((session) => {
-        setUser(session.user);
-      })
+    void restoreSession()
       .catch(() => {
         clearAuth();
       })

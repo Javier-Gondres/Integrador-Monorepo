@@ -10,10 +10,10 @@ import {
   getSession,
   login as loginApi,
   logout as logoutApi,
-  refreshToken as refreshTokenApi,
 } from "../api/get-session";
 import { AUTH_ROUTES } from "../constants";
 import { authKeys } from "../query-keys";
+import { restoreSession } from "../services/restore-session";
 import { useAuthStore } from "../store/auth-store";
 import type { LoginCredentials } from "../types/auth.types";
 
@@ -59,14 +59,7 @@ export function useAuth() {
   });
 
   const refreshTokenMutation = useMutation({
-    mutationFn: async () => {
-      const { accessToken: token } = await refreshTokenApi();
-      setAccessToken(token);
-
-      const session = await getSession();
-      setUser(session.user);
-      return session;
-    },
+    mutationFn: restoreSession,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authKeys.all });
     },
