@@ -10,12 +10,11 @@ import { CategoryDto } from "@/modules/categories/types/category.types";
 import { getProducts } from "@/modules/products/api/get-products";
 import { mapProductDtoToUi } from "@/modules/products/mappers/product.mapper";
 import { productKeys } from "@/modules/products/query-keys";
-
+import { ProductDto } from "@/modules/products/types/product.types";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 
 import type { EntityOption } from "../components/entity-selector";
 import { EntitySelector } from "../components/entity-selector";
-import { ProductDto } from "@/modules/products/types/product.types";
 
 const COMBOBOX_PAGE_SIZE = 10;
 
