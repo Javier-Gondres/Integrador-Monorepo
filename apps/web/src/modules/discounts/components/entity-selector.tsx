@@ -7,6 +7,7 @@ import { Badge } from "@/shared/ui/badge";
 export interface EntityOption {
   id: string;
   name: string;
+  subtitle?: string;
 }
 
 interface EntitySelectorProps {
@@ -289,6 +290,11 @@ export function EntitySelector({
                         >
                           {option.name}
                         </span>
+                        {option.subtitle && (
+                          <span style={{ fontSize: "12px", color: C.mutedText }}>
+                            {option.subtitle}
+                          </span>
+                        )}
                       </div>
                     );
                   })}

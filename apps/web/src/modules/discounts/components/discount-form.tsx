@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import type { ReactElement } from "react";
+import { useController, useForm } from "react-hook-form";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import { Button } from "@/shared/ui/button";
@@ -22,15 +23,15 @@ interface DiscountFormProps {
   renderCategorySelector: (props: {
     selectedIds: string[];
     onChange: (ids: string[]) => void;
-  }) => React.ReactNode;
+  }) => ReactElement;
   renderProductSelector: (props: {
     selectedIds: string[];
     onChange: (ids: string[]) => void;
-  }) => React.ReactNode;
+  }) => ReactElement;
   renderExcludedProductSelector: (props: {
     selectedIds: string[];
     onChange: (ids: string[]) => void;
-  }) => React.ReactNode;
+  }) => ReactElement;
 }
 
 export function DiscountForm({
@@ -51,6 +52,19 @@ export function DiscountForm({
   } = useForm<DiscountFormSchema>({
     resolver: zodResolver(discountFormSchema),
     defaultValues,
+  });
+
+  const categoryIdsField = useController({
+    name: "categoryIds",
+    control,
+  });
+  const productIdsField = useController({
+    name: "productIds",
+    control,
+  });
+  const excludedProductIdsField = useController({
+    name: "excludedProductIds",
+    control,
   });
 
   return (
@@ -151,27 +165,15 @@ export function DiscountForm({
             </p>
           </div>
 
-          <Controller
-            name="categoryIds"
-            control={control}
-            render={({ field }) =>
-              renderCategorySelector({
-                selectedIds: field.value ?? [],
-                onChange: field.onChange,
-              })
-            }
-          />
+          {renderCategorySelector({
+            selectedIds: categoryIdsField.field.value ?? [],
+            onChange: categoryIdsField.field.onChange,
+          })}
 
-          <Controller
-            name="productIds"
-            control={control}
-            render={({ field }) =>
-              renderProductSelector({
-                selectedIds: field.value ?? [],
-                onChange: field.onChange,
-              })
-            }
-          />
+          {renderProductSelector({
+            selectedIds: productIdsField.field.value ?? [],
+            onChange: productIdsField.field.onChange,
+          })}
         </div>
 
         <div
@@ -202,16 +204,10 @@ export function DiscountForm({
             </p>
           </div>
 
-          <Controller
-            name="excludedProductIds"
-            control={control}
-            render={({ field }) =>
-              renderExcludedProductSelector({
-                selectedIds: field.value ?? [],
-                onChange: field.onChange,
-              })
-            }
-          />
+          {renderExcludedProductSelector({
+            selectedIds: excludedProductIdsField.field.value ?? [],
+            onChange: excludedProductIdsField.field.onChange,
+          })}
         </div>
 
         <div
