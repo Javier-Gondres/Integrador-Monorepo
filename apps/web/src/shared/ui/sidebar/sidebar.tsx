@@ -17,6 +17,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { section: "Catálogo" },
   { label: "Productos", icon: Box, href: "/products" },
+  { label: "Clientes", icon: Users, href: "/customers" },
   { label: "Categorías", icon: Tag, href: "/categories" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
