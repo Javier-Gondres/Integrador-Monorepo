@@ -27,8 +27,9 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
+  const fullName = user ? `${user.firstName} ${user.lastName}` : "Usuario";
   return (
     <aside className="sidebar">
       {/* Logo */}
@@ -74,8 +75,8 @@ export function Sidebar() {
         <div className="user-card">
           <div className="avatar">AD</div>
           <div>
-            <p className="user-name">Admin User</p>
-            <p className="user-role">Administrador</p>
+            <p className="user-name">{fullName}</p>
+            <p className="user-role">{user?.role ? user.role.name : "Rol"}</p>
           </div>
         </div>
         <button className="logout-btn" onClick={() => logout()}>

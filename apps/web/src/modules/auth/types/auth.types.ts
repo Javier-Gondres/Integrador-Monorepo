@@ -9,16 +9,20 @@ export interface LoginResponse {
   accessToken: string;
 }
 
-export interface AuthMeResponse {
-  auth: {
-    userId: string;
-    companyId: string | null;
-    branchId: string | null;
-    role: string | null;
-  };
-  company: {
+export interface MeProfileResponse {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  membership: {
+    id: string;
     companyId: string;
-    branchId: string | null;
-    role: string;
-  };
+    roleId: string;
+    defaultBranchId: string | null;
+    role: { id: string; name: string };
+    company: { id: string; name: string; slug: string };
+  } | null;
 }

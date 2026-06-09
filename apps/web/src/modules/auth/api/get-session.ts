@@ -2,29 +2,33 @@ import { apiFetch } from "@/lib/api/client";
 import type { AuthUser } from "@/types";
 
 import type {
-  AuthMeResponse,
   AuthSession,
   LoginCredentials,
   LoginResponse,
+  MeProfileResponse,
 } from "../types/auth.types";
 
-function mapMeResponseToUser(me: AuthMeResponse): AuthUser {
+function mapProfileToUser(profile: MeProfileResponse): AuthUser {
   return {
-    id: me.auth.userId,
-    email: "",
-    companyId: me.company.companyId,
-    branchId: me.company.branchId ?? undefined,
-    role: {
-      id: me.company.role,
-      name: me.company.role,
-      permissions: [],
-    },
+    id: profile.id,
+    email: profile.email,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    companyId: profile.membership?.companyId,
+    branchId: profile.membership?.defaultBranchId ?? undefined,
+    role: profile.membership?.role
+      ? {
+          id: profile.membership.role.id,
+          name: profile.membership.role.name,
+          permissions: [],
+        }
+      : undefined,
   };
 }
 
 export async function getSession(): Promise<AuthSession> {
-  const me = await apiFetch<AuthMeResponse>("/auth/me");
-  return { user: mapMeResponseToUser(me) };
+  const profile = await apiFetch<MeProfileResponse>("/me");
+  return { user: mapProfileToUser(profile) };
 }
 
 export async function login(credentials: LoginCredentials) {
