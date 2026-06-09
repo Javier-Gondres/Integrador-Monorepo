@@ -5,8 +5,8 @@ import { useState } from "react";
 import { ERP_COLORS as C } from "@/constants/theme";
 import { PageHeader } from "@/shared/ui";
 
-import { CustomersTableContainer } from "../containers/customers-table-container";
 import { CustomerFormModalContainer } from "../containers/customer-form-modal-container";
+import { CustomersTableContainer } from "../containers/customers-table-container";
 import type { Customer } from "../types/customer.types";
 
 export function CustomersScreen() {
