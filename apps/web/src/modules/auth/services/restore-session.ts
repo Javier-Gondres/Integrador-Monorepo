@@ -1,15 +1,13 @@
-import {
-  getSession,
-  refreshToken as refreshTokenApi,
-} from "../api/get-session";
+import { refreshAccessToken } from "@/lib/api/refresh-access-token";
+
+import { getSession } from "../api/get-session";
 import { useAuthStore } from "../store/auth-store";
 import type { AuthSession } from "../types/auth.types";
 
 export async function restoreSession(): Promise<AuthSession> {
-  const { setAccessToken, setUser } = useAuthStore.getState();
+  const { setUser } = useAuthStore.getState();
 
-  const { accessToken } = await refreshTokenApi();
-  setAccessToken(accessToken);
+  await refreshAccessToken();
 
   const session = await getSession();
   setUser(session.user);

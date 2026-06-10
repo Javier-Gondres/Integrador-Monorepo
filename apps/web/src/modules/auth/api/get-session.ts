@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/client";
+import { refreshAccessToken } from "@/lib/api/refresh-access-token";
 import type { AuthUser } from "@/types";
 
 import type {
@@ -38,10 +39,9 @@ export async function login(credentials: LoginCredentials) {
   });
 }
 
-export async function refreshToken() {
-  return apiFetch<LoginResponse>("/auth/refresh", {
-    method: "POST",
-  });
+export async function refreshToken(): Promise<LoginResponse> {
+  const accessToken = await refreshAccessToken();
+  return { accessToken };
 }
 
 export async function logout() {

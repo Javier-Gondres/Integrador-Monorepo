@@ -13,7 +13,6 @@ import {
 } from "../api/get-session";
 import { AUTH_ROUTES } from "../constants";
 import { authKeys } from "../query-keys";
-import { restoreSession } from "../services/restore-session";
 import { useAuthStore } from "../store/auth-store";
 import type { LoginCredentials } from "../types/auth.types";
 
@@ -58,41 +57,13 @@ export function useAuth() {
     },
   });
 
-  const refreshTokenMutation = useMutation({
-    mutationFn: restoreSession,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: authKeys.all });
-    },
-    onError: (error) => {
-      clearAuth();
-      toast.error(getErrorMessage(error, "Sesión expirada"));
-    },
-  });
-
   return {
     accessToken,
     user,
     isAuthenticated: Boolean(accessToken),
     login: loginMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
-    refreshToken: refreshTokenMutation.mutateAsync,
     isLoggingIn: loginMutation.isPending,
     isLoggingOut: logoutMutation.isPending,
-    isRefreshing: refreshTokenMutation.isPending,
   };
-}
-
-export function useCurrentUser() {
-  const user = useAuthStore((state) => state.user);
-  return { user };
-}
-
-export function usePermissions() {
-  const user = useAuthStore((state) => state.user);
-  return user?.role?.permissions ?? [];
-}
-
-export function useHasPermission(code: string) {
-  const permissions = usePermissions();
-  return permissions.some((permission) => permission.code === code);
 }
