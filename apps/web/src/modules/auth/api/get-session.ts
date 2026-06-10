@@ -1,13 +1,7 @@
 import { apiFetch } from "@/lib/api/client";
-import { refreshAccessToken } from "@/lib/api/refresh-access-token";
 import type { AuthUser } from "@/types";
 
-import type {
-  AuthSession,
-  LoginCredentials,
-  LoginResponse,
-  MeProfileResponse,
-} from "../types/auth.types";
+import type { AuthSession, MeProfileResponse } from "../types/auth.types";
 
 function mapProfileToUser(profile: MeProfileResponse): AuthUser {
   return {
@@ -30,20 +24,4 @@ function mapProfileToUser(profile: MeProfileResponse): AuthUser {
 export async function getSession(): Promise<AuthSession> {
   const profile = await apiFetch<MeProfileResponse>("/me");
   return { user: mapProfileToUser(profile) };
-}
-
-export async function login(credentials: LoginCredentials) {
-  return apiFetch<LoginResponse>("/auth/login", {
-    method: "POST",
-    body: JSON.stringify(credentials),
-  });
-}
-
-export async function refreshToken(): Promise<LoginResponse> {
-  const accessToken = await refreshAccessToken();
-  return { accessToken };
-}
-
-export async function logout() {
-  return apiFetch<void>("/auth/logout", { method: "POST" });
 }

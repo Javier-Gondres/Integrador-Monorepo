@@ -6,11 +6,9 @@ import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/api/errors";
 
-import {
-  getSession,
-  login as loginApi,
-  logout as logoutApi,
-} from "../api/get-session";
+import { getSession } from "../api/get-session";
+import { login as loginApi } from "../api/login";
+import { logout as logoutApi } from "../api/logout";
 import { AUTH_ROUTES } from "../constants";
 import { authKeys } from "../query-keys";
 import { useAuthStore } from "../store/auth-store";

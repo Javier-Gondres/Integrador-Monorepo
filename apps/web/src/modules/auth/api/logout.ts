@@ -1,1 +1,5 @@
-export { logout } from "./get-session";
+import { apiFetch } from "@/lib/api/client";
+
+export async function logout() {
+  return apiFetch<void>("/auth/logout", { method: "POST" });
+}
