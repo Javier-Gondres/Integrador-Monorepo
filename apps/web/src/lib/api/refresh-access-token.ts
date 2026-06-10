@@ -1,6 +1,7 @@
 import { env } from "@/config/env";
 
 import { tokenStorage } from "./access-token";
+import { ENDPOINTS } from "./endpoints";
 import { ApiError } from "./errors";
 import type { ApiErrorBody, ApiResponse } from "./types";
 
@@ -9,7 +10,7 @@ type RefreshTokenResponse = { accessToken: string };
 let refreshPromise: Promise<string> | null = null;
 
 async function requestNewAccessToken(): Promise<string> {
-  const response = await fetch(`${env.apiUrl}/auth/refresh`, {
+  const response = await fetch(`${env.apiUrl}${ENDPOINTS.auth.refresh}`, {
     method: "POST",
     credentials: "include",
     headers: { Accept: "application/json" },

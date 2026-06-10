@@ -1,14 +1,15 @@
 import { env } from "@/config/env";
 
 import { tokenStorage } from "./access-token";
+import { ENDPOINTS } from "./endpoints";
 import { ApiError, getErrorMessage } from "./errors";
 import { refreshAccessToken } from "./refresh-access-token";
 import type { ApiErrorBody, ApiResponse } from "./types";
 
-const AUTH_ENDPOINTS_WITHOUT_RETRY = new Set([
-  "/auth/login",
-  "/auth/logout",
-  "/auth/refresh",
+const AUTH_ENDPOINTS_WITHOUT_RETRY = new Set<string>([
+  ENDPOINTS.auth.login,
+  ENDPOINTS.auth.logout,
+  ENDPOINTS.auth.refresh,
 ]);
 
 function getApiHeaders(includeJson = false): HeadersInit {

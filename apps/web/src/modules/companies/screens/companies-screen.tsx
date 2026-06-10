@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import { apiFetch } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 import { getErrorMessage } from "@/lib/api/errors";
 
 import type { CompanyListItem } from "../types/company.types";
@@ -42,7 +43,7 @@ export function CompaniesScreen() {
   const cargarCompanies = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const data = await apiFetch<CompanyListItem>("/me/company", {
+      const data = await apiFetch<CompanyListItem>(ENDPOINTS.me.company, {
         signal,
       });
       setCompanies(data ? [data] : []);
@@ -76,7 +77,7 @@ export function CompaniesScreen() {
   // Borrado lógico
   const borradoLogico = async (id: string) => {
     try {
-      await apiFetch<{ message: string }>(`/companies/${id}`, {
+      await apiFetch<{ message: string }>(ENDPOINTS.companies.byId(id), {
         method: "DELETE",
       });
 
@@ -100,8 +101,8 @@ export function CompaniesScreen() {
     e.preventDefault();
 
     const endpoint = editingCompany
-      ? `/companies/${editingCompany.id}`
-      : "/companies";
+      ? ENDPOINTS.companies.byId(editingCompany.id)
+      : ENDPOINTS.companies.root;
 
     const method = editingCompany ? "PATCH" : "POST";
 

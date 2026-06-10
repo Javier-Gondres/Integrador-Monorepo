@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 import type { AuthUser } from "@/types";
 
 import type { AuthSession, MeProfileResponse } from "../types/auth.types";
@@ -22,6 +23,6 @@ function mapProfileToUser(profile: MeProfileResponse): AuthUser {
 }
 
 export async function getSession(): Promise<AuthSession> {
-  const profile = await apiFetch<MeProfileResponse>("/me");
+  const profile = await apiFetch<MeProfileResponse>(ENDPOINTS.me.profile);
   return { user: mapProfileToUser(profile) };
 }
