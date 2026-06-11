@@ -2,6 +2,7 @@ import {
   ArrowRight,
   CircleCheckBig,
   Package,
+  ShelvingUnit,
   Tag,
   Truck,
   Users,
@@ -39,6 +40,13 @@ const availableModules = [
     href: "/suppliers",
     icon: Truck,
     tone: "amber",
+  },
+  {
+    title: "Stock",
+    description: "Asigna productos a las diferentes sucursales de la empresa",
+    href: "/inventories",
+    icon: ShelvingUnit,
+    tone: "red",
   },
 ];
 
