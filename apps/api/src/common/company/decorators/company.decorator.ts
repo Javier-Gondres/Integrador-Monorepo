@@ -28,3 +28,22 @@ export const CompanyId = createParamDecorator(
     return request.company.companyId;
   },
 );
+
+/** Solo el `branchId` de la sucursal activa del tenant. */
+export const BranchId = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): string => {
+    const request = ctx.switchToHttp().getRequest<Request>();
+
+    if (!request.company) {
+      throw AuthException.unauthorizedCompanyAccess();
+    }
+
+    if (!request.company.branchId) {
+      throw AuthException.unauthorizedCompanyAccess(
+        'No tienes una sucursal activa seleccionada',
+      );
+    }
+
+    return request.company.branchId;
+  },
+);
