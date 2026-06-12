@@ -10,6 +10,8 @@ export async function getInventories(filters?: InventoryFilters) {
       take: filters?.take,
       search: filters?.search,
       branchId: filters?.branchId,
+      isActive: filters?.isActive,
+      needsRestock: filters?.needsRestock,
     },
   });
 }
