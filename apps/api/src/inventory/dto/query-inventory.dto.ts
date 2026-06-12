@@ -1,5 +1,25 @@
-import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from "class-validator";
+
+function parseOptionalBoolean(value: unknown): boolean | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+  if (value === "true" || value === true) {
+    return true;
+  }
+  if (value === "false" || value === false) {
+    return false;
+  }
+  return value as boolean;
+}
 
 export class QueryInventoryDto {
   @IsOptional()
@@ -22,10 +42,22 @@ export class QueryInventoryDto {
   @IsOptional()
   @IsString({ message: "branchId debe ser texto" })
   branchId?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => parseOptionalBoolean(value))
+  @IsBoolean({ message: "isActive debe ser un booleano" })
+  isActive?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => parseOptionalBoolean(value))
+  @IsBoolean({ message: "needsRestock debe ser un booleano" })
+  needsRestock?: boolean;
 }
 
 export type NormalizedQueryInventory = {
   page: number;
   take: number;
   search?: string;
+  isActive?: boolean;
+  needsRestock?: boolean;
 };
