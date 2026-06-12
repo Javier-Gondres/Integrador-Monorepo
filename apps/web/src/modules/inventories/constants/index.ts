@@ -1,5 +1,5 @@
-/** Cantidad por debajo (o igual) a la cual se resalta el stock como bajo. */
-export const LOW_STOCK_THRESHOLD = 8;
+/** Valor por defecto de la cantidad mínima al asignar un producto. */
+export const DEFAULT_MINIMUM_QUANTITY = 0;
 
 /** Tamaño de página del combobox de productos (scroll infinito). */
 export const PRODUCTS_COMBOBOX_PAGE_SIZE = 10;
