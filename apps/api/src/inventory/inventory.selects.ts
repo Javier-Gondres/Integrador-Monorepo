@@ -5,6 +5,8 @@ export const inventorySelect = {
   branchId: true,
   productId: true,
   quantity: true,
+  minimumQuantity: true,
+  isActive: true,
   createdAt: true,
   updatedAt: true,
   product: {
