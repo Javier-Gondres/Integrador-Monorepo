@@ -50,6 +50,11 @@ export class InventoryRepository {
         ...(createInventoryDto.quantity !== undefined && {
           quantity: new Prisma.Decimal(createInventoryDto.quantity),
         }),
+        ...(createInventoryDto.minimumQuantity !== undefined && {
+          minimumQuantity: new Prisma.Decimal(
+            createInventoryDto.minimumQuantity,
+          ),
+        }),
       },
       select: inventorySelect,
     });
@@ -66,6 +71,14 @@ export class InventoryRepository {
     });
   }
 
+  setActive(id: string, isActive: boolean): Promise<InventoryRecord> {
+    return prisma.inventory.update({
+      where: { id },
+      data: { isActive },
+      select: inventorySelect,
+    });
+  }
+
   private buildListWhere(
     companyId: string,
     branchId: string,
@@ -74,6 +87,10 @@ export class InventoryRepository {
     return {
       branchId,
       branch: { companyId },
+      ...(query.isActive !== undefined && { isActive: query.isActive }),
+      ...(query.needsRestock && {
+        quantity: { lte: prisma.inventory.fields.minimumQuantity },
+      }),
       ...(query.search && {
         OR: [
           {

@@ -93,29 +93,30 @@ export class InventoryService {
       branchId: branch.id,
       productId: product.id,
       quantity: createInventoryDto.quantity,
+      minimumQuantity: createInventoryDto.minimumQuantity,
     });
   }
 
   async update(id: string, companyId: string, data: UpdateInventoryDto) {
-    const inventory = await this.inventoryRepository.findByIdInCompany(
-      id,
-      companyId,
-    );
-
-    if (!inventory) {
-      throw InventoryException.notFound(
-        ErrorCodes.RECORD_NOT_FOUND,
-        "el producto no esta en el inventario",
-      );
-    }
+    await this.findById(id, companyId);
 
     const updateData: Prisma.InventoryUpdateInput = {
-      ...(data.quantity !== undefined && {
-        quantity: new Prisma.Decimal(data.quantity),
+      ...(data.minimumQuantity !== undefined && {
+        minimumQuantity: new Prisma.Decimal(data.minimumQuantity),
       }),
     };
 
     return await this.inventoryRepository.update(id, updateData);
+  }
+
+  async activate(id: string, companyId: string) {
+    await this.findById(id, companyId);
+    return await this.inventoryRepository.setActive(id, true);
+  }
+
+  async deactivate(id: string, companyId: string) {
+    await this.findById(id, companyId);
+    return await this.inventoryRepository.setActive(id, false);
   }
 
   async increaseQuantity(id: string, companyId: string, quantity: number) {
@@ -164,6 +165,10 @@ export class InventoryService {
       page: query.page ?? DEFAULT_PAGE,
       take: query.take ?? DEFAULT_TAKE,
       ...(query.search?.trim() && { search: query.search.trim() }),
+      ...(query.isActive !== undefined && { isActive: query.isActive }),
+      ...(query.needsRestock !== undefined && {
+        needsRestock: query.needsRestock,
+      }),
     };
   }
 }

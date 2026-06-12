@@ -2,15 +2,15 @@ import { Pencil } from "lucide-react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import type { DataTableColumn } from "@/shared/data-table";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { StatusToggle } from "@/shared/ui/status-toggle";
 
-import { LOW_STOCK_THRESHOLD } from "../constants";
 import type { Inventory } from "../types/inventory.types";
 import { formatCurrency } from "../utils/format-currency";
 
 interface InventoryTableActions {
   onEdit: (inventory: Inventory) => void;
+  onToggleStatus: (id: string, isActive: boolean) => void;
 }
 
 export function getInventoriesTableColumns(
@@ -38,7 +38,7 @@ export function getInventoriesTableColumns(
       id: "quantity",
       header: "Cantidad",
       cell: (inv) => {
-        const low = inv.quantity <= LOW_STOCK_THRESHOLD;
+        const low = inv.quantity <= inv.minimumQuantity;
         return (
           <span
             style={{
@@ -53,6 +53,17 @@ export function getInventoriesTableColumns(
       },
     },
     {
+      id: "minimumQuantity",
+      header: "Mínimo",
+      cell: (inv) => (
+        <span
+          style={{ color: C.mutedText, fontVariantNumeric: "tabular-nums" }}
+        >
+          {inv.minimumQuantity}
+        </span>
+      ),
+    },
+    {
       id: "price",
       header: "Precio",
       cell: (inv) => (
@@ -64,12 +75,12 @@ export function getInventoriesTableColumns(
     {
       id: "status",
       header: "Estado",
-      cell: (inv) =>
-        inv.isActive ? (
-          <Badge variant="success">Activo</Badge>
-        ) : (
-          <Badge variant="muted">Inactivo</Badge>
-        ),
+      cell: (inv) => (
+        <StatusToggle
+          isActive={inv.isActive}
+          onToggle={() => actions.onToggleStatus(inv.id, inv.isActive)}
+        />
+      ),
     },
     {
       id: "actions",
@@ -86,7 +97,7 @@ export function getInventoriesTableColumns(
           <Button
             variant="icon"
             onClick={() => actions.onEdit(inv)}
-            title="Editar"
+            title="Editar cantidad mínima"
             style={{ width: "34px", height: "34px", borderRadius: "7px" }}
             className="hover:border-blue-400 hover:text-blue-600 transition-colors"
           >

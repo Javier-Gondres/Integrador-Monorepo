@@ -1,3 +1,4 @@
+import { DEFAULT_MINIMUM_QUANTITY } from "../constants";
 import type { InventoryFormSchema } from "../schemas/inventory.schema";
 import type {
   CreateInventoryValues,
@@ -12,10 +13,14 @@ export function mapInventoryToFormValues(
   return {
     productId: inventory?.productId ?? "",
     quantity: inventory?.quantity ?? 0,
+    minimumQuantity: inventory?.minimumQuantity ?? DEFAULT_MINIMUM_QUANTITY,
   };
 }
 
-/** Construye la opción de producto a partir de una fila de inventario (modo edición). */
+/**
+ * Opción de producto a partir de una fila de inventario (modo edición).
+ * Usa el estado del producto (`productIsActive`), no el de la fila.
+ */
 export function mapInventoryToProductOption(
   inventory: Inventory | null,
 ): InventoryProductOption | null {
@@ -25,7 +30,7 @@ export function mapInventoryToProductOption(
     code: inventory.code,
     name: inventory.name,
     price: inventory.price,
-    isActive: inventory.isActive,
+    isActive: inventory.productIsActive,
   };
 }
 
@@ -37,6 +42,7 @@ export function mapFormValuesToCreateDto(
     branchId,
     productId: values.productId,
     quantity: values.quantity,
+    minimumQuantity: values.minimumQuantity,
   };
 }
 
@@ -44,6 +50,6 @@ export function mapFormValuesToUpdateDto(
   values: InventoryFormSchema,
 ): UpdateInventoryValues {
   return {
-    quantity: values.quantity,
+    minimumQuantity: values.minimumQuantity,
   };
 }

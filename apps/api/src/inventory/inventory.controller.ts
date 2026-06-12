@@ -53,4 +53,16 @@ export class InventoryController {
   ) {
     return this.inventoryService.update(id, companyId, updateInventoryDto);
   }
+
+  @RequireCompany()
+  @Patch(":id/activate")
+  activate(@Param("id") id: string, @CompanyId() companyId: string) {
+    return this.inventoryService.activate(id, companyId);
+  }
+
+  @RequireCompany()
+  @Patch(":id/deactivate")
+  deactivate(@Param("id") id: string, @CompanyId() companyId: string) {
+    return this.inventoryService.deactivate(id, companyId);
+  }
 }
