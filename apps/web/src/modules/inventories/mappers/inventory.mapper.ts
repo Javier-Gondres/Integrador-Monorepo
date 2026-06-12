@@ -10,8 +10,10 @@ export function mapInventoryDtoToUi(dto: InventoryDto): Inventory {
     code: dto.product.code,
     name: dto.product.name,
     quantity: Number(dto.quantity),
+    minimumQuantity: Number(dto.minimumQuantity),
     price: Number(dto.product.price),
-    isActive: dto.product.isActive,
+    isActive: dto.isActive,
+    productIsActive: dto.product.isActive,
   };
 }
 
