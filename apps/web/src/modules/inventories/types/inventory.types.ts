@@ -17,6 +17,10 @@ export interface InventoryDto {
   productId: string;
   /** Decimal serializado por Prisma (puede llegar como string). */
   quantity: string | number;
+  /** Decimal serializado por Prisma (puede llegar como string). */
+  minimumQuantity: string | number;
+  /** Estado propio de la fila de inventario (no del producto). */
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
   product: InventoryProductDto;
@@ -30,8 +34,12 @@ export interface Inventory {
   code: string;
   name: string;
   quantity: number;
+  minimumQuantity: number;
   price: number;
+  /** Estado de la fila de inventario (toggleable). */
   isActive: boolean;
+  /** Estado del producto referenciado (solo informativo en el modal). */
+  productIsActive: boolean;
 }
 
 export type InventoryFilters = Pick<
@@ -39,6 +47,8 @@ export type InventoryFilters = Pick<
   "page" | "take" | "search"
 > & {
   branchId?: string;
+  isActive?: boolean;
+  needsRestock?: boolean;
 };
 
 /** Opción de producto para el selector del modal de asignación. */
@@ -55,9 +65,13 @@ export interface CreateInventoryValues {
   branchId: string;
   productId: string;
   quantity?: number;
+  minimumQuantity?: number;
 }
 
-/** Payload para actualizar inventario (solo cantidad). */
+/**
+ * Payload para actualizar inventario. La cantidad se mueve vía
+ * InventoryMovement; aquí solo se edita la cantidad mínima de reposición.
+ */
 export interface UpdateInventoryValues {
-  quantity: number;
+  minimumQuantity: number;
 }
