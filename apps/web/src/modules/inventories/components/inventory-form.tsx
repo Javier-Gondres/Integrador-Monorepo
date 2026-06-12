@@ -100,7 +100,7 @@ export function InventoryForm({
       title={isEditing ? "Editar inventario" : "Asignar producto"}
       description={
         isEditing
-          ? "Actualiza la cantidad en stock de este producto."
+          ? "Actualiza la cantidad mínima de reposición de este producto."
           : "Agrega un producto al inventario de la sucursal seleccionada."
       }
       onClose={onClose}
@@ -120,17 +120,17 @@ export function InventoryForm({
           <FieldLabel>
             Producto <span style={{ color: C.danger }}>*</span>
           </FieldLabel>
-          {isEditing ? (
-            <ReadonlyBox>
-              <span style={{ fontWeight: 500 }}>
-                {selectedProduct?.name ?? "—"}
-              </span>
-            </ReadonlyBox>
-          ) : (
-            <Controller
-              name="productId"
-              control={control}
-              render={({ field }) => (
+          <Controller
+            name="productId"
+            control={control}
+            render={({ field }) =>
+              isEditing ? (
+                <ReadonlyBox>
+                  <span style={{ fontWeight: 500 }}>
+                    {selectedProduct?.name ?? "—"}
+                  </span>
+                </ReadonlyBox>
+              ) : (
                 <>
                   {renderProductCombobox({
                     selected: selectedProduct,
@@ -140,9 +140,9 @@ export function InventoryForm({
                     },
                   })}
                 </>
-              )}
-            />
-          )}
+              )
+            }
+          />
           {errors.productId && (
             <span style={{ fontSize: "12px", color: C.danger }}>
               {errors.productId.message}
@@ -168,25 +168,6 @@ export function InventoryForm({
             </span>
           </ReadonlyField>
 
-          <Input
-            label="Cantidad"
-            required
-            type="number"
-            min="0"
-            step="any"
-            placeholder="0"
-            error={errors.quantity?.message}
-            {...register("quantity", { valueAsNumber: true })}
-          />
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "16px",
-          }}
-        >
           <ReadonlyField label="Precio">
             <span
               style={{
@@ -198,20 +179,61 @@ export function InventoryForm({
               {selectedProduct ? formatCurrency(selectedProduct.price) : "—"}
             </span>
           </ReadonlyField>
+        </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <FieldLabel>Estado</FieldLabel>
-            <div style={{ display: "flex", alignItems: "center", minHeight: "42px" }}>
-              {selectedProduct ? (
-                selectedProduct.isActive ? (
-                  <Badge variant="success">Activo</Badge>
-                ) : (
-                  <Badge variant="muted">Inactivo</Badge>
-                )
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "16px",
+          }}
+        >
+          <Input
+            label="Cantidad"
+            required
+            type="number"
+            min="0"
+            step="any"
+            placeholder="0"
+            readOnly={isEditing}
+            title={
+              isEditing
+                ? "La cantidad se ajusta mediante movimientos de inventario"
+                : undefined
+            }
+            error={errors.quantity?.message}
+            style={
+              isEditing
+                ? { backgroundColor: C.tableHead, color: C.mutedText }
+                : undefined
+            }
+            {...register("quantity", { valueAsNumber: true })}
+          />
+
+          <Input
+            label="Cantidad mínima"
+            required
+            type="number"
+            min="0"
+            step="any"
+            placeholder="0"
+            error={errors.minimumQuantity?.message}
+            {...register("minimumQuantity", { valueAsNumber: true })}
+          />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <FieldLabel>Estado del producto</FieldLabel>
+          <div style={{ display: "flex", alignItems: "center", minHeight: "42px" }}>
+            {selectedProduct ? (
+              selectedProduct.isActive ? (
+                <Badge variant="success">Activo</Badge>
               ) : (
-                <span style={{ color: C.mutedText }}>—</span>
-              )}
-            </div>
+                <Badge variant="muted">Inactivo</Badge>
+              )
+            ) : (
+              <span style={{ color: C.mutedText }}>—</span>
+            )}
           </div>
         </div>
 
