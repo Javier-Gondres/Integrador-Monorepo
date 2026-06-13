@@ -24,7 +24,7 @@ export function useCajas(branchId?: string) {
       queryClient.invalidateQueries({ queryKey: ["cajas"] });
       toast.success("Caja creada correctamente");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error?.message || "Error al crear la caja");
     },
   });
@@ -38,7 +38,7 @@ export function useCajas(branchId?: string) {
       queryClient.invalidateQueries({ queryKey: ["cajas"] });
       toast.success("Turno abierto correctamente");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error?.message || "Error al abrir el turno");
     },
   });
@@ -52,7 +52,7 @@ export function useCajas(branchId?: string) {
       queryClient.invalidateQueries({ queryKey: ["cajas"] });
       toast.success("Turno cerrado correctamente");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error?.message || "Error al cerrar el turno");
     },
   });

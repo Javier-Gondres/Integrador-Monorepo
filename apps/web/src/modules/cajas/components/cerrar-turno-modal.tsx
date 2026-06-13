@@ -1,10 +1,11 @@
 "use client";
 
+import { AlertTriangle,Banknote, X } from "lucide-react";
 import { useState } from "react";
-import { X, Banknote, AlertTriangle } from "lucide-react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import { Button } from "@/shared/ui/button";
+
 import type { Caja, CerrarTurnoPayload } from "../types/caja.types";
 import { formatCurrency } from "../utils/format";
 

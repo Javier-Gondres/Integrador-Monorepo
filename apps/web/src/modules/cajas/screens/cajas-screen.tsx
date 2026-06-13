@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { LayoutGrid, TrendingUp, DollarSign, Clock3, Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { Clock3, DollarSign, LayoutGrid, Plus,TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
+import { getBranchesForSelect } from "@/modules/employees/api/get-branches";
 import { PageHeader } from "@/shared/ui";
 import { Button } from "@/shared/ui/button";
-import { getBranchesForSelect } from "@/modules/employees/api/get-branches";
 
-import { useCajas } from "../hooks/use-cajas";
-import { CajaCard } from "../components/caja-card";
 import { AbrirTurnoModal } from "../components/abrir-turno-modal";
+import { CajaCard } from "../components/caja-card";
 import { CerrarTurnoModal } from "../components/cerrar-turno-modal";
 import { CrearCajaModal } from "../components/crear-caja-modal";
+import { useCajas } from "../hooks/use-cajas";
 import type { Caja } from "../types/caja.types";
 import { formatCurrency } from "../utils/format";
 

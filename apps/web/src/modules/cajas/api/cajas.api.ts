@@ -1,5 +1,6 @@
 import { apiFetch } from "@/lib/api/client";
 import type { PaginatedResponse } from "@/types/pagination";
+
 import type {
   AbrirTurnoPayload,
   Caja,

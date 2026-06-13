@@ -2,15 +2,16 @@
 
 import {
   Clock,
+  History,
   Lock,
   PlayCircle,
   StopCircle,
-  History,
   User,
 } from "lucide-react";
 import Link from "next/link";
 
 import { ERP_COLORS as C } from "@/constants/theme";
+
 import type { Caja } from "../types/caja.types";
 import { formatCurrency, formatElapsed } from "../utils/format";
 

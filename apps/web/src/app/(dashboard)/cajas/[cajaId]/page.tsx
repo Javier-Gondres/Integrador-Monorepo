@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { HistorialCajaScreen } from "@/modules/cajas/screens/historial-caja-screen";
 
 export const metadata: Metadata = {

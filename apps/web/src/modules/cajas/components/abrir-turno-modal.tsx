@@ -1,13 +1,14 @@
 "use client";
 
-import { X, Banknote, UserCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { Banknote, UserCheck,X } from "lucide-react";
+import { useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
-import { Button } from "@/shared/ui/button";
-import type { Caja, AbrirTurnoPayload } from "../types/caja.types";
 import { getEmployees } from "@/modules/employees/api/get-employees";
-import { useState } from "react";
+import { Button } from "@/shared/ui/button";
+
+import type { AbrirTurnoPayload,Caja } from "../types/caja.types";
 
 interface Props {
   caja: Caja;

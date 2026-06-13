@@ -1,16 +1,16 @@
 "use client";
 
-import { Calendar, AlertTriangle, ArrowLeft } from "lucide-react";
+import { AlertTriangle, ArrowLeft,Calendar } from "lucide-react";
 import Link from "next/link";
 
 import { ERP_COLORS as C } from "@/constants/theme";
-import { PageHeader } from "@/shared/ui";
-import { DataTable, DataTableToolbar } from "@/shared/data-table";
 import type { DataTableColumn } from "@/shared/data-table";
+import { DataTable, DataTableToolbar } from "@/shared/data-table";
+import { PageHeader } from "@/shared/ui";
 
 import { useHistorialCaja } from "../hooks/use-historial-caja";
-import { formatCurrency } from "../utils/format";
 import type { TurnoHistorial } from "../types/caja.types";
+import { formatCurrency } from "../utils/format";
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
