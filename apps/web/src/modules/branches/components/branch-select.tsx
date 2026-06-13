@@ -1,5 +1,6 @@
 import { ERP_COLORS as C } from "@/constants/theme";
-import type { BranchListItem } from "@/modules/branches/types/branch.types";
+
+import type { BranchListItem } from "../types/branch.types";
 
 interface BranchSelectProps {
   branches: BranchListItem[];

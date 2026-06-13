@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 import { DEFAULT_PAGE_SIZE, ERP_COLORS as C } from "@/constants/theme";
+import { BranchSelect } from "@/modules/branches/components/branch-select";
 import type { BranchListItem } from "@/modules/branches/types/branch.types";
 import { DataTable, DataTableToolbar } from "@/shared/data-table";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 
-import { BranchSelect } from "../components/branch-select";
 import { getInventoriesTableColumns } from "../components/inventories-table";
 import { useInventories } from "../hooks/use-inventories";
 import { useToggleInventoryStatus } from "../hooks/use-toggle-inventory-status";
