@@ -1,34 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { InventoryMovementService } from './inventory-movement.service';
-import { CreateInventoryMovementDto } from './dto/create-inventory-movement.dto';
-import { UpdateInventoryMovementDto } from './dto/update-inventory-movement.dto';
+import { Controller, Get, Query } from "@nestjs/common";
+import {
+  Company,
+  type CompanyContext,
+  RequireCompany,
+} from "src/common/company";
 
-@Controller('inventory-movement')
+import { QueryInventoryMovementDto } from "./dto/query-inventory-movement.dto";
+import { InventoryMovementService } from "./inventory-movement.service";
+
+@Controller("inventory-movements")
 export class InventoryMovementController {
-  constructor(private readonly inventoryMovementService: InventoryMovementService) {}
+  constructor(
+    private readonly inventoryMovementService: InventoryMovementService,
+  ) {}
 
-  @Post()
-  create(@Body() createInventoryMovementDto: CreateInventoryMovementDto) {
-    return this.inventoryMovementService.create(createInventoryMovementDto);
-  }
-
+  @RequireCompany()
   @Get()
-  findAll() {
-    return this.inventoryMovementService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.inventoryMovementService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInventoryMovementDto: UpdateInventoryMovementDto) {
-    return this.inventoryMovementService.update(+id, updateInventoryMovementDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.inventoryMovementService.remove(+id);
+  findAll(
+    @Company() company: CompanyContext,
+    @Query() query: QueryInventoryMovementDto,
+  ) {
+    return this.inventoryMovementService.findAllByBranch(company, query);
   }
 }
