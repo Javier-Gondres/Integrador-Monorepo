@@ -77,7 +77,14 @@ export function CerrarTurnoModal({ caja, onConfirm, onClose, loading }: Props) {
             >
               Cierre de turno
             </p>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: C.bodyText, margin: 0 }}>
+            <h2
+              style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: C.bodyText,
+                margin: 0,
+              }}
+            >
               {caja.nombre}
             </h2>
           </div>
@@ -112,13 +119,33 @@ export function CerrarTurnoModal({ caja, onConfirm, onClose, loading }: Props) {
         >
           {[
             { label: "Cajero", value: turno.empleadoNombre },
-            { label: "Monto apertura", value: formatCurrency(turno.montoApertura) },
-            { label: "Total ventas", value: formatCurrency(turno.totalVentas), accent: true },
-            { label: "Efectivo recibido", value: formatCurrency(turno.totalEfectivo) },
-            { label: "Tarjeta recibida", value: formatCurrency(turno.totalTarjeta) },
+            {
+              label: "Monto apertura",
+              value: formatCurrency(turno.montoApertura),
+            },
+            {
+              label: "Total ventas",
+              value: formatCurrency(turno.totalVentas),
+              accent: true,
+            },
+            {
+              label: "Efectivo recibido",
+              value: formatCurrency(turno.totalEfectivo),
+            },
+            {
+              label: "Tarjeta recibida",
+              value: formatCurrency(turno.totalTarjeta),
+            },
           ].map(({ label, value, accent }) => (
-            <div key={label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontSize: 11, color: C.mutedText, fontWeight: 500 }}>{label}</span>
+            <div
+              key={label}
+              style={{ display: "flex", flexDirection: "column", gap: 2 }}
+            >
+              <span
+                style={{ fontSize: 11, color: C.mutedText, fontWeight: 500 }}
+              >
+                {label}
+              </span>
               <span
                 style={{
                   fontSize: accent ? 17 : 14,
@@ -133,7 +160,14 @@ export function CerrarTurnoModal({ caja, onConfirm, onClose, loading }: Props) {
         </div>
 
         {/* body */}
-        <div style={{ padding: "20px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div
+          style={{
+            padding: "20px 28px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+          }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <label
               style={{
@@ -179,11 +213,23 @@ export function CerrarTurnoModal({ caja, onConfirm, onClose, loading }: Props) {
                 fontSize: 13,
                 fontWeight: 600,
                 background:
-                  diferencia < 0 ? C.dangerBg : diferencia > 0 ? C.greenBg : "#f0f9ff",
+                  diferencia < 0
+                    ? C.dangerBg
+                    : diferencia > 0
+                      ? C.greenBg
+                      : "#f0f9ff",
                 color:
-                  diferencia < 0 ? C.danger : diferencia > 0 ? C.greenText : "#0369a1",
+                  diferencia < 0
+                    ? C.danger
+                    : diferencia > 0
+                      ? C.greenText
+                      : "#0369a1",
                 border: `1px solid ${
-                  diferencia < 0 ? "#fecaca" : diferencia > 0 ? C.greenBorder : "#bae6fd"
+                  diferencia < 0
+                    ? "#fecaca"
+                    : diferencia > 0
+                      ? C.greenBorder
+                      : "#bae6fd"
                 }`,
               }}
             >
@@ -191,8 +237,8 @@ export function CerrarTurnoModal({ caja, onConfirm, onClose, loading }: Props) {
               {diferencia === 0
                 ? "✓ Cuadre exacto"
                 : diferencia > 0
-                ? `Sobrante: ${formatCurrency(diferencia)}`
-                : `Faltante: ${formatCurrency(Math.abs(diferencia))}`}
+                  ? `Sobrante: ${formatCurrency(diferencia)}`
+                  : `Faltante: ${formatCurrency(Math.abs(diferencia))}`}
             </div>
           )}
         </div>
@@ -213,7 +259,11 @@ export function CerrarTurnoModal({ caja, onConfirm, onClose, loading }: Props) {
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            style={{ backgroundColor: C.danger, border: `1px solid ${C.danger}`, color: "#fff" }}
+            style={{
+              backgroundColor: C.danger,
+              border: `1px solid ${C.danger}`,
+              color: "#fff",
+            }}
           >
             {loading ? "Cerrando…" : "Cerrar turno"}
           </Button>

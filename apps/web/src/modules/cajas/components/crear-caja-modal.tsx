@@ -62,7 +62,14 @@ export function CrearCajaModal({ onConfirm, onClose, loading }: Props) {
             >
               Configuración
             </p>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: C.bodyText, margin: 0 }}>
+            <h2
+              style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: C.bodyText,
+                margin: 0,
+              }}
+            >
               Crear Nueva Caja
             </h2>
           </div>
@@ -133,7 +140,10 @@ export function CrearCajaModal({ onConfirm, onClose, loading }: Props) {
           <Button variant="secondary" onClick={onClose}>
             Cancelar
           </Button>
-          <Button onClick={() => canSubmit && onConfirm(name.trim())} disabled={!canSubmit}>
+          <Button
+            onClick={() => canSubmit && onConfirm(name.trim())}
+            disabled={!canSubmit}
+          >
             {loading ? "Creando…" : "Crear Caja"}
           </Button>
         </div>

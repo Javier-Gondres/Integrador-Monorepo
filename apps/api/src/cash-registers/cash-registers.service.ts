@@ -12,9 +12,8 @@ export class CashRegistersService {
   ) {}
 
   async findAllByBranch(branchId: string) {
-    const registers = await this.cashRegistersRepository.findAllByBranch(
-      branchId,
-    );
+    const registers =
+      await this.cashRegistersRepository.findAllByBranch(branchId);
 
     return registers.map((reg) => {
       const activeShift = reg.shifts[0];
@@ -29,7 +28,7 @@ export class CashRegistersService {
         for (const sale of activeShift.sales) {
           const total = Number(sale.total);
           totalVentas += total;
-          
+
           for (const payment of sale.payments) {
             const amount = Number(payment.amount);
             if (payment.method === 'CASH') {
@@ -74,17 +73,23 @@ export class CashRegistersService {
         'El nombre de la caja es requerido',
       );
     }
-    
+
     // Validar si existe caja con mismo nombre en sucursal
-    const existing = await this.cashRegistersRepository.findAllByBranch(branchId);
-    if (existing.some((c) => c.name.toLowerCase() === name.trim().toLowerCase())) {
+    const existing =
+      await this.cashRegistersRepository.findAllByBranch(branchId);
+    if (
+      existing.some((c) => c.name.toLowerCase() === name.trim().toLowerCase())
+    ) {
       throw new BusinessException(
         ErrorCodes.VALIDATION_ERROR,
         'Ya existe una caja con ese nombre en esta sucursal',
       );
     }
 
-    const reg = await this.cashRegistersRepository.create(branchId, name.trim());
+    const reg = await this.cashRegistersRepository.create(
+      branchId,
+      name.trim(),
+    );
     return {
       id: reg.id,
       nombre: reg.name,
@@ -119,9 +124,8 @@ export class CashRegistersService {
 
     // Si el frontend envía emp-XXX, ignoramos y buscamos el empleado del usuario logueado
     if (employeeId.startsWith('emp-')) {
-      const emp = await this.cashRegistersRepository.getEmployeeIdByUserId(
-        userId,
-      );
+      const emp =
+        await this.cashRegistersRepository.getEmployeeIdByUserId(userId);
       if (!emp) {
         throw new BusinessException(
           ErrorCodes.VALIDATION_ERROR,
@@ -171,7 +175,10 @@ export class CashRegistersService {
   async getShiftsHistory(id: string, branchId: string, query: QueryShiftsDto) {
     const cashRegister = await this.cashRegistersRepository.findById(id);
     if (!cashRegister || cashRegister.branchId !== branchId) {
-      throw new BusinessException(ErrorCodes.RECORD_NOT_FOUND, 'Caja no encontrada');
+      throw new BusinessException(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'Caja no encontrada',
+      );
     }
 
     const page = query.page ?? 1;
@@ -201,7 +208,9 @@ export class CashRegistersService {
       }
 
       const openingAmount = Number(shift.openingAmount);
-      const closingAmount = shift.closingAmount ? Number(shift.closingAmount) : null;
+      const closingAmount = shift.closingAmount
+        ? Number(shift.closingAmount)
+        : null;
 
       let diferencia = null;
       if (closingAmount !== null) {
@@ -210,7 +219,9 @@ export class CashRegistersService {
 
       const employeeName =
         shift.cashier?.user?.firstName +
-        (shift.cashier?.user?.lastName ? ' ' + shift.cashier?.user?.lastName : '');
+        (shift.cashier?.user?.lastName
+          ? ' ' + shift.cashier?.user?.lastName
+          : '');
 
       return {
         id: shift.id,

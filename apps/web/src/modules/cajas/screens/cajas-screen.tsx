@@ -38,12 +38,19 @@ export function CajasScreen() {
     }
   }, [branches, selectedBranchId]);
 
-  const { cajas, loading, abrirTurno, cerrarTurno, crearCaja } = useCajas(selectedBranchId);
+  const { cajas, loading, abrirTurno, cerrarTurno, crearCaja } =
+    useCajas(selectedBranchId);
   const [modal, setModal] = useState<ModalState>(null);
 
   const cajasAbiertas = cajas.filter((c) => !!c.turnoActivo).length;
-  const totalVentasHoy = cajas.reduce((acc, c) => acc + (c.turnoActivo?.totalVentas ?? 0), 0);
-  const totalEfectivoHoy = cajas.reduce((acc, c) => acc + (c.turnoActivo?.totalEfectivo ?? 0), 0);
+  const totalVentasHoy = cajas.reduce(
+    (acc, c) => acc + (c.turnoActivo?.totalVentas ?? 0),
+    0,
+  );
+  const totalEfectivoHoy = cajas.reduce(
+    (acc, c) => acc + (c.turnoActivo?.totalEfectivo ?? 0),
+    0,
+  );
 
   function handleConfirmAbrir(payload: Parameters<typeof abrirTurno>[0]) {
     abrirTurno(payload);
@@ -61,15 +68,28 @@ export function CajasScreen() {
   }
 
   return (
-    <main style={{ minHeight: "100vh", backgroundColor: C.pageBg, fontFamily: "inherit" }}>
+    <main
+      style={{
+        minHeight: "100vh",
+        backgroundColor: C.pageBg,
+        fontFamily: "inherit",
+      }}
+    >
       <PageHeader breadcrumb="Cajas" title="Cajas" />
 
       <div
-        style={{ padding: "32px 40px", display: "flex", flexDirection: "column", gap: 28 }}
+        style={{
+          padding: "32px 40px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 28,
+        }}
       >
         {/* ── selector de sucursal ─────────────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: C.headText }}>Sucursal:</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: C.headText }}>
+            Sucursal:
+          </span>
           <select
             value={selectedBranchId}
             onChange={(e) => setSelectedBranchId(e.target.value)}
@@ -101,10 +121,30 @@ export function CajasScreen() {
           }}
         >
           {[
-            { icon: <LayoutGrid size={18} />, label: "Cajas abiertas", value: `${cajasAbiertas} / ${cajas.length}`, tone: "#10b981" },
-            { icon: <TrendingUp size={18} />, label: "Ventas del día", value: formatCurrency(totalVentasHoy), tone: C.primary },
-            { icon: <DollarSign size={18} />, label: "Efectivo en cajas", value: formatCurrency(totalEfectivoHoy), tone: "#8b5cf6" },
-            { icon: <Clock3 size={18} />, label: "Total cajas", value: String(cajas.length), tone: "#f59e0b" },
+            {
+              icon: <LayoutGrid size={18} />,
+              label: "Cajas abiertas",
+              value: `${cajasAbiertas} / ${cajas.length}`,
+              tone: "#10b981",
+            },
+            {
+              icon: <TrendingUp size={18} />,
+              label: "Ventas del día",
+              value: formatCurrency(totalVentasHoy),
+              tone: C.primary,
+            },
+            {
+              icon: <DollarSign size={18} />,
+              label: "Efectivo en cajas",
+              value: formatCurrency(totalEfectivoHoy),
+              tone: "#8b5cf6",
+            },
+            {
+              icon: <Clock3 size={18} />,
+              label: "Total cajas",
+              value: String(cajas.length),
+              tone: "#f59e0b",
+            },
           ].map(({ icon, label, value, tone }) => (
             <div
               key={label}
@@ -135,10 +175,26 @@ export function CajasScreen() {
                 {icon}
               </div>
               <div>
-                <p style={{ fontSize: 11, color: C.mutedText, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: C.mutedText,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    margin: "0 0 4px",
+                  }}
+                >
                   {label}
                 </p>
-                <p style={{ fontSize: 20, fontWeight: 700, color: C.bodyText, margin: 0 }}>
+                <p
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: C.bodyText,
+                    margin: 0,
+                  }}
+                >
                   {value}
                 </p>
               </div>
@@ -147,12 +203,34 @@ export function CajasScreen() {
         </div>
 
         {/* ── section header ───────────────────────────────────────────── */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: C.mutedText, margin: "0 0 4px" }}>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: C.mutedText,
+                margin: "0 0 4px",
+              }}
+            >
               Operación
             </p>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: C.bodyText, margin: 0 }}>
+            <h2
+              style={{
+                fontSize: 20,
+                fontWeight: 700,
+                color: C.bodyText,
+                margin: 0,
+              }}
+            >
               Estado de cajas
             </h2>
           </div>
@@ -211,7 +289,9 @@ export function CajasScreen() {
       {modal?.type === "cerrar" && (
         <CerrarTurnoModal
           caja={modal.caja}
-          onConfirm={(payload) => handleConfirmCerrar({ ...payload, cajaId: modal.caja.id })}
+          onConfirm={(payload) =>
+            handleConfirmCerrar({ ...payload, cajaId: modal.caja.id })
+          }
           onClose={() => setModal(null)}
           loading={loading}
         />

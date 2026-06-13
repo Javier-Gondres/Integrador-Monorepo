@@ -17,7 +17,13 @@ interface Props {
   branchId?: string;
 }
 
-export function AbrirTurnoModal({ caja, onConfirm, onClose, loading, branchId }: Props) {
+export function AbrirTurnoModal({
+  caja,
+  onConfirm,
+  onClose,
+  loading,
+  branchId,
+}: Props) {
   const [empleadoId, setEmpleadoId] = useState("");
   const [montoApertura, setMontoApertura] = useState("");
 
@@ -27,7 +33,8 @@ export function AbrirTurnoModal({ caja, onConfirm, onClose, loading, branchId }:
   });
 
   const employees = employeesData?.items || [];
-  const canSubmit = empleadoId.trim().length > 0 && Number(montoApertura) >= 0 && !loading;
+  const canSubmit =
+    empleadoId.trim().length > 0 && Number(montoApertura) >= 0 && !loading;
 
   function handleSubmit() {
     if (!canSubmit) return;
@@ -87,7 +94,14 @@ export function AbrirTurnoModal({ caja, onConfirm, onClose, loading, branchId }:
             >
               Apertura de turno
             </p>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: C.bodyText, margin: 0 }}>
+            <h2
+              style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: C.bodyText,
+                margin: 0,
+              }}
+            >
               {caja.nombre}
             </h2>
           </div>
@@ -110,7 +124,14 @@ export function AbrirTurnoModal({ caja, onConfirm, onClose, loading, branchId }:
         </div>
 
         {/* body */}
-        <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 18 }}>
+        <div
+          style={{
+            padding: "24px 28px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 18,
+          }}
+        >
           {/* Selector empleado */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <label

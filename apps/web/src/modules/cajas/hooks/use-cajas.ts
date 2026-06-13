@@ -2,7 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { closeShift, createCaja, getCajas, openShift } from "../api/cajas.api";
-import type { AbrirTurnoPayload, CerrarTurnoPayload } from "../types/caja.types";
+import type {
+  AbrirTurnoPayload,
+  CerrarTurnoPayload,
+} from "../types/caja.types";
 
 export function useCajas(branchId?: string) {
   const queryClient = useQueryClient();
@@ -15,7 +18,8 @@ export function useCajas(branchId?: string) {
   });
 
   const crearMutation = useMutation({
-    mutationFn: (payload: { name: string; branchId?: string }) => createCaja(payload),
+    mutationFn: (payload: { name: string; branchId?: string }) =>
+      createCaja(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cajas"] });
       toast.success("Caja creada correctamente");
@@ -55,9 +59,15 @@ export function useCajas(branchId?: string) {
 
   return {
     cajas,
-    loading: isLoading || abrirMutation.isPending || cerrarMutation.isPending || crearMutation.isPending,
+    loading:
+      isLoading ||
+      abrirMutation.isPending ||
+      cerrarMutation.isPending ||
+      crearMutation.isPending,
     abrirTurno: (payload: AbrirTurnoPayload) => abrirMutation.mutate(payload),
-    cerrarTurno: (payload: CerrarTurnoPayload & { cajaId: string }) => cerrarMutation.mutate(payload),
-    crearCaja: (payload: { name: string; branchId?: string }) => crearMutation.mutate(payload),
+    cerrarTurno: (payload: CerrarTurnoPayload & { cajaId: string }) =>
+      cerrarMutation.mutate(payload),
+    crearCaja: (payload: { name: string; branchId?: string }) =>
+      crearMutation.mutate(payload),
   };
 }

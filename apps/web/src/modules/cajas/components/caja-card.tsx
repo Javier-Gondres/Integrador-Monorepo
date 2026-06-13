@@ -1,6 +1,13 @@
 "use client";
 
-import { Clock, Lock, PlayCircle, StopCircle, History, User } from "lucide-react";
+import {
+  Clock,
+  Lock,
+  PlayCircle,
+  StopCircle,
+  History,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 
 import { ERP_COLORS as C } from "@/constants/theme";
@@ -53,7 +60,14 @@ export function CajaCard({ caja, onAbrir, onCerrar }: Props) {
             {abierta ? "Turno activo" : "Sin turno"}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: C.bodyText, margin: 0 }}>
+            <h3
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: C.bodyText,
+                margin: 0,
+              }}
+            >
               {caja.nombre}
             </h3>
             <Link
@@ -77,7 +91,9 @@ export function CajaCard({ caja, onAbrir, onCerrar }: Props) {
             </Link>
           </div>
           {caja.descripcion && (
-            <p style={{ fontSize: 12, color: C.mutedText, margin: 0 }}>{caja.descripcion}</p>
+            <p style={{ fontSize: 12, color: C.mutedText, margin: 0 }}>
+              {caja.descripcion}
+            </p>
           )}
         </div>
 
@@ -120,14 +136,47 @@ export function CajaCard({ caja, onAbrir, onCerrar }: Props) {
           }}
         >
           {[
-            { icon: <User size={13} />, label: "Cajero", value: turno.empleadoNombre, accent: false },
-            { icon: <Clock size={13} />, label: "Tiempo abierto", value: formatElapsed(turno.fechaApertura), accent: false },
-            { icon: null, label: "Apertura", value: formatCurrency(turno.montoApertura), accent: false },
-            { icon: null, label: "Ventas", value: formatCurrency(turno.totalVentas), accent: true },
-            { icon: null, label: "Efectivo", value: formatCurrency(turno.totalEfectivo), accent: false },
-            { icon: null, label: "Tarjeta", value: formatCurrency(turno.totalTarjeta), accent: false },
+            {
+              icon: <User size={13} />,
+              label: "Cajero",
+              value: turno.empleadoNombre,
+              accent: false,
+            },
+            {
+              icon: <Clock size={13} />,
+              label: "Tiempo abierto",
+              value: formatElapsed(turno.fechaApertura),
+              accent: false,
+            },
+            {
+              icon: null,
+              label: "Apertura",
+              value: formatCurrency(turno.montoApertura),
+              accent: false,
+            },
+            {
+              icon: null,
+              label: "Ventas",
+              value: formatCurrency(turno.totalVentas),
+              accent: true,
+            },
+            {
+              icon: null,
+              label: "Efectivo",
+              value: formatCurrency(turno.totalEfectivo),
+              accent: false,
+            },
+            {
+              icon: null,
+              label: "Tarjeta",
+              value: formatCurrency(turno.totalTarjeta),
+              accent: false,
+            },
           ].map(({ icon, label, value, accent }) => (
-            <div key={label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div
+              key={label}
+              style={{ display: "flex", flexDirection: "column", gap: 2 }}
+            >
               <span
                 style={{
                   display: "flex",

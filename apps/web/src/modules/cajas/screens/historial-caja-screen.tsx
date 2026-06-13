@@ -167,9 +167,22 @@ export function HistorialCajaScreen({ cajaId }: { cajaId: string }) {
   } = useHistorialCaja(cajaId);
 
   return (
-    <main style={{ minHeight: "100vh", backgroundColor: C.pageBg, fontFamily: "inherit" }}>
+    <main
+      style={{
+        minHeight: "100vh",
+        backgroundColor: C.pageBg,
+        fontFamily: "inherit",
+      }}
+    >
       {/* nav bar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 40px 0" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "20px 40px 0",
+        }}
+      >
         <Link
           href="/cajas"
           title="Volver a Cajas"
@@ -191,12 +204,22 @@ export function HistorialCajaScreen({ cajaId }: { cajaId: string }) {
           <ArrowLeft size={16} />
         </Link>
         <div style={{ flex: 1 }}>
-          <PageHeader breadcrumb="Cajas / Historial" title="Historial de Turnos" />
+          <PageHeader
+            breadcrumb="Cajas / Historial"
+            title="Historial de Turnos"
+          />
         </div>
       </div>
 
       {/* content */}
-      <div style={{ padding: "20px 40px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
+      <div
+        style={{
+          padding: "20px 40px 40px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 24,
+        }}
+      >
         <DataTableToolbar
           searchPlaceholder="Buscar cajero..."
           searchValue=""

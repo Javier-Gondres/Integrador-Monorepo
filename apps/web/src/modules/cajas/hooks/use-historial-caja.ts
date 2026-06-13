@@ -11,7 +11,8 @@ export function useHistorialCaja(cajaId: string) {
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["caja-historial", cajaId, currentPage, rowsPerPage],
-    queryFn: () => getHistorialCaja(cajaId, { page: currentPage, take: rowsPerPage }),
+    queryFn: () =>
+      getHistorialCaja(cajaId, { page: currentPage, take: rowsPerPage }),
     enabled: !!cajaId,
   });
 

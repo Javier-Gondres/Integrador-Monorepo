@@ -38,8 +38,9 @@ const shiftSelect = {
   },
 } as const;
 
-export type ShiftRecord = Prisma.CashShiftGetPayload<{ select: typeof shiftSelect }>;
-
+export type ShiftRecord = Prisma.CashShiftGetPayload<{
+  select: typeof shiftSelect;
+}>;
 
 @Injectable()
 export class CashRegistersRepository {
@@ -71,11 +72,7 @@ export class CashRegistersRepository {
     });
   }
 
-  openShift(
-    cashRegisterId: string,
-    cashierId: string,
-    openingAmount: number,
-  ) {
+  openShift(cashRegisterId: string, cashierId: string, openingAmount: number) {
     return prisma.cashShift.create({
       data: {
         cashRegisterId,
