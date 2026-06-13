@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle,Banknote, X } from "lucide-react";
+import { AlertTriangle, Banknote, X } from "lucide-react";
 import { useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";

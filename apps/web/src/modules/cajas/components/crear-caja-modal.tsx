@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid,X } from "lucide-react";
+import { LayoutGrid, X } from "lucide-react";
 import { useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";

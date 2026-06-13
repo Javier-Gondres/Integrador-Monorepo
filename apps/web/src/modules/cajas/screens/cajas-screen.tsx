@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Clock3, DollarSign, LayoutGrid, Plus,TrendingUp } from "lucide-react";
+import { Clock3, DollarSign, LayoutGrid, Plus, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";

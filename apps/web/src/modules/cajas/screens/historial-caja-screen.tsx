@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ArrowLeft,Calendar } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Calendar } from "lucide-react";
 import Link from "next/link";
 
 import { ERP_COLORS as C } from "@/constants/theme";
