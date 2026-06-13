@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   CircleCheckBig,
+  History,
   Package,
   ShelvingUnit,
   Tag,
@@ -46,6 +47,13 @@ const availableModules = [
     description: "Asigna productos a las diferentes sucursales de la empresa",
     href: "/inventories",
     icon: ShelvingUnit,
+    tone: "red",
+  },
+  {
+    title: "Movimientos de inventario",
+    description: "Consulta el historial de los inventarios",
+    href: "/inventories",
+    icon: History,
     tone: "red",
   },
 ];
