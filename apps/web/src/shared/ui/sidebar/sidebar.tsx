@@ -3,6 +3,7 @@
 import {
   Box,
   Grid2x2,
+  History,
   LayoutDashboard,
   LogOut,
   ShelvingUnit,
@@ -21,6 +22,7 @@ const navItems = [
   { label: "Categorías", icon: Tag, href: "/categories" },
   { section: "Inventarios" },
   { label: "Stock", icon: ShelvingUnit, href: "/inventories" },
+  { label: "Movimientos", icon: History, href: "/inventory-movements" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
   { label: "Proveedores", icon: Truck, href: "/suppliers" },

@@ -9,6 +9,7 @@ import { CategoriesModule } from "./categories/categories.module";
 import { CompanyModule } from "./company/company.module";
 import { EmployeesModule } from "./employees/employees.module";
 import { InventoryModule } from "./inventory/inventory.module";
+import { InventoryMovementModule } from './inventory-movement/inventory-movement.module';
 import { MeModule } from "./me/me.module";
 import { ProductsModule } from "./products/products.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
@@ -33,6 +34,7 @@ const envFilePath =
     EmployeesModule,
     SuppliersModule,
     InventoryModule,
+    InventoryMovementModule,
   ],
   controllers: [AppController],
   providers: [AppService],
