@@ -102,6 +102,9 @@ export class ProductsRepository {
       ...(query.categoryId && {
         categories: { some: { id: query.categoryId, companyId } },
       }),
+      ...(query.excludeSupplierId && {
+        NOT: { suppliers: { some: { supplierId: query.excludeSupplierId } } },
+      }),
       ...(query.search && {
         OR: [
           { name: { contains: query.search, mode: 'insensitive' } },

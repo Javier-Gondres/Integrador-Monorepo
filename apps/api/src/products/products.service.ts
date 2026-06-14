@@ -147,6 +147,9 @@ export class ProductsService {
       take: query.take ?? DEFAULT_TAKE,
       ...(query.search?.trim() && { search: query.search.trim() }),
       ...(query.categoryId?.trim() && { categoryId: query.categoryId.trim() }),
+      ...(query.excludeSupplierId?.trim() && {
+        excludeSupplierId: query.excludeSupplierId.trim(),
+      }),
       ...(query.isActive !== undefined && { isActive: query.isActive }),
     };
   }
