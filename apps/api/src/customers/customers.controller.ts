@@ -11,6 +11,7 @@ import {
 import { CompanyId, RequireCompany } from 'src/common/company';
 
 import { CustomersService } from './customers.service';
+import { CheckCustomerUniquenessDto } from './dto/check-customer-uniqueness.dto';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { QueryCustomersDto } from './dto/query-customers.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -23,6 +24,15 @@ export class CustomersController {
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryCustomersDto) {
     return this.customersService.findPaginatedByCompany(companyId, query);
+  }
+
+  @RequireCompany()
+  @Get('check-uniqueness')
+  checkUniqueness(
+    @CompanyId() companyId: string,
+    @Query() query: CheckCustomerUniquenessDto,
+  ) {
+    return this.customersService.checkUniqueness(companyId, query);
   }
 
   @RequireCompany()

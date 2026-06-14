@@ -11,6 +11,11 @@ import {
 } from './dto/query-customers.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 
+type UniqueCustomerCheck = {
+  email?: string | null;
+  cedula?: string | null;
+};
+
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
 
@@ -54,10 +59,15 @@ export class CustomersService {
   }
 
   async create(companyId: string, dto: CreateCustomerDto) {
+    await this.validateUniqueValues(companyId, {
+      email: dto.email?.trim() || null,
+      cedula: dto.cedula?.trim() || null,
+    });
+
     const customer = await this.customersRepository.create(companyId, {
       firstName: dto.firstName.trim(),
       lastName: dto.lastName.trim(),
-      email: dto.email?.trim() || null,
+      email: dto.email?.trim().toLowerCase() || null,
       phone: dto.phone?.trim() || null,
       address: dto.address?.trim() || null,
       cedula: dto.cedula?.trim() || null,
@@ -86,7 +96,7 @@ export class CustomersService {
       updateData.lastName = data.lastName;
     }
     if (dto.email !== undefined) {
-      updateData.email = dto.email?.trim() || null;
+      updateData.email = dto.email?.trim().toLowerCase() || null;
     }
     if (dto.phone !== undefined) {
       updateData.phone = dto.phone?.trim() || null;
@@ -108,7 +118,44 @@ export class CustomersService {
       );
     }
 
+    await this.validateUniqueValues(
+      companyId,
+      {
+        email: dto.email?.trim() || null,
+        cedula: dto.cedula?.trim() || null,
+      },
+      id,
+    );
+
     return this.customersRepository.update(id, updateData);
+  }
+
+  async checkUniqueness(
+    companyId: string,
+    query: { email?: string; cedula?: string; excludeId?: string },
+  ) {
+    const emailTaken = Boolean(
+      query.email &&
+      (await this.customersRepository.findDuplicateByEmail(
+        companyId,
+        query.email.trim().toLowerCase(),
+        query.excludeId,
+      )),
+    );
+
+    const cedulaTaken = Boolean(
+      query.cedula &&
+      (await this.customersRepository.findDuplicateByCedula(
+        companyId,
+        query.cedula.replace(/\D/g, ''),
+        query.excludeId,
+      )),
+    );
+
+    return {
+      emailTaken,
+      cedulaTaken,
+    };
   }
 
   async activate(id: string, companyId: string) {
@@ -130,6 +177,42 @@ export class CustomersService {
     return {
       message: 'Cliente eliminado correctamente',
     };
+  }
+
+  private async validateUniqueValues(
+    companyId: string,
+    values: UniqueCustomerCheck,
+    excludeId?: string,
+  ) {
+    if (values.email) {
+      const exists = await this.customersRepository.findDuplicateByEmail(
+        companyId,
+        values.email.toLowerCase(),
+        excludeId,
+      );
+
+      if (exists) {
+        throw BusinessException.conflict(
+          ErrorCodes.EMAIL_ALREADY_EXISTS,
+          'Ese correo ya está asociado a otro cliente',
+        );
+      }
+    }
+
+    if (values.cedula) {
+      const exists = await this.customersRepository.findDuplicateByCedula(
+        companyId,
+        values.cedula.replace(/\D/g, ''),
+        excludeId,
+      );
+
+      if (exists) {
+        throw BusinessException.conflict(
+          ErrorCodes.DUPLICATE_RECORD,
+          'Esa cédula ya está asociada a otro cliente',
+        );
+      }
+    }
   }
 
   private normalizeQuery(query: QueryCustomersDto): NormalizedQueryCustomers {

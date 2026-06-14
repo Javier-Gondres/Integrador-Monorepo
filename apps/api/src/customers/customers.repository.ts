@@ -80,6 +80,28 @@ export class CustomersRepository {
     });
   }
 
+  findDuplicateByEmail(companyId: string, email: string, excludeId?: string) {
+    return prisma.customer.findFirst({
+      where: {
+        companyId,
+        email: { equals: email, mode: 'insensitive' },
+        id: excludeId ? { not: excludeId } : undefined,
+      },
+      select: { id: true },
+    });
+  }
+
+  findDuplicateByCedula(companyId: string, cedula: string, excludeId?: string) {
+    return prisma.customer.findFirst({
+      where: {
+        companyId,
+        cedula,
+        id: excludeId ? { not: excludeId } : undefined,
+      },
+      select: { id: true },
+    });
+  }
+
   activate(id: string) {
     return prisma.customer.activate({ where: { id } });
   }

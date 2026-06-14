@@ -1,28 +1,72 @@
-import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+  IsBoolean,
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
+
+const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+
+function normalizeOptionalString(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
+function normalizeOptionalNumeric(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const digits = value.replace(/\D/g, '');
+  return digits === '' ? undefined : digits;
+}
 
 export class CreateCustomerDto {
-  @IsString({ message: 'firstName debe ser texto' })
-  @MinLength(1, { message: 'firstName es requerido' })
+  @IsString({ message: 'El nombre debe ser texto' })
+  @MinLength(1, { message: 'El nombre es requerido' })
+  @Matches(namePattern, {
+    message: 'El nombre solo puede contener letras y espacios',
+  })
   firstName!: string;
 
-  @IsString({ message: 'lastName debe ser texto' })
-  @MinLength(1, { message: 'lastName es requerido' })
+  @IsString({ message: 'El apellido debe ser texto' })
+  @MinLength(1, { message: 'El apellido es requerido' })
+  @Matches(namePattern, {
+    message: 'El apellido solo puede contener letras y espacios',
+  })
   lastName!: string;
 
   @IsOptional()
-  @IsString({ message: 'email debe ser texto' })
+  @Transform(({ value }) => normalizeOptionalString(value))
+  @IsEmail({}, { message: 'El correo debe tener un formato válido' })
   email?: string;
 
   @IsOptional()
-  @IsString({ message: 'phone debe ser texto' })
+  @Transform(({ value }) => normalizeOptionalNumeric(value))
+  @IsString({ message: 'El teléfono debe ser texto' })
+  @Matches(/^[0-9]{10}$/, {
+    message: 'El teléfono debe tener 10 dígitos',
+  })
   phone?: string;
 
   @IsOptional()
-  @IsString({ message: 'address debe ser texto' })
+  @Transform(({ value }) => normalizeOptionalString(value))
+  @IsString({ message: 'La dirección debe ser texto' })
   address?: string;
 
   @IsOptional()
-  @IsString({ message: 'cedula debe ser texto' })
+  @Transform(({ value }) => normalizeOptionalNumeric(value))
+  @IsString({ message: 'La cédula debe ser texto' })
+  @Matches(/^[0-9]{11}$/, {
+    message: 'La cédula debe tener 11 dígitos',
+  })
   cedula?: string;
 
   @IsOptional()

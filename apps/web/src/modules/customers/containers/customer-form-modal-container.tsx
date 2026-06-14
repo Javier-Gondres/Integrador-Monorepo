@@ -39,6 +39,7 @@ export function CustomerFormModalContainer({
 
   return (
     <CustomerForm
+      customerId={customer?.id}
       isEditing={isEditing}
       defaultValues={mapCustomerToFormValues(customer)}
       isSubmitting={isSubmitting}

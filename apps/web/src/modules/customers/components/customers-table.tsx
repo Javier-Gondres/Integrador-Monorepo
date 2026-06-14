@@ -6,6 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { StatusToggle } from "@/shared/ui/status-toggle";
 
 import type { Customer } from "../types/customer.types";
+import { formatCedulaMask } from "../utils/customer-formatters";
 
 interface CustomerTableActions {
   onEdit: (customer: Customer) => void;
@@ -43,7 +44,9 @@ export function getCustomersTableColumns(
       id: "cedula",
       header: "Cédula",
       cell: (customer) => (
-        <span style={{ color: C.mutedText }}>{customer.cedula ?? "-"}</span>
+        <span style={{ color: C.mutedText }}>
+          {customer.cedula ? formatCedulaMask(customer.cedula) : "-"}
+        </span>
       ),
     },
     {

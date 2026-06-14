@@ -1,5 +1,11 @@
 import type { CustomerFormSchema } from "../schemas/customer.schema";
 import type { Customer, CustomerFormValues } from "../types/customer.types";
+import {
+  formatCedulaMask,
+  formatPhoneMask,
+  normalizeCedulaValue,
+  normalizePhoneValue,
+} from "../utils/customer-formatters";
 
 export function mapCustomerToFormValues(
   customer: Customer | null,
@@ -8,9 +14,9 @@ export function mapCustomerToFormValues(
     firstName: customer?.firstName ?? "",
     lastName: customer?.lastName ?? "",
     email: customer?.email ?? "",
-    phone: customer?.phone ?? "",
+    phone: formatPhoneMask(customer?.phone ?? ""),
     address: customer?.address ?? "",
-    cedula: customer?.cedula ?? "",
+    cedula: formatCedulaMask(customer?.cedula ?? ""),
     isActive: customer?.isActive ?? true,
   };
 }
@@ -22,9 +28,9 @@ export function mapFormValuesToDto(
     firstName: values.firstName,
     lastName: values.lastName,
     email: values.email || undefined,
-    phone: values.phone || undefined,
+    phone: values.phone ? normalizePhoneValue(values.phone) : undefined,
     address: values.address || undefined,
-    cedula: values.cedula || undefined,
+    cedula: values.cedula ? normalizeCedulaValue(values.cedula) : undefined,
     isActive: values.isActive,
   };
 }
