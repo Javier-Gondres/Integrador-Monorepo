@@ -26,6 +26,15 @@ export const ENDPOINTS = {
     activate: (id: string) => `/categories/${id}/activate`,
     deactivate: (id: string) => `/categories/${id}/deactivate`,
   },
+  discounts: {
+    root: "/discounts",
+    byId: (id: string) => `/discounts/${id}`,
+    activate: (id: string) => `/discounts/${id}/activate`,
+    deactivate: (id: string) => `/discounts/${id}/deactivate`,
+    current: "/discounts/current",
+    applicableToProduct: (productId: string) =>
+      `/discounts/applicable/${productId}`,
+  },
   suppliers: {
     root: "/suppliers",
     byId: (id: string) => `/suppliers/${id}`,
