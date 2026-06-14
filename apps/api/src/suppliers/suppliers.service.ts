@@ -10,6 +10,7 @@ import {
 } from './dto/query-suppliers.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { SuppliersRepository } from './suppliers.repository';
+import type { SupplierRecord } from './suppliers.selects';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -27,7 +28,7 @@ export class SuppliersService {
       );
 
     return {
-      items,
+      items: items.map(mapSupplier),
       meta: {
         page: normalized.page,
         take: normalized.take,
@@ -50,11 +51,11 @@ export class SuppliersService {
       );
     }
 
-    return supplier;
+    return mapSupplier(supplier);
   }
 
-  create(companyId: string, dto: CreateSupplierDto) {
-    return this.suppliersRepository.create(companyId, {
+  async create(companyId: string, dto: CreateSupplierDto) {
+    const supplier = await this.suppliersRepository.create(companyId, {
       name: dto.name.trim(),
       contactName: dto.contactName?.trim() || null,
       email: dto.email?.trim().toLowerCase() || null,
@@ -64,6 +65,8 @@ export class SuppliersService {
       notes: dto.notes?.trim() || null,
       isActive: dto.isActive ?? true,
     });
+
+    return mapSupplier(supplier);
   }
 
   async update(id: string, companyId: string, dto: UpdateSupplierDto) {
@@ -101,7 +104,9 @@ export class SuppliersService {
       );
     }
 
-    return this.suppliersRepository.update(id, updateData);
+    const supplier = await this.suppliersRepository.update(id, updateData);
+
+    return mapSupplier(supplier);
   }
 
   async remove(id: string, companyId: string) {
@@ -121,7 +126,7 @@ export class SuppliersService {
       );
     }
 
-    return supplier;
+    return mapSupplier(supplier);
   }
 
   private normalizeQuery(query: QuerySuppliersDto): NormalizedQuerySuppliers {
@@ -132,4 +137,13 @@ export class SuppliersService {
       ...(query.isActive !== undefined && { isActive: query.isActive }),
     };
   }
+}
+
+function mapSupplier(supplier: SupplierRecord) {
+  const { _count, ...rest } = supplier;
+
+  return {
+    ...rest,
+    productsCount: _count.products,
+  };
 }
