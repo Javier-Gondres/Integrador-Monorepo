@@ -11,6 +11,7 @@ export interface SupplierDto {
   address: string | null;
   notes: string | null;
   isActive: boolean;
+  productsCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +27,7 @@ export interface Supplier {
   address: string | null;
   notes: string | null;
   isActive: boolean;
+  productsCount: number;
 }
 
 export type SupplierFilters = BaseListFilters;

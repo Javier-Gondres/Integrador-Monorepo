@@ -14,6 +14,9 @@ export const supplierSelect = {
   deletedAt: true,
   createdAt: true,
   updatedAt: true,
+  _count: {
+    select: { products: true },
+  },
 } satisfies Prisma.SupplierSelect;
 
 export type SupplierRecord = Prisma.SupplierGetPayload<{

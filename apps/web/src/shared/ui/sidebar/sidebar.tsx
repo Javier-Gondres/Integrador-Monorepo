@@ -6,6 +6,7 @@ import {
   History,
   LayoutDashboard,
   LogOut,
+  PackageSearch,
   ShelvingUnit,
   Tag,
   Truck,
@@ -26,6 +27,7 @@ const navItems = [
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
   { label: "Proveedores", icon: Truck, href: "/suppliers" },
+  { label: "Catálogo Proveedores", icon: PackageSearch, href: "/supplier-catalog" },
 ];
 
 export function Sidebar() {

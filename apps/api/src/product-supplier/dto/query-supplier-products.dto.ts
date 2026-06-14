@@ -1,12 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 function parseOptionalBoolean(value: unknown): boolean | undefined {
   if (value === undefined || value === null || value === '') {
@@ -21,7 +14,7 @@ function parseOptionalBoolean(value: unknown): boolean | undefined {
   return value as boolean;
 }
 
-export class QueryProductsDto {
+export class QuerySupplierProductsDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'page debe ser un entero' })
@@ -32,7 +25,7 @@ export class QueryProductsDto {
   @Type(() => Number)
   @IsInt({ message: 'take debe ser un entero' })
   @Min(1, { message: 'take debe ser al menos 1' })
-  @Max(50, { message: 'take no puede ser mayor a 50' })
+  @Max(100, { message: 'take no puede ser mayor a 100' })
   take?: number;
 
   @IsOptional()
@@ -40,24 +33,14 @@ export class QueryProductsDto {
   search?: string;
 
   @IsOptional()
-  @IsString({ message: 'categoryId debe ser texto' })
-  categoryId?: string;
-
-  @IsOptional()
-  @IsString({ message: 'excludeSupplierId debe ser texto' })
-  excludeSupplierId?: string;
-
-  @IsOptional()
   @Transform(({ value }) => parseOptionalBoolean(value))
   @IsBoolean({ message: 'isActive debe ser un booleano' })
   isActive?: boolean;
 }
 
-export type NormalizedQueryProducts = {
+export type NormalizedQuerySupplierProducts = {
   page: number;
   take: number;
   search?: string;
-  categoryId?: string;
-  excludeSupplierId?: string;
   isActive?: boolean;
 };

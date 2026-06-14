@@ -11,6 +11,7 @@ import { EmployeesModule } from "./employees/employees.module";
 import { InventoryModule } from "./inventory/inventory.module";
 import { InventoryMovementModule } from './inventory-movement/inventory-movement.module';
 import { MeModule } from "./me/me.module";
+import { ProductSupplierModule } from './product-supplier/product-supplier.module';
 import { ProductsModule } from "./products/products.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
 import { UsersModule } from "./users/users.module";
@@ -35,6 +36,7 @@ const envFilePath =
     SuppliersModule,
     InventoryModule,
     InventoryMovementModule,
+    ProductSupplierModule,
   ],
   controllers: [AppController],
   providers: [AppService],
