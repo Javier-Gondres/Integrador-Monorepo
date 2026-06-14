@@ -1,30 +1,14 @@
-import { AUTH_STORAGE_KEY } from "@/modules/auth/constants";
+import { useAuthStore } from "@/modules/auth/store/auth-store";
 
-let memoryToken: string | null = null;
+/** Storage for the access token backed by the auth store. */
+export const tokenStorage = {
+  get: () => useAuthStore.getState().accessToken,
 
-export function getAccessToken(): string | null {
-  if (memoryToken) {
-    return memoryToken;
-  }
+  set: (token: string) => {
+    useAuthStore.getState().setAccessToken(token);
+  },
 
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  memoryToken = sessionStorage.getItem(AUTH_STORAGE_KEY);
-  return memoryToken;
-}
-
-export function setAccessToken(token: string) {
-  memoryToken = token;
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem(AUTH_STORAGE_KEY, token);
-  }
-}
-
-export function clearAccessToken() {
-  memoryToken = null;
-  if (typeof window !== "undefined") {
-    sessionStorage.removeItem(AUTH_STORAGE_KEY);
-  }
-}
+  clear: () => {
+    useAuthStore.getState().clearAuth();
+  },
+};

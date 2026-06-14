@@ -1,6 +1,7 @@
 "use client";
 
 import { LoginForm } from "../components/login-form";
+import { useAuth } from "../hooks/use-auth";
 import type { LoginSchema } from "../schemas/login.schema";
 
 const LOGIN_DEFAULT_VALUES: LoginSchema = {
@@ -9,14 +10,19 @@ const LOGIN_DEFAULT_VALUES: LoginSchema = {
 };
 
 export function LoginFormContainer() {
-  const handleSubmit = async (_values: LoginSchema) => {
-    // TODO: conectar useLogin() cuando la autenticación esté lista
+  const { login, isLoggingIn } = useAuth();
+
+  const handleSubmit = async (values: LoginSchema) => {
+    await login({
+      email: values.email,
+      password: values.password,
+    });
   };
 
   return (
     <LoginForm
       defaultValues={LOGIN_DEFAULT_VALUES}
-      isSubmitting={false}
+      isSubmitting={isLoggingIn}
       onSubmit={handleSubmit}
     />
   );

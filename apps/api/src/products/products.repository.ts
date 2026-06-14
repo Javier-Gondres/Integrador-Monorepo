@@ -92,6 +92,15 @@ export class ProductsRepository {
     return prisma.product.softDelete({ where: { id } });
   }
 
+  countByIdsInCompany(productIds: string[], companyId: string) {
+    return prisma.product.count({
+      where: {
+        id: { in: productIds },
+        companyId,
+      },
+    });
+  }
+
   private buildListWhere(
     companyId: string,
     query: NormalizedQueryProducts,

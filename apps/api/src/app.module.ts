@@ -8,6 +8,7 @@ import { BranchModule } from './branch/branch.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CompanyModule } from './company/company.module';
 import { EmployeesModule } from './employees/employees.module';
+import { DiscountsModule } from './discounts/discounts.module';
 import { MeModule } from './me/me.module';
 import { ProductsModule } from './products/products.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
@@ -30,6 +31,7 @@ const envFilePath =
     BranchModule,
     MeModule,
     EmployeesModule,
+    DiscountsModule,
     SuppliersModule,
   ],
   controllers: [AppController],

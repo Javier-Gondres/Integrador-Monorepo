@@ -1,8 +1,16 @@
 import { env } from "@/config/env";
 
-import { getAccessToken } from "./access-token";
-import { ApiError } from "./errors";
+import { tokenStorage } from "./access-token";
+import { ENDPOINTS } from "./endpoints";
+import { ApiError, getErrorMessage } from "./errors";
+import { refreshAccessToken } from "./refresh-access-token";
 import type { ApiErrorBody, ApiResponse } from "./types";
+
+const AUTH_ENDPOINTS_WITHOUT_RETRY = new Set<string>([
+  ENDPOINTS.auth.login,
+  ENDPOINTS.auth.logout,
+  ENDPOINTS.auth.refresh,
+]);
 
 function getApiHeaders(includeJson = false): HeadersInit {
   const headers: Record<string, string> = {
@@ -13,7 +21,7 @@ function getApiHeaders(includeJson = false): HeadersInit {
     headers["Content-Type"] = "application/json";
   }
 
-  const accessToken = getAccessToken();
+  const accessToken = tokenStorage.get();
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -38,20 +46,7 @@ function buildUrl(
   return url.toString();
 }
 
-export async function apiFetch<T>(
-  endpoint: string,
-  options?: RequestInit & {
-    params?: Record<string, string | number | boolean | undefined>;
-  },
-): Promise<T> {
-  const { params, ...fetchOptions } = options ?? {};
-
-  const response = await fetch(buildUrl(endpoint, params), {
-    credentials: "include",
-    headers: getApiHeaders(fetchOptions.body !== undefined),
-    ...fetchOptions,
-  });
-
+async function parseResponse<T>(response: Response): Promise<T> {
   const json = (await response.json().catch(() => ({}))) as
     | ApiResponse<T>
     | ApiErrorBody;
@@ -65,4 +60,44 @@ export async function apiFetch<T>(
   }
 
   return json as T;
+}
+
+function shouldRetryWithRefresh(
+  endpoint: string,
+  status: number,
+  retried: boolean,
+): boolean {
+  return (
+    status === 401 && !retried && !AUTH_ENDPOINTS_WITHOUT_RETRY.has(endpoint)
+  );
+}
+
+export async function apiFetch<T>(
+  endpoint: string,
+  options?: RequestInit & {
+    params?: Record<string, string | number | boolean | undefined>;
+  },
+  retried = false,
+): Promise<T> {
+  const { params, ...fetchOptions } = options ?? {};
+
+  const response = await fetch(buildUrl(endpoint, params), {
+    credentials: "include",
+    headers: getApiHeaders(fetchOptions.body !== undefined),
+    ...fetchOptions,
+  });
+
+  if (shouldRetryWithRefresh(endpoint, response.status, retried)) {
+    try {
+      await refreshAccessToken();
+      return apiFetch<T>(endpoint, options, true);
+    } catch (error) {
+      throw new ApiError(response.status, {
+        message: "Sesión expirada",
+        error: getErrorMessage(error),
+      });
+    }
+  }
+
+  return parseResponse<T>(response);
 }
