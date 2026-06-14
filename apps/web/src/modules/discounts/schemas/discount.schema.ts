@@ -1,4 +1,10 @@
-import { endOfDay, isBefore, parseISO, startOfDay, startOfToday } from "date-fns";
+import {
+  endOfDay,
+  isBefore,
+  parseISO,
+  startOfDay,
+  startOfToday,
+} from "date-fns";
 import { z } from "zod";
 
 export const discountFormSchema = z
@@ -21,9 +27,7 @@ export const discountFormSchema = z
     const startDate = values.startDate
       ? startOfDay(parseISO(values.startDate))
       : null;
-    const endDate = values.endDate
-      ? endOfDay(parseISO(values.endDate))
-      : null;
+    const endDate = values.endDate ? endOfDay(parseISO(values.endDate)) : null;
 
     if (startDate && isBefore(startDate, today)) {
       ctx.addIssue({

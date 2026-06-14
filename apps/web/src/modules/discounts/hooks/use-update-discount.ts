@@ -17,9 +17,7 @@ export function useUpdateDiscount() {
       await queryClient.invalidateQueries({ queryKey: discountKeys.all });
     },
     onError: (error) => {
-      toast.error(
-        getErrorMessage(error, "No se pudo actualizar el descuento"),
-      );
+      toast.error(getErrorMessage(error, "No se pudo actualizar el descuento"));
     },
   });
 }

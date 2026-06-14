@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@repo/db';
-import { endOfDay, isBefore, parseISO, startOfDay, startOfToday } from 'date-fns';
+import {
+  endOfDay,
+  isBefore,
+  parseISO,
+  startOfDay,
+  startOfToday,
+} from 'date-fns';
 
 import { CategoriesService } from '../categories/categories.service';
 import { BusinessException, ErrorCodes } from '../common/errors';
@@ -328,10 +334,7 @@ export class DiscountsService {
     }
   }
 
-  private assertDatesNotPast(
-    startDate: Date | null,
-    endDate: Date | null,
-  ) {
+  private assertDatesNotPast(startDate: Date | null, endDate: Date | null) {
     const today = startOfToday();
     if (startDate && isBefore(startDate, today)) {
       throw new BusinessException(
