@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { CashRegistersRepository } from './cash-registers.repository';
 import { CloseShiftDto } from './dto/close-shift.dto';
