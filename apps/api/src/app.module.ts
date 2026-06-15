@@ -8,6 +8,7 @@ import { BranchModule } from './branch/branch.module';
 import { CashRegistersModule } from './cash-registers/cash-registers.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CompanyModule } from './company/company.module';
+import { CustomersModule } from './customers/customers.module';
 import { DiscountsModule } from './discounts/discounts.module';
 import { EmployeesModule } from './employees/employees.module';
 import { MeModule } from './me/me.module';
@@ -28,6 +29,7 @@ const envFilePath =
     UsersModule,
     CategoriesModule,
     ProductsModule,
+    CustomersModule,
     CompanyModule,
     BranchModule,
     MeModule,
