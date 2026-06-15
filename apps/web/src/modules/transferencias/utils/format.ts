@@ -9,9 +9,12 @@ export const ESTADO_LABELS: Record<TransferStatus, string> = {
   CANCELLED: "Cancelada",
 };
 
-export const ESTADO_COLORS: Record<TransferStatus, { bg: string; text: string; dot: string }> = {
-  PENDING: { bg: "#fef3c7", text: "#92400e", dot: "#f59e0b" },      // amber
-  IN_TRANSIT: { bg: "#e0e7ff", text: "#3730a3", dot: "#6366f1" },   // indigo
+export const ESTADO_COLORS: Record<
+  TransferStatus,
+  { bg: string; text: string; dot: string }
+> = {
+  PENDING: { bg: "#fef3c7", text: "#92400e", dot: "#f59e0b" }, // amber
+  IN_TRANSIT: { bg: "#e0e7ff", text: "#3730a3", dot: "#6366f1" }, // indigo
   COMPLETED: { bg: C.greenBg, text: C.greenText, dot: "#10b981" },
   CANCELLED: { bg: C.dangerBg, text: C.danger, dot: "#ef4444" },
 };
@@ -27,10 +30,10 @@ export function formatRelative(dateStr: string) {
     if (hours === 0) return "Hace un momento";
     return `Hace ${hours} ${hours === 1 ? "hora" : "horas"}`;
   }
-  
+
   if (days === 1) return "Ayer";
   if (days < 7) return `Hace ${days} días`;
-  
+
   const day = d.getDate().toString().padStart(2, "0");
   const month = d.toLocaleString("es", { month: "short" });
   return `${day} ${month}`;

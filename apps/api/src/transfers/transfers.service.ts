@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, prisma, TransferStatus, InventoryMovementType } from '@repo/db';
+import {
+  InventoryMovementType,
+  Prisma,
+  prisma,
+  TransferStatus,
+} from '@repo/db';
 import { BranchRepository } from 'src/branch/branch.repository';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
 import { ProductsRepository } from 'src/products/products.repository';
@@ -20,7 +25,7 @@ export class TransfersService {
     private readonly transfersRepository: TransfersRepository,
     private readonly branchRepository: BranchRepository,
     private readonly productsRepository: ProductsRepository,
-  ) { }
+  ) {}
 
   async create(companyId: string, dto: CreateTransferDto) {
     if (dto.fromBranchId === dto.toBranchId) {
@@ -67,7 +72,10 @@ export class TransfersService {
   async dispatch(id: string, companyId: string) {
     const transfer = await this.transfersRepository.findById(id);
     if (!transfer) {
-      throw new BusinessException(ErrorCodes.RECORD_NOT_FOUND, 'Transferencia no encontrada');
+      throw new BusinessException(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'Transferencia no encontrada',
+      );
     }
     this.validateTransferOwnership(transfer, companyId);
 
@@ -98,7 +106,10 @@ export class TransfersService {
   async complete(id: string, companyId: string) {
     const transfer = await this.transfersRepository.findById(id);
     if (!transfer) {
-      throw new BusinessException(ErrorCodes.RECORD_NOT_FOUND, 'Transferencia no encontrada');
+      throw new BusinessException(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'Transferencia no encontrada',
+      );
     }
     this.validateTransferOwnership(transfer, companyId);
 
@@ -183,7 +194,10 @@ export class TransfersService {
   async cancel(id: string, companyId: string) {
     const transfer = await this.transfersRepository.findById(id);
     if (!transfer) {
-      throw new BusinessException(ErrorCodes.RECORD_NOT_FOUND, 'Transferencia no encontrada');
+      throw new BusinessException(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'Transferencia no encontrada',
+      );
     }
     this.validateTransferOwnership(transfer, companyId);
 
@@ -204,7 +218,10 @@ export class TransfersService {
   async findAll(companyId: string, query: QueryTransfersDto) {
     const normalized = this.normalizeQuery(query);
     const { items, total } =
-      await this.transfersRepository.findPaginatedByCompany(companyId, normalized);
+      await this.transfersRepository.findPaginatedByCompany(
+        companyId,
+        normalized,
+      );
 
     return {
       items,
@@ -225,14 +242,13 @@ export class TransfersService {
     return { quantity };
   }
 
-  private validateTransferOwnership(transfer: any, companyId: string) {
+  private validateTransferOwnership(transfer: unknown, _companyId: string) {
     if (!transfer) {
       throw new BusinessException(
         ErrorCodes.RECORD_NOT_FOUND,
         'Transferencia no encontrada',
       );
     }
-
   }
 
   private normalizeQuery(query: QueryTransfersDto): NormalizedQueryTransfers {

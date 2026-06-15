@@ -1,21 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import { Prisma } from "@repo/db";
-import { BranchRepository } from "src/branch/branch.repository";
-import type { CompanyContext } from "src/common/company";
+import { Injectable } from '@nestjs/common';
+import { Prisma } from '@repo/db';
+import { BranchRepository } from 'src/branch/branch.repository';
+import type { CompanyContext } from 'src/common/company';
 import {
   BusinessException,
   ErrorCodes,
   InventoryException,
-} from "src/common/errors";
-import { ProductsRepository } from "src/products/products.repository";
+} from 'src/common/errors';
+import { ProductsRepository } from 'src/products/products.repository';
 
-import { CreateInventoryDto } from "./dto/create-inventory.dto";
+import { CreateInventoryDto } from './dto/create-inventory.dto';
 import {
   NormalizedQueryInventory,
   QueryInventoryDto,
-} from "./dto/query-inventory.dto";
-import { UpdateInventoryDto } from "./dto/update-inventory.dto";
-import { InventoryRepository } from "./inventory.repository";
+} from './dto/query-inventory.dto';
+import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import { InventoryRepository } from './inventory.repository';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -33,7 +33,7 @@ export class InventoryService {
     if (!branchId) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "No hay una sucursal seleccionada",
+        'No hay una sucursal seleccionada',
       );
     }
 
@@ -65,7 +65,7 @@ export class InventoryService {
     if (!inventory) {
       throw InventoryException.notFound(
         ErrorCodes.PRODUCT_NOT_FOUND,
-        "El producto no esta en el inventario",
+        'El producto no esta en el inventario',
       );
     }
 
@@ -86,7 +86,7 @@ export class InventoryService {
     if (!branch || !product) {
       throw InventoryException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "La sucursal o el producto no existe",
+        'La sucursal o el producto no existe',
       );
     }
     return await this.inventoryRepository.create({
@@ -128,7 +128,7 @@ export class InventoryService {
     if (!inventory) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "el producto no esta en el inventario",
+        'el producto no esta en el inventario',
       );
     }
 
@@ -147,7 +147,7 @@ export class InventoryService {
     if (!inventory) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "el producto no esta en el inventario",
+        'el producto no esta en el inventario',
       );
     }
 

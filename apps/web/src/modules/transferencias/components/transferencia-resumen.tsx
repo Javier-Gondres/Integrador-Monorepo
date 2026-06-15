@@ -45,7 +45,7 @@ export function TransferenciaResumen({
       <ArrowRight size={14} color={C.mutedText} />
 
       <Chip
-        label={`${items.length} producto${items.length !== 1 ? 's' : ''} (${items.reduce((a, b) => a + b.cantidad, 0)} items)`}
+        label={`${items.length} producto${items.length !== 1 ? "s" : ""} (${items.reduce((a, b) => a + b.cantidad, 0)} items)`}
         accent
       />
 

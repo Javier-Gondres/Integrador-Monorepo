@@ -1,4 +1,8 @@
-export type TransferStatus = "PENDING" | "IN_TRANSIT" | "COMPLETED" | "CANCELLED";
+export type TransferStatus =
+  | "PENDING"
+  | "IN_TRANSIT"
+  | "COMPLETED"
+  | "CANCELLED";
 
 export interface TransferItem {
   id: string;

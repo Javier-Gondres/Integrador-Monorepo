@@ -67,7 +67,10 @@ export class TransfersRepository {
     });
   }
 
-  async getStockForProduct(branchId: string, productId: string): Promise<number> {
+  async getStockForProduct(
+    branchId: string,
+    productId: string,
+  ): Promise<number> {
     const inventory = await prisma.inventory.findFirst({
       where: { branchId, productId },
       select: { quantity: true },

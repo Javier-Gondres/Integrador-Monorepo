@@ -1,5 +1,5 @@
 import { ClipboardList, Plus, Trash2 } from "lucide-react";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 
@@ -45,13 +45,18 @@ export function TransferenciaItemsForm({
   const selectedProduct = productos.find((p) => p.id === selectedProductId);
   const cantidadNum = parseInt(cantidadInput);
   const isCantidadValid = !isNaN(cantidadNum) && cantidadNum > 0;
-  const isStockSufficient = stockDisponible !== null && cantidadNum <= stockDisponible;
+  const isStockSufficient =
+    stockDisponible !== null && cantidadNum <= stockDisponible;
 
-  const canAdd = selectedProduct && isCantidadValid && isStockSufficient && !items.find(i => i.productId === selectedProductId);
+  const canAdd =
+    selectedProduct &&
+    isCantidadValid &&
+    isStockSufficient &&
+    !items.find((i) => i.productId === selectedProductId);
 
   function handleAdd() {
     if (!canAdd || !selectedProduct) return;
-    
+
     onItemsChange([
       ...items,
       {
@@ -62,7 +67,7 @@ export function TransferenciaItemsForm({
         stockDisponible: stockDisponible!,
       },
     ]);
-    
+
     setSelectedProductId("");
     setCantidadInput("");
     setStockDisponible(null);
@@ -118,12 +123,12 @@ export function TransferenciaItemsForm({
           >
             <option value="">Seleccionar producto…</option>
             {productos
-              .filter(p => !items.some(i => i.productId === p.id)) // Ocultar ya agregados
+              .filter((p) => !items.some((i) => i.productId === p.id)) // Ocultar ya agregados
               .map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} · {p.code}
-              </option>
-            ))}
+                <option key={p.id} value={p.id}>
+                  {p.name} · {p.code}
+                </option>
+              ))}
           </select>
         </Field>
 
@@ -163,10 +168,21 @@ export function TransferenciaItemsForm({
 
       {/* Tabla de ítems */}
       {items.length > 0 && (
-        <div style={{ border: `1px solid ${C.cardBorder}`, borderRadius: 8, overflow: "hidden" }}>
+        <div
+          style={{
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+          }}
+        >
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: C.pageBg, borderBottom: `1px solid ${C.cardBorder}` }}>
+              <tr
+                style={{
+                  background: C.pageBg,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                }}
+              >
                 <th style={th}>Producto</th>
                 <th style={{ ...th, textAlign: "right" }}>Stock Origen</th>
                 <th style={{ ...th, textAlign: "right" }}>Cantidad</th>
@@ -175,15 +191,29 @@ export function TransferenciaItemsForm({
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.productId} style={{ borderBottom: `1px solid ${C.divider}` }}>
+                <tr
+                  key={item.productId}
+                  style={{ borderBottom: `1px solid ${C.divider}` }}
+                >
                   <td style={td}>
-                    <div style={{ fontWeight: 500, color: C.bodyText }}>{item.nombre}</div>
-                    <div style={{ fontSize: 12, color: C.mutedText }}>{item.sku}</div>
+                    <div style={{ fontWeight: 500, color: C.bodyText }}>
+                      {item.nombre}
+                    </div>
+                    <div style={{ fontSize: 12, color: C.mutedText }}>
+                      {item.sku}
+                    </div>
                   </td>
                   <td style={{ ...td, textAlign: "right", color: C.mutedText }}>
                     {item.stockDisponible}
                   </td>
-                  <td style={{ ...td, textAlign: "right", fontWeight: 600, color: C.bodyText }}>
+                  <td
+                    style={{
+                      ...td,
+                      textAlign: "right",
+                      fontWeight: 600,
+                      color: C.bodyText,
+                    }}
+                  >
                     {item.cantidad}
                   </td>
                   <td style={td}>
@@ -230,7 +260,13 @@ export function TransferenciaItemsForm({
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <label style={{ fontSize: 12, fontWeight: 600, color: C.mutedText }}>

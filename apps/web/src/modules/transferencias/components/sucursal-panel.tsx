@@ -98,7 +98,14 @@ export function SucursalPanel({
         </div>
       ) : (
         <div style={{ marginTop: "auto" }}>
-          <p style={{ fontSize: 13, color: C.mutedText, margin: 0, fontStyle: "italic" }}>
+          <p
+            style={{
+              fontSize: 13,
+              color: C.mutedText,
+              margin: 0,
+              fontStyle: "italic",
+            }}
+          >
             Selecciona una sucursal
           </p>
         </div>

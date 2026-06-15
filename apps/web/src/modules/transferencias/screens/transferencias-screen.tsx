@@ -12,7 +12,10 @@ import { TransferenciaItemsForm } from "../components/transferencia-items-form";
 import { TransferenciaResumen } from "../components/transferencia-resumen";
 import { TransferenciasHistorial } from "../components/transferencias-historial";
 import { useTransferencias } from "../hooks/use-transferencias";
-import type { CrearTransferenciaPayload, ItemEnCarrito } from "../types/transferencia.types";
+import type {
+  CrearTransferenciaPayload,
+  ItemEnCarrito,
+} from "../types/transferencia.types";
 
 export function TransferenciasScreen() {
   // form state
@@ -48,11 +51,7 @@ export function TransferenciasScreen() {
   const isMisma = !!origenId && origenId === destinoId;
 
   const canSubmit =
-    !!origenId &&
-    !!destinoId &&
-    !isMisma &&
-    items.length > 0 &&
-    !isCreating;
+    !!origenId && !!destinoId && !isMisma && items.length > 0 && !isCreating;
 
   function handleReset() {
     setOrigenId("");
@@ -67,7 +66,10 @@ export function TransferenciasScreen() {
       fromBranchId: origenId,
       toBranchId: destinoId,
       notes: notas.trim() || undefined,
-      items: items.map(i => ({ productId: i.productId, quantity: i.cantidad })),
+      items: items.map((i) => ({
+        productId: i.productId,
+        quantity: i.cantidad,
+      })),
     };
     crearTransferencia(payload);
     handleReset();
@@ -85,7 +87,10 @@ export function TransferenciasScreen() {
         fontFamily: "inherit",
       }}
     >
-      <PageHeader breadcrumb="Inventario / Transferencias" title="Transferencia de Productos" />
+      <PageHeader
+        breadcrumb="Inventario / Transferencias"
+        title="Transferencia de Productos"
+      />
 
       <div
         style={{
@@ -201,8 +206,8 @@ export function TransferenciasScreen() {
               Transferencias registradas
             </h2>
           </div>
-          
-          <TransferenciasHistorial 
+
+          <TransferenciasHistorial
             transferencias={transferencias}
             total={total}
             currentPage={currentPage}
@@ -227,10 +232,16 @@ export function TransferenciasScreen() {
 }
 
 // ── Banner ────────────────────────────────────────────────────────────────────
-function Banner({ children, color }: { children: React.ReactNode; color: "amber" | "red" }) {
+function Banner({
+  children,
+  color,
+}: {
+  children: React.ReactNode;
+  color: "amber" | "red";
+}) {
   const styles = {
     amber: { bg: "#fef3c7", border: "#fcd34d", text: "#92400e" },
-    red:   { bg: C.dangerBg, border: "#fecaca", text: C.danger },
+    red: { bg: C.dangerBg, border: "#fecaca", text: C.danger },
   }[color];
 
   return (

@@ -34,7 +34,9 @@ export class CreateTransferDto {
   notes?: string;
 
   @IsArray({ message: 'Debe proporcionar una lista de items' })
-  @ArrayMinSize(1, { message: 'Debe agregar al menos un producto a la transferencia' })
+  @ArrayMinSize(1, {
+    message: 'Debe agregar al menos un producto a la transferencia',
+  })
   @ValidateNested({ each: true })
   @Type(() => CreateTransferItemDto)
   items!: CreateTransferItemDto[];

@@ -1,9 +1,16 @@
 import { ArrowRight, CheckCircle2, Truck, XCircle } from "lucide-react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
-import { DataTable, DataTableColumn, DataTableToolbar } from "@/shared/data-table";
+import {
+  DataTable,
+  DataTableColumn,
+  DataTableToolbar,
+} from "@/shared/data-table";
 
-import type { Transferencia, TransferStatus } from "../types/transferencia.types";
+import type {
+  Transferencia,
+  TransferStatus,
+} from "../types/transferencia.types";
 import { ESTADO_COLORS, ESTADO_LABELS, formatRelative } from "../utils/format";
 
 interface Props {
@@ -64,7 +71,14 @@ export function TransferenciasHistorial({
             <ArrowRight size={12} color={C.mutedText} />
             <span style={{ fontWeight: 600 }}>{t.destinoNombre}</span>
           </div>
-          <span style={{ fontSize: 12, color: C.mutedText, display: "block", marginTop: 4 }}>
+          <span
+            style={{
+              fontSize: 12,
+              color: C.mutedText,
+              display: "block",
+              marginTop: 4,
+            }}
+          >
             ID: {t.id}
           </span>
         </div>
@@ -78,11 +92,14 @@ export function TransferenciasHistorial({
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {t.items.slice(0, 2).map((item) => (
             <div key={item.id} style={{ fontSize: 13, color: C.bodyText }}>
-              <span style={{ fontWeight: 600 }}>{item.cantidad}x</span> {item.productoNombre}
+              <span style={{ fontWeight: 600 }}>{item.cantidad}x</span>{" "}
+              {item.productoNombre}
             </div>
           ))}
           {t.items.length > 2 && (
-            <div style={{ fontSize: 12, color: C.mutedText, fontStyle: "italic" }}>
+            <div
+              style={{ fontSize: 12, color: C.mutedText, fontStyle: "italic" }}
+            >
               + {t.items.length - 2} items más
             </div>
           )}
@@ -166,7 +183,11 @@ export function TransferenciasHistorial({
                 onClick={() => onComplete(t.id)}
                 disabled={isMutating}
                 title="Completar (Mover stock)"
-                style={{ ...btnStyle, color: C.greenText, background: C.greenBg }}
+                style={{
+                  ...btnStyle,
+                  color: C.greenText,
+                  background: C.greenBg,
+                }}
               >
                 <CheckCircle2 size={15} />
               </button>
@@ -201,7 +222,11 @@ export function TransferenciasHistorial({
         </div>
         <select
           value={statusFilter ?? ""}
-          onChange={(e) => onStatusFilterChange(e.target.value ? (e.target.value as TransferStatus) : undefined)}
+          onChange={(e) =>
+            onStatusFilterChange(
+              e.target.value ? (e.target.value as TransferStatus) : undefined,
+            )
+          }
           style={{
             padding: "8px 12px",
             borderRadius: 8,

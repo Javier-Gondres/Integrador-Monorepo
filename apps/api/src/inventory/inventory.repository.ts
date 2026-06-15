@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { Prisma, prisma } from "@repo/db";
-import { PaginatedResult } from "src/common/types/repository.types";
+import { Injectable } from '@nestjs/common';
+import { Prisma, prisma } from '@repo/db';
+import { PaginatedResult } from 'src/common/types/repository.types';
 
-import { CreateInventoryDto } from "./dto/create-inventory.dto";
-import { NormalizedQueryInventory } from "./dto/query-inventory.dto";
-import { InventoryRecord, inventorySelect } from "./inventory.selects";
+import { CreateInventoryDto } from './dto/create-inventory.dto';
+import { NormalizedQueryInventory } from './dto/query-inventory.dto';
+import { InventoryRecord, inventorySelect } from './inventory.selects';
 
 export type PaginatedInventoryResult = PaginatedResult<InventoryRecord>;
 
@@ -23,7 +23,7 @@ export class InventoryRepository {
         where,
         skip,
         take: query.take,
-        orderBy: { product: { name: "asc" } },
+        orderBy: { product: { name: 'asc' } },
         select: inventorySelect,
       }),
       prisma.inventory.count({ where }),
@@ -94,10 +94,10 @@ export class InventoryRepository {
       ...(query.search && {
         OR: [
           {
-            product: { name: { contains: query.search, mode: "insensitive" } },
+            product: { name: { contains: query.search, mode: 'insensitive' } },
           },
           {
-            product: { code: { contains: query.search, mode: "insensitive" } },
+            product: { code: { contains: query.search, mode: 'insensitive' } },
           },
         ],
       }),

@@ -14,14 +14,19 @@ import {
   getStock,
   getTransferencias,
 } from "../api/transferencias.api";
-import type { CrearTransferenciaPayload, TransferStatus } from "../types/transferencia.types";
+import type {
+  CrearTransferenciaPayload,
+  TransferStatus,
+} from "../types/transferencia.types";
 
 export function useTransferencias(origenId?: string) {
   const queryClient = useQueryClient();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_PAGE_SIZE);
-  const [statusFilter, setStatusFilter] = useState<TransferStatus | undefined>();
+  const [statusFilter, setStatusFilter] = useState<
+    TransferStatus | undefined
+  >();
 
   // Queries
   const { data: sucursales = [] } = useQuery({
@@ -34,20 +39,32 @@ export function useTransferencias(origenId?: string) {
     queryFn: () => getInventories({ branchId: origenId, take: 50 }),
     enabled: !!origenId,
   });
-  const productos = inventarioResponse?.items.map((i) => ({
-    id: i.product.id,
-    name: i.product.name,
-    code: i.product.code,
-  })) ?? [];
+  const productos =
+    inventarioResponse?.items.map((i) => ({
+      id: i.product.id,
+      name: i.product.name,
+      code: i.product.code,
+    })) ?? [];
 
-  const { data: transferenciasResponse, isLoading, isFetching, refetch } = useQuery({
+  const {
+    data: transferenciasResponse,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: ["transferencias", currentPage, rowsPerPage, statusFilter],
-    queryFn: () => getTransferencias({ page: currentPage, take: rowsPerPage, status: statusFilter }),
+    queryFn: () =>
+      getTransferencias({
+        page: currentPage,
+        take: rowsPerPage,
+        status: statusFilter,
+      }),
   });
 
   // Mutations
   const crearMutation = useMutation({
-    mutationFn: (payload: CrearTransferenciaPayload) => crearTransferencia(payload),
+    mutationFn: (payload: CrearTransferenciaPayload) =>
+      crearTransferencia(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transferencias"] });
       toast.success("Transferencia creada con éxito");
@@ -120,12 +137,16 @@ export function useTransferencias(origenId?: string) {
       setStatusFilter(status);
       setCurrentPage(1);
     },
-    crearTransferencia: (payload: CrearTransferenciaPayload) => crearMutation.mutate(payload),
+    crearTransferencia: (payload: CrearTransferenciaPayload) =>
+      crearMutation.mutate(payload),
     isCreating: crearMutation.isPending,
     despacharTransferencia: (id: string) => despacharMutation.mutate(id),
     completarTransferencia: (id: string) => completarMutation.mutate(id),
     cancelarTransferencia: (id: string) => cancelarMutation.mutate(id),
-    isMutating: despacharMutation.isPending || completarMutation.isPending || cancelarMutation.isPending,
+    isMutating:
+      despacharMutation.isPending ||
+      completarMutation.isPending ||
+      cancelarMutation.isPending,
     fetchStock,
   };
 }

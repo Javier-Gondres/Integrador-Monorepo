@@ -18,7 +18,9 @@ export function useUpdateInventory() {
       toast.success("Inventario actualizado correctamente");
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, "No se pudo actualizar el inventario"));
+      toast.error(
+        getErrorMessage(error, "No se pudo actualizar el inventario"),
+      );
     },
   });
 }

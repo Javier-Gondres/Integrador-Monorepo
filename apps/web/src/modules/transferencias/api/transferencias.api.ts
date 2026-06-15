@@ -2,7 +2,10 @@ import { apiFetch } from "@/lib/api/client";
 import type { BaseListFilters } from "@/types/filters";
 import type { PaginatedResponse } from "@/types/pagination";
 
-import type { CrearTransferenciaPayload, TransferStatus } from "../types/transferencia.types";
+import type {
+  CrearTransferenciaPayload,
+  TransferStatus,
+} from "../types/transferencia.types";
 
 export interface TransferenciasFilters extends BaseListFilters {
   status?: TransferStatus;
@@ -41,13 +44,19 @@ export async function getTransferencias(filters?: TransferenciasFilters) {
       estado: t.status,
       notas: t.notes,
       creadaEn: t.createdAt,
-      items: t.items.map((i: { id: string; quantity: number | string; product: { id: string; name: string; code: string } }) => ({
-        id: i.id,
-        cantidad: Number(i.quantity),
-        productoId: i.product.id,
-        productoNombre: i.product.name,
-        productoSku: i.product.code,
-      })),
+      items: t.items.map(
+        (i: {
+          id: string;
+          quantity: number | string;
+          product: { id: string; name: string; code: string };
+        }) => ({
+          id: i.id,
+          cantidad: Number(i.quantity),
+          productoId: i.product.id,
+          productoNombre: i.product.name,
+          productoSku: i.product.code,
+        }),
+      ),
     })),
   }));
 }
