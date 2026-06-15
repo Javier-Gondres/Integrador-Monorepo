@@ -10,10 +10,10 @@ import {
 } from '@nestjs/common';
 import { CompanyId, RequireCompany } from 'src/common/company';
 
+import { DiscountsService } from './discounts.service';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { QueryDiscountsDto } from './dto/query-discounts.dto';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
-import { DiscountsService } from './discounts.service';
 
 @Controller('discounts')
 export class DiscountsController {

@@ -3,8 +3,8 @@ import type { Prisma } from '@repo/db';
 import { prisma } from '@repo/db';
 
 import type { PaginatedResult } from '../common/types/repository.types';
+import { type DiscountRecord,discountSelect } from './discounts.selects';
 import type { NormalizedQueryDiscounts } from './dto/query-discounts.dto';
-import { discountSelect, type DiscountRecord } from './discounts.selects';
 
 export type { DiscountRecord } from './discounts.selects';
 export type PaginatedDiscountsResult = PaginatedResult<DiscountRecord>;

@@ -12,14 +12,14 @@ import { CategoriesService } from '../categories/categories.service';
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
 import { ProductsService } from '../products/products.service';
+import { DiscountsRepository } from './discounts.repository';
+import type { DiscountRecord } from './discounts.selects';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import {
   NormalizedQueryDiscounts,
   QueryDiscountsDto,
 } from './dto/query-discounts.dto';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
-import { DiscountsRepository } from './discounts.repository';
-import type { DiscountRecord } from './discounts.selects';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -265,7 +265,7 @@ export class DiscountsService {
 
     const bestDiscount = discounts.reduce<DiscountRecord | null>(
       (best, item) => {
-        if (!best) return item;
+        if (!best) {return item;}
         return Number(item.percentage) > Number(best.percentage) ? item : best;
       },
       null,
@@ -370,7 +370,7 @@ export class DiscountsService {
  * Acepta tanto ISO completo como date-only (YYYY-MM-DD).
  */
 function parseStartDate(value: string | null | undefined): Date | null {
-  if (!value) return null;
+  if (!value) {return null;}
   return startOfDay(parseISO(value));
 }
 
@@ -379,7 +379,7 @@ function parseStartDate(value: string | null | undefined): Date | null {
  * Acepta tanto ISO completo como date-only (YYYY-MM-DD).
  */
 function parseEndDate(value: string | null | undefined): Date | null {
-  if (!value) return null;
+  if (!value) {return null;}
   return endOfDay(parseISO(value));
 }
 
