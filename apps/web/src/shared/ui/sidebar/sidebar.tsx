@@ -22,6 +22,8 @@ const navItems = [
   { label: "Productos", icon: Box, href: "/products" },
   { label: "Categorías", icon: Tag, href: "/categories" },
   { label: "Descuentos", icon: Percent, href: "/discounts" },
+  { section: "Operación" },
+  { label: "Cajas", icon: LayoutDashboard, href: "/cajas" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
   { label: "Proveedores", icon: Truck, href: "/suppliers" },

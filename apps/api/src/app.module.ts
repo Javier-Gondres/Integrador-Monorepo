@@ -5,10 +5,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { BranchModule } from './branch/branch.module';
+import { CashRegistersModule } from './cash-registers/cash-registers.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CompanyModule } from './company/company.module';
-import { EmployeesModule } from './employees/employees.module';
 import { DiscountsModule } from './discounts/discounts.module';
+import { EmployeesModule } from './employees/employees.module';
 import { MeModule } from './me/me.module';
 import { ProductsModule } from './products/products.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
@@ -33,6 +34,7 @@ const envFilePath =
     EmployeesModule,
     DiscountsModule,
     SuppliersModule,
+    CashRegistersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
