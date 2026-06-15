@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowLeftRight,
   Box,
   Grid2x2,
   History,
@@ -22,6 +23,7 @@ const navItems = [
   { label: "Categorías", icon: Tag, href: "/categories" },
   { section: "Inventarios" },
   { label: "Stock", icon: ShelvingUnit, href: "/inventories" },
+  { label: "Transferencias", icon: ArrowLeftRight, href: "/transferencias" },
   { label: "Movimientos", icon: History, href: "/inventory-movements" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
