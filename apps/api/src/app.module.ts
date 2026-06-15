@@ -14,6 +14,7 @@ import { MeModule } from "./me/me.module";
 import { ProductsModule } from "./products/products.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
 import { UsersModule } from "./users/users.module";
+import { TransfersModule } from "./transfers/transfers.module";
 
 const envFilePath =
   process.env.APP_ENV === "staging" ? ".env.staging" : ".env.development";
@@ -35,6 +36,7 @@ const envFilePath =
     SuppliersModule,
     InventoryModule,
     InventoryMovementModule,
+    TransfersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
