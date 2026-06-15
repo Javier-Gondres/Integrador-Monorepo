@@ -265,7 +265,9 @@ export class DiscountsService {
 
     const bestDiscount = discounts.reduce<DiscountRecord | null>(
       (best, item) => {
-        if (!best) {return item;}
+        if (!best) {
+          return item;
+        }
         return Number(item.percentage) > Number(best.percentage) ? item : best;
       },
       null,
@@ -370,7 +372,9 @@ export class DiscountsService {
  * Acepta tanto ISO completo como date-only (YYYY-MM-DD).
  */
 function parseStartDate(value: string | null | undefined): Date | null {
-  if (!value) {return null;}
+  if (!value) {
+    return null;
+  }
   return startOfDay(parseISO(value));
 }
 
@@ -379,7 +383,9 @@ function parseStartDate(value: string | null | undefined): Date | null {
  * Acepta tanto ISO completo como date-only (YYYY-MM-DD).
  */
 function parseEndDate(value: string | null | undefined): Date | null {
-  if (!value) {return null;}
+  if (!value) {
+    return null;
+  }
   return endOfDay(parseISO(value));
 }
 
