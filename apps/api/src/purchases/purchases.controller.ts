@@ -1,16 +1,16 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import {
   Company,
   type CompanyContext,
   CompanyId,
   RequireCompany,
-} from "src/common/company";
+} from 'src/common/company';
 
-import { CreatePurchaseDto } from "./dto/create-purchase.dto";
-import { QueryPurchasesDto } from "./dto/query-purchases.dto";
-import { PurchasesService } from "./purchases.service";
+import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { QueryPurchasesDto } from './dto/query-purchases.dto';
+import { PurchasesService } from './purchases.service';
 
-@Controller("purchases")
+@Controller('purchases')
 export class PurchasesController {
   constructor(private readonly purchasesService: PurchasesService) {}
 
@@ -25,13 +25,16 @@ export class PurchasesController {
 
   @RequireCompany()
   @Get()
-  findAll(@Company() company: CompanyContext, @Query() query: QueryPurchasesDto) {
+  findAll(
+    @Company() company: CompanyContext,
+    @Query() query: QueryPurchasesDto,
+  ) {
     return this.purchasesService.findAll(company, query);
   }
 
   @RequireCompany()
-  @Get(":id")
-  findById(@Param("id") id: string, @CompanyId() companyId: string) {
+  @Get(':id')
+  findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.purchasesService.findById(id, companyId);
   }
 }

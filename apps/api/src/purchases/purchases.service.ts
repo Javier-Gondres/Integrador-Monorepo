@@ -1,20 +1,17 @@
-import { Injectable } from "@nestjs/common";
-import { BranchRepository } from "src/branch/branch.repository";
-import type { CompanyContext } from "src/common/company";
-import { BusinessException, ErrorCodes } from "src/common/errors";
-import { ProductsRepository } from "src/products/products.repository";
-import { SuppliersService } from "src/suppliers/suppliers.service";
+import { Injectable } from '@nestjs/common';
+import { BranchRepository } from 'src/branch/branch.repository';
+import type { CompanyContext } from 'src/common/company';
+import { BusinessException, ErrorCodes } from 'src/common/errors';
+import { ProductsRepository } from 'src/products/products.repository';
+import { SuppliersService } from 'src/suppliers/suppliers.service';
 
-import { CreatePurchaseDto } from "./dto/create-purchase.dto";
+import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import {
   NormalizedQueryPurchases,
   QueryPurchasesDto,
-} from "./dto/query-purchases.dto";
-import { PurchasesRepository } from "./purchases.repository";
-import {
-  PurchaseDetailRecord,
-  PurchaseListRecord,
-} from "./purchases.selects";
+} from './dto/query-purchases.dto';
+import { PurchasesRepository } from './purchases.repository';
+import { PurchaseDetailRecord, PurchaseListRecord } from './purchases.selects';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -57,7 +54,7 @@ export class PurchasesService {
     if (!record) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "La orden de compra no existe",
+        'La orden de compra no existe',
       );
     }
 
@@ -72,7 +69,7 @@ export class PurchasesService {
     if (!branch) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "La sucursal no existe",
+        'La sucursal no existe',
       );
     }
 
@@ -86,7 +83,7 @@ export class PurchasesService {
     if (new Set(productIds).size !== productIds.length) {
       throw new BusinessException(
         ErrorCodes.VALIDATION_ERROR,
-        "Hay productos duplicados en la orden",
+        'Hay productos duplicados en la orden',
       );
     }
 
@@ -110,7 +107,9 @@ export class PurchasesService {
       unitCost: item.unitCost,
       subtotal: round2(item.quantity * item.unitCost),
     }));
-    const subtotal = round2(items.reduce((sum, item) => sum + item.subtotal, 0));
+    const subtotal = round2(
+      items.reduce((sum, item) => sum + item.subtotal, 0),
+    );
     const taxAmount = round2(subtotal * ITBIS_RATE);
     const total = round2(subtotal + taxAmount);
 

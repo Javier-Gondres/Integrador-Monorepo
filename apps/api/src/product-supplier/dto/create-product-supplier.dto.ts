@@ -1,4 +1,10 @@
-import { IsNumber, IsOptional, IsString, Min, MinLength } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateProductSupplierDto {
   @IsString({ message: 'productId debe ser texto' })

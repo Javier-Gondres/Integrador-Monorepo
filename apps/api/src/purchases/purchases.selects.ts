@@ -1,4 +1,4 @@
-import type { Prisma } from "@repo/db";
+import type { Prisma } from '@repo/db';
 
 const supplierSummarySelect = {
   id: true,

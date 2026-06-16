@@ -6,20 +6,20 @@ import {
   Patch,
   Post,
   Query,
-} from "@nestjs/common";
+} from '@nestjs/common';
 import {
   Company,
   type CompanyContext,
   CompanyId,
   RequireCompany,
-} from "src/common/company";
+} from 'src/common/company';
 
-import { CreateInventoryDto } from "./dto/create-inventory.dto";
-import { QueryInventoryDto } from "./dto/query-inventory.dto";
-import { UpdateInventoryDto } from "./dto/update-inventory.dto";
-import { InventoryService } from "./inventory.service";
+import { CreateInventoryDto } from './dto/create-inventory.dto';
+import { QueryInventoryDto } from './dto/query-inventory.dto';
+import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import { InventoryService } from './inventory.service';
 
-@Controller("inventories")
+@Controller('inventories')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
@@ -34,20 +34,23 @@ export class InventoryController {
 
   @RequireCompany()
   @Get()
-  findAll(@Company() company: CompanyContext, @Query() query: QueryInventoryDto) {
+  findAll(
+    @Company() company: CompanyContext,
+    @Query() query: QueryInventoryDto,
+  ) {
     return this.inventoryService.findAllByBranch(company, query);
   }
 
   @RequireCompany()
-  @Get(":id")
-  findById(@Param("id") id: string, @CompanyId() companyId: string) {
+  @Get(':id')
+  findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.inventoryService.findById(id, companyId);
   }
 
   @RequireCompany()
-  @Patch(":id")
+  @Patch(':id')
   update(
-    @Param("id") id: string,
+    @Param('id') id: string,
     @CompanyId() companyId: string,
     @Body() updateInventoryDto: UpdateInventoryDto,
   ) {
@@ -55,14 +58,14 @@ export class InventoryController {
   }
 
   @RequireCompany()
-  @Patch(":id/activate")
-  activate(@Param("id") id: string, @CompanyId() companyId: string) {
+  @Patch(':id/activate')
+  activate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.inventoryService.activate(id, companyId);
   }
 
   @RequireCompany()
-  @Patch(":id/deactivate")
-  deactivate(@Param("id") id: string, @CompanyId() companyId: string) {
+  @Patch(':id/deactivate')
+  deactivate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.inventoryService.deactivate(id, companyId);
   }
 }

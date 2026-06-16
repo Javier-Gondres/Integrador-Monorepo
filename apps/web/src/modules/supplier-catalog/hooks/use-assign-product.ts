@@ -4,7 +4,10 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/api/errors";
 import { supplierKeys } from "@/modules/suppliers/query-keys";
 
-import { assignProduct,type AssignProductPayload } from "../api/assign-product";
+import {
+  assignProduct,
+  type AssignProductPayload,
+} from "../api/assign-product";
 import { supplierCatalogKeys } from "../query-keys";
 
 export function useAssignProduct(supplierId: string) {

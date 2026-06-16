@@ -1,14 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import { InventoryMovementType, Prisma, prisma } from "@repo/db";
-import { PaginatedResult } from "src/common/types/repository.types";
+import { Injectable } from '@nestjs/common';
+import { InventoryMovementType, Prisma, prisma } from '@repo/db';
+import { PaginatedResult } from 'src/common/types/repository.types';
 
-import { NormalizedQueryPurchases } from "./dto/query-purchases.dto";
+import { NormalizedQueryPurchases } from './dto/query-purchases.dto';
 import {
   PurchaseDetailRecord,
   purchaseDetailSelect,
   PurchaseListRecord,
   purchaseListSelect,
-} from "./purchases.selects";
+} from './purchases.selects';
 
 export type PaginatedPurchasesResult = PaginatedResult<PurchaseListRecord>;
 
@@ -44,7 +44,7 @@ export class PurchasesRepository {
         where,
         skip,
         take: query.take,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         select: purchaseListSelect,
       }),
       prisma.purchase.count({ where }),
@@ -117,7 +117,7 @@ export class PurchasesRepository {
             type: InventoryMovementType.PURCHASE,
             quantity,
             purchaseId: purchase.id,
-            notes: "Compra registrada",
+            notes: 'Compra registrada',
             ...(data.invoiceNumber && { referenceNumber: data.invoiceNumber }),
           },
         });

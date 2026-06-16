@@ -52,7 +52,11 @@ export class ProductSupplierController {
     @Param('supplierId') supplierId: string,
     @Param('productId') productId: string,
   ) {
-    return this.productSupplierService.activate(companyId, supplierId, productId);
+    return this.productSupplierService.activate(
+      companyId,
+      supplierId,
+      productId,
+    );
   }
 
   @RequireCompany()

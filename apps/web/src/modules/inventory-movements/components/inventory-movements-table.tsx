@@ -103,7 +103,9 @@ export function getInventoryMovementsTableColumns(): DataTableColumn<InventoryMo
       header: "Motivo",
       cell: (m) => (
         <span style={{ color: C.mutedText }}>
-          {m.adjustmentReason ? ADJUSTMENT_REASON_LABELS[m.adjustmentReason] : "—"}
+          {m.adjustmentReason
+            ? ADJUSTMENT_REASON_LABELS[m.adjustmentReason]
+            : "—"}
         </span>
       ),
     },

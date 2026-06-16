@@ -32,15 +32,10 @@ export function PurchaseOrderContainer({
   const { data: suppliersData, isLoading: suppliersLoading } = useSuppliers({
     take: 100,
   });
-  const suppliers = useMemo(
-    () => suppliersData?.items ?? [],
-    [suppliersData],
-  );
+  const suppliers = useMemo(() => suppliersData?.items ?? [], [suppliersData]);
 
-  const { data: productsData, isLoading: productsLoading } = useSupplierProducts(
-    selectedSupplierId,
-    { take: 100 },
-  );
+  const { data: productsData, isLoading: productsLoading } =
+    useSupplierProducts(selectedSupplierId, { take: 100 });
 
   // Selecciona el primer proveedor disponible cuando aún no hay selección.
   useEffect(() => {

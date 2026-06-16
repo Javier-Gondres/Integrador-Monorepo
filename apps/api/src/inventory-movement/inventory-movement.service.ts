@@ -1,12 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import type { CompanyContext } from "src/common/company";
-import { BusinessException, ErrorCodes } from "src/common/errors";
+import { Injectable } from '@nestjs/common';
+import type { CompanyContext } from 'src/common/company';
+import { BusinessException, ErrorCodes } from 'src/common/errors';
 
 import {
   NormalizedQueryInventoryMovement,
   QueryInventoryMovementDto,
-} from "./dto/query-inventory-movement.dto";
-import { InventoryMovementRepository } from "./inventory-movement.repository";
+} from './dto/query-inventory-movement.dto';
+import { InventoryMovementRepository } from './inventory-movement.repository';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -25,7 +25,7 @@ export class InventoryMovementService {
     if (!branchId) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "No hay una sucursal seleccionada",
+        'No hay una sucursal seleccionada',
       );
     }
 

@@ -224,7 +224,9 @@ export function InventoryForm({
 
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <FieldLabel>Estado del producto</FieldLabel>
-          <div style={{ display: "flex", alignItems: "center", minHeight: "42px" }}>
+          <div
+            style={{ display: "flex", alignItems: "center", minHeight: "42px" }}
+          >
             {selectedProduct ? (
               selectedProduct.isActive ? (
                 <Badge variant="success">Activo</Badge>

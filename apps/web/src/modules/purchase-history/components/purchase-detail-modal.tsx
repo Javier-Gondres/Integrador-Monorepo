@@ -95,7 +95,9 @@ export function PurchaseDetailModal({
           <div className="ml-auto max-w-xs space-y-1.5 text-sm">
             <div className="flex items-center justify-between text-head">
               <span>Subtotal</span>
-              <b className="tabular-nums text-body">{money(purchase.subtotal)}</b>
+              <b className="tabular-nums text-body">
+                {money(purchase.subtotal)}
+              </b>
             </div>
             <div className="flex items-center justify-between text-head">
               <span>ITBIS (18%)</span>

@@ -36,7 +36,8 @@ export function PurchaseHistoryTableContainer() {
   const purchases = data?.items ?? [];
   const total = data?.meta.total ?? 0;
   const totalPages = data?.meta.totalPages ?? 1;
-  const dirty = branchFilter !== ALL_BRANCHES || dateFrom !== "" || dateTo !== "";
+  const dirty =
+    branchFilter !== ALL_BRANCHES || dateFrom !== "" || dateTo !== "";
 
   const resetPage = () => setCurrentPage(1);
 

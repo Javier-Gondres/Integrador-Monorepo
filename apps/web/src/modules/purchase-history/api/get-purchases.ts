@@ -31,7 +31,9 @@ export async function getPurchases(filters?: PurchaseFilters) {
       dateFrom: filters?.dateFrom
         ? dayBoundaryIso(filters.dateFrom, false)
         : undefined,
-      dateTo: filters?.dateTo ? dayBoundaryIso(filters.dateTo, true) : undefined,
+      dateTo: filters?.dateTo
+        ? dayBoundaryIso(filters.dateTo, true)
+        : undefined,
     },
   });
 }

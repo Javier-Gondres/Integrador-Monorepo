@@ -1,5 +1,5 @@
-import { Type } from "class-transformer";
-import { IsNumber, IsOptional, Min } from "class-validator";
+import { Type } from 'class-transformer';
+import { IsNumber, IsOptional, Min } from 'class-validator';
 
 /**
  * La cantidad (`quantity`) NO se edita directamente: cambia mediante
@@ -11,8 +11,8 @@ export class UpdateInventoryDto {
   @Type(() => Number)
   @IsNumber(
     { maxDecimalPlaces: 3 },
-    { message: "La cantidad mínima debe ser un número" },
+    { message: 'La cantidad mínima debe ser un número' },
   )
-  @Min(0, { message: "La cantidad mínima no puede ser negativa" })
+  @Min(0, { message: 'La cantidad mínima no puede ser negativa' })
   minimumQuantity?: number;
 }

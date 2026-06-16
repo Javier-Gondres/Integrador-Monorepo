@@ -1,4 +1,4 @@
-import { Transform, Type } from "class-transformer";
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
@@ -6,16 +6,16 @@ import {
   IsString,
   Max,
   Min,
-} from "class-validator";
+} from 'class-validator';
 
 function parseOptionalBoolean(value: unknown): boolean | undefined {
-  if (value === undefined || value === null || value === "") {
+  if (value === undefined || value === null || value === '') {
     return undefined;
   }
-  if (value === "true" || value === true) {
+  if (value === 'true' || value === true) {
     return true;
   }
-  if (value === "false" || value === false) {
+  if (value === 'false' || value === false) {
     return false;
   }
   return value as boolean;
@@ -24,33 +24,33 @@ function parseOptionalBoolean(value: unknown): boolean | undefined {
 export class QueryInventoryDto {
   @IsOptional()
   @Type(() => Number)
-  @IsInt({ message: "page debe ser un entero" })
-  @Min(1, { message: "page debe ser al menos 1" })
+  @IsInt({ message: 'page debe ser un entero' })
+  @Min(1, { message: 'page debe ser al menos 1' })
   page?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt({ message: "take debe ser un entero" })
-  @Min(1, { message: "take debe ser al menos 1" })
-  @Max(50, { message: "take no puede ser mayor a 50" })
+  @IsInt({ message: 'take debe ser un entero' })
+  @Min(1, { message: 'take debe ser al menos 1' })
+  @Max(50, { message: 'take no puede ser mayor a 50' })
   take?: number;
 
   @IsOptional()
-  @IsString({ message: "search debe ser texto" })
+  @IsString({ message: 'search debe ser texto' })
   search?: string;
 
   @IsOptional()
-  @IsString({ message: "branchId debe ser texto" })
+  @IsString({ message: 'branchId debe ser texto' })
   branchId?: string;
 
   @IsOptional()
   @Transform(({ value }) => parseOptionalBoolean(value))
-  @IsBoolean({ message: "isActive debe ser un booleano" })
+  @IsBoolean({ message: 'isActive debe ser un booleano' })
   isActive?: boolean;
 
   @IsOptional()
   @Transform(({ value }) => parseOptionalBoolean(value))
-  @IsBoolean({ message: "needsRestock debe ser un booleano" })
+  @IsBoolean({ message: 'needsRestock debe ser un booleano' })
   needsRestock?: boolean;
 }
 

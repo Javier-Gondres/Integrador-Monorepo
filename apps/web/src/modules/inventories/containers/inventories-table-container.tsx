@@ -89,9 +89,7 @@ export function InventoriesTableContainer({
           flexWrap: "wrap",
         }}
       >
-        <div
-          style={{ display: "flex", alignItems: "center", gap: "10px" }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <span style={filterLabelStyle}>Sucursal</span>
           <BranchSelect
             branches={branches}
