@@ -3,6 +3,8 @@ import {
   CircleCheckBig,
   History,
   Package,
+  PackageSearch,
+  ReceiptText,
   ShelvingUnit,
   Tag,
   Truck,
@@ -43,6 +45,13 @@ const availableModules = [
     tone: "amber",
   },
   {
+    title: "Catálogo de Proveedores",
+    description: "Registra los suministros de los diferentes suplidores.",
+    href: "/supplier-catalog",
+    icon: PackageSearch,
+    tone: "amber",
+  },
+  {
     title: "Stock",
     description: "Asigna productos a las diferentes sucursales de la empresa",
     href: "/inventories",
@@ -54,6 +63,13 @@ const availableModules = [
     description: "Consulta el historial de los inventarios",
     href: "/inventories",
     icon: History,
+    tone: "red",
+  },
+  {
+    title: "Compras",
+    description: "Realiza ordenes de compra y consulta compras recientes",
+    href: "/purchase-history",
+    icon: ReceiptText,
     tone: "red",
   },
 ];
