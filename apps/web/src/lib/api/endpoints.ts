@@ -13,6 +13,7 @@ export const ENDPOINTS = {
   me: {
     profile: "/me",
     company: "/me/company",
+    password: "/me/password",
   },
   products: {
     root: "/products",
