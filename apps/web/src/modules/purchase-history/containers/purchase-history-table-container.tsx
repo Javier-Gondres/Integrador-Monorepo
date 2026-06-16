@@ -68,8 +68,11 @@ export function PurchaseHistoryTableContainer() {
           <input
             type="date"
             value={dateFrom}
+            max={dateTo || undefined}
             onChange={(e) => {
-              setDateFrom(e.target.value);
+              const value = e.target.value;
+              if (dateTo && value > dateTo) return;
+              setDateFrom(value);
               resetPage();
             }}
             className="h-10 rounded-lg border border-input-border bg-white px-3 text-sm text-body outline-none focus:border-primary"
@@ -81,8 +84,11 @@ export function PurchaseHistoryTableContainer() {
           <input
             type="date"
             value={dateTo}
+            min={dateFrom || undefined}
             onChange={(e) => {
-              setDateTo(e.target.value);
+              const value = e.target.value;
+              if (dateFrom && value < dateFrom) return;
+              setDateTo(value);
               resetPage();
             }}
             className="h-10 rounded-lg border border-input-border bg-white px-3 text-sm text-body outline-none focus:border-primary"

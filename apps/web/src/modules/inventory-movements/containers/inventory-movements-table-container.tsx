@@ -122,7 +122,9 @@ export function InventoryMovementsTableContainer({
             value={dateFrom}
             max={dateTo || undefined}
             onChange={(e) => {
-              setDateFrom(e.target.value);
+              const value = e.target.value;
+              if (dateTo && value > dateTo) return;
+              setDateFrom(value);
               setCurrentPage(1);
             }}
             style={controlStyle}
@@ -137,7 +139,9 @@ export function InventoryMovementsTableContainer({
             value={dateTo}
             min={dateFrom || undefined}
             onChange={(e) => {
-              setDateTo(e.target.value);
+              const value = e.target.value;
+              if (dateFrom && value < dateFrom) return;
+              setDateTo(value);
               setCurrentPage(1);
             }}
             style={controlStyle}
