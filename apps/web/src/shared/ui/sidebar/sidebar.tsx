@@ -30,19 +30,19 @@ const navItems = [
   { label: "Proveedores", icon: Truck, href: "/suppliers" },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () => void }) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "Usuario";
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? "open" : ""}`}>
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">
           <Grid2x2 size={16} color="#fff" />
         </div>
-        <div>
+        <div className="sidebar-logo-text">
           <p className="sidebar-logo-name">Mi ERP</p>
           <p className="sidebar-logo-sub">Bienvenido al ERP</p>
         </div>
@@ -65,6 +65,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href!}
+              onClick={onClose}
               className={`nav-item${active ? " active" : ""}`}
             >
               <Icon size={16} />

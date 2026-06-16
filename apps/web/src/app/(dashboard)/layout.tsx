@@ -1,5 +1,5 @@
 import { AuthGuard } from "@/modules/auth/components/auth-guard";
-import { Sidebar } from "@/shared/ui/sidebar/sidebar";
+import { LayoutShell } from "@/shared/ui/layout-shell/layout-shell";
 
 export default function DashboardLayout({
   children,
@@ -8,10 +8,9 @@ export default function DashboardLayout({
 }>) {
   return (
     <AuthGuard>
-      <div className="app-shell">
-        <Sidebar />
-        <div className="app-shell__content">{children}</div>
-      </div>
+      <LayoutShell>
+        {children}
+      </LayoutShell>
     </AuthGuard>
   );
 }
