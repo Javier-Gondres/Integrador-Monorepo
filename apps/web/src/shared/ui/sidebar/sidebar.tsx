@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   PackageSearch,
+  ReceiptText,
   ShelvingUnit,
   Tag,
   Truck,
@@ -24,10 +25,15 @@ const navItems = [
   { section: "Inventarios" },
   { label: "Stock", icon: ShelvingUnit, href: "/inventories" },
   { label: "Movimientos", icon: History, href: "/inventory-movements" },
+  { label: "Compras", icon: ReceiptText, href: "/purchase-history" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
   { label: "Proveedores", icon: Truck, href: "/suppliers" },
-  { label: "Catálogo Proveedores", icon: PackageSearch, href: "/supplier-catalog" },
+  {
+    label: "Catálogo Proveedores",
+    icon: PackageSearch,
+    href: "/supplier-catalog",
+  },
 ];
 
 export function Sidebar() {

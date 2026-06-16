@@ -6,6 +6,15 @@ import type {
   InventoryMovementFilters,
 } from "../types/inventory-movement.types";
 
+function dayBoundaryIso(date: string, end: boolean): string | undefined {
+  const [year, month, day] = date.split("-").map(Number);
+  if (!year || !month || !day) return undefined;
+  const d = end
+    ? new Date(year, month - 1, day, 23, 59, 59, 999)
+    : new Date(year, month - 1, day, 0, 0, 0, 0);
+  return d.toISOString();
+}
+
 export async function getInventoryMovements(
   filters?: InventoryMovementFilters,
 ) {
@@ -18,8 +27,12 @@ export async function getInventoryMovements(
         search: filters?.search,
         branchId: filters?.branchId,
         type: filters?.type,
-        dateFrom: filters?.dateFrom,
-        dateTo: filters?.dateTo,
+        dateFrom: filters?.dateFrom
+          ? dayBoundaryIso(filters.dateFrom, false)
+          : undefined,
+        dateTo: filters?.dateTo
+          ? dayBoundaryIso(filters.dateTo, false)
+          : undefined,
       },
     },
   );

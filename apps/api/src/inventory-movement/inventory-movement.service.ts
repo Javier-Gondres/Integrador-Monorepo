@@ -57,9 +57,7 @@ export class InventoryMovementService {
       ...(query.search?.trim() && { search: query.search.trim() }),
       ...(query.type && { type: query.type }),
       ...(query.dateFrom && { dateFrom: query.dateFrom }),
-      // El cliente envía solo la fecha (YYYY-MM-DD); el "hasta" debe incluir
-      // todo el día seleccionado.
-      ...(query.dateTo && { dateTo: `${query.dateTo}T23:59:59.999Z` }),
+      ...(query.dateTo && { dateTo: query.dateTo }),
     };
   }
 }
