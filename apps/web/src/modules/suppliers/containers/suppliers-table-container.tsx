@@ -1,10 +1,12 @@
 "use client";
 
+import { Plus } from "lucide-react"; //////////////
 import { useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
 import { DataTable, DataTableToolbar } from "@/shared/data-table";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
+import { Button } from "@/shared/ui/button";
 
 import { getSuppliersTableColumns } from "../components/suppliers-table";
 import { useDeleteSupplier } from "../hooks/use-delete-supplier";
@@ -14,11 +16,13 @@ import type { Supplier } from "../types/supplier.types";
 interface SuppliersTableContainerProps {
   onEdit: (supplier: Supplier) => void;
   onCreate: () => void;
+  onCreateProduct: () => void;
 }
 
 export function SuppliersTableContainer({
   onEdit,
   onCreate,
+  onCreateProduct,
 }: SuppliersTableContainerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedValue(searchTerm);
@@ -53,6 +57,12 @@ export function SuppliersTableContainer({
         refreshing={isFetching}
         createLabel="Nuevo Proveedor"
         onCreate={onCreate}
+        actions={
+          <Button variant="secondary" onClick={onCreateProduct}>
+            <Plus style={{ width: "16px", height: "16px" }} />
+            Nuevo Producto
+          </Button>
+        }
       />
 
       <DataTable
