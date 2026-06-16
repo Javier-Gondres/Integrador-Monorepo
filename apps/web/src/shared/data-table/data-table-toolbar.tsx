@@ -15,20 +15,15 @@ export function DataTableToolbar({
   onCreate,
 }: DataTableToolbarProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "12px",
-      }}
-    >
-      <SearchInput
-        placeholder={searchPlaceholder}
-        value={searchValue}
-        onChange={(e) => onSearchChange(e.target.value)}
-      />
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
+      <div className="w-full sm:w-auto flex-1">
+        <SearchInput
+          placeholder={searchPlaceholder}
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+      </div>
+      <div className="flex items-center gap-2 sm:gap-3 justify-end">
         <Button variant="icon" onClick={onRefresh} title="Refrescar">
           <RotateCw
             style={{ width: "16px", height: "16px" }}

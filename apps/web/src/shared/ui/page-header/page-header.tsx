@@ -8,10 +8,10 @@ interface PageHeaderProps {
 export function PageHeader({ breadcrumb, title }: PageHeaderProps) {
   return (
     <div
+      className="py-4 px-5 md:py-5 md:px-10"
       style={{
         backgroundColor: C.cardBg,
         borderBottom: `1px solid ${C.cardBorder}`,
-        padding: "20px 40px",
       }}
     >
       <p style={{ fontSize: "13px", color: C.mutedText, marginBottom: "4px" }}>

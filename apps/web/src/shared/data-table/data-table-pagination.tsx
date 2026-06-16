@@ -25,15 +25,7 @@ export function DataTablePagination({
 
   return (
     <div
-      style={{
-        padding: "14px 24px",
-        borderTop: `1px solid ${C.divider}`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "12px",
-        flexWrap: "wrap",
-      }}
+      className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 border-t border-slate-200"
     >
       <div
         style={{

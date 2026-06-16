@@ -52,9 +52,9 @@ export function DataTable<T>({
         </span>
       </div>
 
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
+      <div className="overflow-x-auto w-full pb-4 md:pb-0">
+        <table className="w-full border-collapse block md:table">
+          <thead className="hidden md:table-header-group">
             <tr style={{ backgroundColor: C.tableHead }}>
               {columns.map((col) => (
                 <th
@@ -75,31 +75,21 @@ export function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="block md:table-row-group">
             {loading ? (
-              <tr>
+              <tr className="block md:table-row">
                 <td
                   colSpan={colSpan}
-                  style={{
-                    textAlign: "center",
-                    padding: "48px",
-                    color: C.mutedText,
-                    fontSize: "14px",
-                  }}
+                  className="block md:table-cell text-center p-12 text-[14px] text-slate-500"
                 >
                   {loadingMessage}
                 </td>
               </tr>
             ) : data.length === 0 ? (
-              <tr>
+              <tr className="block md:table-row">
                 <td
                   colSpan={colSpan}
-                  style={{
-                    textAlign: "center",
-                    padding: "48px",
-                    color: C.mutedText,
-                    fontSize: "14px",
-                  }}
+                  className="block md:table-cell text-center p-12 text-[14px] text-slate-500"
                 >
                   {emptyMessage}
                 </td>
@@ -112,19 +102,21 @@ export function DataTable<T>({
                     borderBottom:
                       i < data.length - 1 ? `1px solid ${C.divider}` : "none",
                   }}
-                  className="group hover:bg-[#F9FAFB] transition-colors"
+                  className="group hover:bg-[#F9FAFB] transition-colors flex flex-col md:table-row mb-4 md:mb-0 border md:border-b-0 border-slate-200 md:border-transparent rounded-xl md:rounded-none bg-white md:bg-transparent overflow-hidden shadow-sm md:shadow-none"
                 >
                   {columns.map((col) => (
                     <td
                       key={col.id}
+                      className="flex md:table-cell justify-between items-center py-3 px-4 md:py-3.5 md:px-5 text-[14px] border-b border-slate-100 md:border-0 last:border-0"
                       style={{
-                        padding: "14px 20px",
                         textAlign: col.align ?? "center",
-                        fontSize: "14px",
                         color: C.bodyText,
                       }}
                     >
-                      {col.cell(row, i)}
+                      <span className="md:hidden text-[11px] font-bold text-slate-500 uppercase tracking-wider">{col.header}</span>
+                      <div className="text-right md:text-center w-full flex justify-end md:justify-center md:block">
+                        {col.cell(row, i)}
+                      </div>
                     </td>
                   ))}
                 </tr>
