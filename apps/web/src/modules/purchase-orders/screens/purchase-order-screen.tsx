@@ -4,14 +4,14 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { useCurrentUser } from "@/modules/auth/hooks/use-auth";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { BranchSelect } from "@/modules/branches/components/branch-select";
 import { useBranches } from "@/modules/branches/hooks/use-branches";
 
 import { PurchaseOrderContainer } from "../containers/purchase-order-container";
 
 export function PurchaseOrderScreen() {
-  const { user } = useCurrentUser();
+  const { user } = useAuth();
   const { data: branches, isLoading: branchesLoading } = useBranches();
 
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);

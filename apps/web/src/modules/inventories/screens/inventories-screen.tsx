@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
-import { useCurrentUser } from "@/modules/auth/hooks/use-auth";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { useBranches } from "@/modules/branches/hooks/use-branches";
 import { PageHeader } from "@/shared/ui";
 
@@ -12,7 +12,7 @@ import { InventoryFormModalContainer } from "../containers/inventory-form-modal-
 import type { Inventory } from "../types/inventory.types";
 
 export function InventoriesScreen() {
-  const { user } = useCurrentUser();
+  const { user } = useAuth();
   const { data: branches, isLoading: branchesLoading } = useBranches();
 
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
