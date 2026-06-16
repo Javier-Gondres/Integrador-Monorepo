@@ -24,14 +24,7 @@ export function ProductsScreen() {
     >
       <PageHeader breadcrumb="Productos" title="Productos" />
 
-      <div
-        style={{
-          padding: "32px 40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-        }}
-      >
+      <div className="flex flex-col gap-5 p-4 md:p-8 lg:px-10">
         <ProductsTableContainer
           onEdit={setModalProduct}
           onCreate={() => setModalProduct(null)}

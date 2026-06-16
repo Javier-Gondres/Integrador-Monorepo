@@ -202,25 +202,11 @@ export function CompaniesScreen() {
       </div>
 
       {/* Body  */}
-      <div
-        style={{
-          padding: "32px 40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-        }}
-      >
+      <div className="flex flex-col gap-5 p-4 md:p-8 lg:px-10">
         {/*Toolbar */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-          }}
-        >
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 w-full">
           {/* Buscador y filtro de estado */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <input
               type="text"
               placeholder="Buscar empresa..."
@@ -266,7 +252,7 @@ export function CompaniesScreen() {
           </div>
 
           {/* Botones de accion */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="flex items-center justify-end gap-3 w-full sm:w-auto">
             <button
               onClick={() => cargarCompanies()}
               title="Refrescar"
@@ -347,9 +333,9 @@ export function CompaniesScreen() {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
+          <div className="overflow-x-auto w-full pb-4 md:pb-0">
+            <table className="w-full border-collapse block md:table">
+              <thead className="hidden md:table-header-group">
                 <tr style={{ backgroundColor: C.tableHead }}>
                   {["Nombre", "RNC", "Estado", "Acciones"].map((h) => (
                     <th
@@ -370,31 +356,21 @@ export function CompaniesScreen() {
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="block md:table-row-group">
                 {loading ? (
-                  <tr>
+                  <tr className="block md:table-row">
                     <td
                       colSpan={4}
-                      style={{
-                        textAlign: "center",
-                        padding: "48px",
-                        color: C.mutedText,
-                        fontSize: "14px",
-                      }}
+                      className="block md:table-cell text-center p-12 text-[14px] text-slate-500"
                     >
                       Cargando empresas...
                     </td>
                   </tr>
                 ) : rows.length === 0 ? (
-                  <tr>
+                  <tr className="block md:table-row">
                     <td
                       colSpan={4}
-                      style={{
-                        textAlign: "center",
-                        padding: "48px",
-                        color: C.mutedText,
-                        fontSize: "14px",
-                      }}
+                      className="block md:table-cell text-center p-12 text-[14px] text-slate-500"
                     >
                       No se encontraron empresas.
                     </td>
@@ -409,97 +385,112 @@ export function CompaniesScreen() {
                             ? `1px solid ${C.divider}`
                             : "none",
                       }}
-                      className="group hover:bg-[#F9FAFB] transition-colors"
+                      className="group hover:bg-[#F9FAFB] transition-colors flex flex-col md:table-row mb-4 md:mb-0 border md:border-b-0 border-slate-200 md:border-transparent rounded-xl md:rounded-none bg-white md:bg-transparent overflow-hidden shadow-sm md:shadow-none"
                     >
                       {/* Nombre */}
                       <td
+                        className="flex md:table-cell justify-between items-center py-3 px-4 md:py-3.5 md:px-5 text-[14px] border-b border-slate-100 md:border-0"
                         style={{
-                          padding: "14px 20px",
-                          fontSize: "14px",
                           fontWeight: 600,
                           color: C.bodyText,
                         }}
                       >
-                        {company.name}
+                        <span className="md:hidden text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nombre</span>
+                        <div className="text-right md:text-left w-full flex justify-end md:justify-start md:block">
+                          {company.name}
+                        </div>
                       </td>
                       {/* RNC */}
                       <td
+                        className="flex md:table-cell justify-between items-center py-3 px-4 md:py-3.5 md:px-5 text-[14px] border-b border-slate-100 md:border-0"
                         style={{
-                          padding: "14px 20px",
-                          fontSize: "14px",
                           color: C.headText,
                           textAlign: "center",
                           maxWidth: "320px",
                         }}
                       >
-                        <div
-                          style={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {company.rnc ?? (
-                            <em
-                              style={{ color: C.mutedText, fontSize: "13px" }}
-                            >
-                              Sin RNC
-                            </em>
-                          )}
+                        <span className="md:hidden text-[11px] font-bold text-slate-500 uppercase tracking-wider">RNC</span>
+                        <div className="text-right md:text-center w-full flex justify-end md:justify-center md:block">
+                          <div
+                            style={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {company.rnc ?? (
+                              <em
+                                style={{ color: C.mutedText, fontSize: "13px" }}
+                              >
+                                Sin RNC
+                              </em>
+                            )}
+                          </div>
                         </div>
                       </td>
                       {/* Estado */}
-                      <td style={{ padding: "14px 20px", textAlign: "center" }}>
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "4px 12px",
-                            borderRadius: "9999px",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            border: `1px solid ${company.isActive ? C.greenBorder : C.grayBorder}`,
-                            backgroundColor: company.isActive
-                              ? C.greenBg
-                              : C.grayBg,
-                            color: company.isActive ? C.greenText : C.grayText,
-                          }}
-                        >
-                          {company.isActive ? (
-                            <>
-                              <Check
-                                style={{
-                                  width: "11px",
-                                  height: "11px",
-                                  strokeWidth: 3,
-                                }}
-                              />
-                              Activo
-                            </>
-                          ) : (
-                            <>
-                              <X
-                                style={{
-                                  width: "11px",
-                                  height: "11px",
-                                  strokeWidth: 3,
-                                }}
-                              />
-                              Inactivo
-                            </>
-                          )}
-                        </span>
+                      <td 
+                        className="flex md:table-cell justify-between items-center py-3 px-4 md:py-3.5 md:px-5 text-[14px] border-b border-slate-100 md:border-0"
+                        style={{ textAlign: "center" }}
+                      >
+                        <span className="md:hidden text-[11px] font-bold text-slate-500 uppercase tracking-wider">Estado</span>
+                        <div className="text-right md:text-center w-full flex justify-end md:justify-center md:block">
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              padding: "4px 12px",
+                              borderRadius: "9999px",
+                              fontSize: "12px",
+                              fontWeight: 500,
+                              border: `1px solid ${company.isActive ? C.greenBorder : C.grayBorder}`,
+                              backgroundColor: company.isActive
+                                ? C.greenBg
+                                : C.grayBg,
+                              color: company.isActive ? C.greenText : C.grayText,
+                            }}
+                          >
+                            {company.isActive ? (
+                              <>
+                                <Check
+                                  style={{
+                                    width: "11px",
+                                    height: "11px",
+                                    strokeWidth: 3,
+                                  }}
+                                />
+                                Activo
+                              </>
+                            ) : (
+                              <>
+                                <X
+                                  style={{
+                                    width: "11px",
+                                    height: "11px",
+                                    strokeWidth: 3,
+                                  }}
+                                />
+                                Inactivo
+                              </>
+                            )}
+                          </span>
+                        </div>
                       </td>
                       {/* Acciones */}
-                      <td style={{ padding: "14px 20px", textAlign: "center" }}>
+                      <td 
+                        className="flex md:table-cell justify-between items-center py-3 px-4 md:py-3.5 md:px-5 text-[14px]"
+                        style={{ textAlign: "center" }}
+                      >
+                        <span className="md:hidden text-[11px] font-bold text-slate-500 uppercase tracking-wider">Acciones</span>
                         <div
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center",
+                            justifyContent: "flex-end",
                             gap: "4px",
                           }}
+                          className="md:justify-center"
                         >
                           <button
                             onClick={() => openEditModal(company)}
@@ -549,17 +540,7 @@ export function CompaniesScreen() {
           </div>
 
           {/* Footer de paginacion */}
-          <div
-            style={{
-              padding: "14px 24px",
-              borderTop: `1px solid ${C.divider}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "12px",
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 border-t border-slate-200">
             {/*Apartado de filas por página*/}
             <div
               style={{
