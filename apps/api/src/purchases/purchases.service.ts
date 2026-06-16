@@ -134,10 +134,10 @@ export class PurchasesService {
       take: query.take ?? DEFAULT_TAKE,
       ...(query.branchId && { branchId: query.branchId }),
       ...(query.supplierId && { supplierId: query.supplierId }),
+      // El cliente envía instantes ISO completos (inicio/fin del día en su zona
+      // horaria), por lo que se usan tal cual para comparar contra createdAt.
       ...(query.dateFrom && { dateFrom: query.dateFrom }),
-      // El cliente envía solo la fecha (YYYY-MM-DD); el "hasta" debe incluir
-      // todo el día seleccionado.
-      ...(query.dateTo && { dateTo: `${query.dateTo}T23:59:59.999Z` }),
+      ...(query.dateTo && { dateTo: query.dateTo }),
     };
   }
 }
