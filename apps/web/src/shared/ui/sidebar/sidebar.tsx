@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { useAuth } from "@/modules/auth";
+import { getUserInitials } from "@/modules/profile/utils/profile-formatters";
 
 const navItems = [
   { section: "General" },
@@ -77,13 +78,13 @@ export function Sidebar() {
 
       {/* Bottom */}
       <div className="sidebar-bottom">
-        <div className="user-card">
-          <div className="avatar">AD</div>
+        <Link href="/profile" className="user-card">
+          <div className="avatar">{user ? getUserInitials(user) : "?"}</div>
           <div>
             <p className="user-name">{fullName}</p>
             <p className="user-role">{user?.role ? user.role.name : "Rol"}</p>
           </div>
-        </div>
+        </Link>
         <button className="logout-btn" onClick={() => logout()}>
           <LogOut size={14} />
           <span>Cerrar Sesión</span>
