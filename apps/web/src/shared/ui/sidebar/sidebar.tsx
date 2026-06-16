@@ -22,6 +22,8 @@ import { useAuth } from "@/modules/auth";
 const navItems = [
   { section: "General" },
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { section: "Operación" },
+  { label: "Cajas", icon: LayoutDashboard, href: "/cajas" },
   { section: "Catálogo" },
   { label: "Productos", icon: Box, href: "/products" },
   { label: "Clientes", icon: Users, href: "/customers" },
@@ -31,8 +33,6 @@ const navItems = [
   { label: "Movimientos", icon: History, href: "/inventory-movements" },
   { label: "Compras", icon: ReceiptText, href: "/purchase-history" },
   { label: "Descuentos", icon: Percent, href: "/discounts" },
-  { section: "Operación" },
-  { label: "Cajas", icon: LayoutDashboard, href: "/cajas" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
   { label: "Proveedores", icon: Truck, href: "/suppliers" },
