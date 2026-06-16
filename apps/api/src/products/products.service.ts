@@ -58,6 +58,20 @@ export class ProductsService {
     return mapProduct(product);
   }
 
+  async assertAllExistInCompany(productIds: string[], companyId: string) {
+    const count = await this.productsRepository.countByIdsInCompany(
+      productIds,
+      companyId,
+    );
+
+    if (count !== productIds.length) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'Uno o más productos no existen en esta empresa',
+      );
+    }
+  }
+
   async create(companyId: string, dto: CreateProductDto) {
     if (dto.categoryIds?.length) {
       await this.categoriesService.assertAllExistInCompany(

@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import { apiFetch } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 import { getErrorMessage } from "@/lib/api/errors";
 
 import type { BranchListItem, MyCompanyListItem } from "../types/branch.types";
@@ -47,7 +48,7 @@ export function BranchesScreen() {
   const cargarBranches = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const data = await apiFetch<BranchListItem[]>("/branches", {
+      const data = await apiFetch<BranchListItem[]>(ENDPOINTS.branches.root, {
         signal,
       });
       setBranches(Array.isArray(data) ? data : []);
@@ -72,7 +73,7 @@ export function BranchesScreen() {
   // Fetch del nombre de la empresa (solo para el breadcrumb)
   const cargarCompanyName = async (signal?: AbortSignal) => {
     try {
-      const company = await apiFetch<MyCompanyListItem>("/me/company", {
+      const company = await apiFetch<MyCompanyListItem>(ENDPOINTS.me.company, {
         signal,
       });
       if (company.slug === companySlug) {
@@ -98,7 +99,7 @@ export function BranchesScreen() {
   // Borrado lógico
   const borradoLogico = async (id: string) => {
     try {
-      await apiFetch<{ message: string }>(`/branches/${id}`, {
+      await apiFetch<{ message: string }>(ENDPOINTS.branches.byId(id), {
         method: "DELETE",
       });
 
@@ -122,8 +123,8 @@ export function BranchesScreen() {
     e.preventDefault();
 
     const endpoint = editingBranch
-      ? `/branches/${editingBranch.id}`
-      : "/branches";
+      ? ENDPOINTS.branches.byId(editingBranch.id)
+      : ENDPOINTS.branches.root;
 
     const method = editingBranch ? "PATCH" : "POST";
 

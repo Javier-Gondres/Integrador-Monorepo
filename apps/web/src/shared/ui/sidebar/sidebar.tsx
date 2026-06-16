@@ -9,6 +9,7 @@ import {
   PackageSearch,
   ReceiptText,
   ShelvingUnit,
+  Percent,
   Tag,
   Truck,
   Users,
@@ -16,16 +17,22 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useAuth } from "@/modules/auth";
+
 const navItems = [
   { section: "General" },
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { section: "Catálogo" },
   { label: "Productos", icon: Box, href: "/products" },
+  { label: "Clientes", icon: Users, href: "/customers" },
   { label: "Categorías", icon: Tag, href: "/categories" },
   { section: "Inventarios" },
   { label: "Stock", icon: ShelvingUnit, href: "/inventories" },
   { label: "Movimientos", icon: History, href: "/inventory-movements" },
   { label: "Compras", icon: ReceiptText, href: "/purchase-history" },
+  { label: "Descuentos", icon: Percent, href: "/discounts" },
+  { section: "Operación" },
+  { label: "Cajas", icon: LayoutDashboard, href: "/cajas" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
   { label: "Proveedores", icon: Truck, href: "/suppliers" },
@@ -38,7 +45,9 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { logout, user } = useAuth();
 
+  const fullName = user ? `${user.firstName} ${user.lastName}` : "Usuario";
   return (
     <aside className="sidebar">
       {/* Logo */}
@@ -84,11 +93,11 @@ export function Sidebar() {
         <div className="user-card">
           <div className="avatar">AD</div>
           <div>
-            <p className="user-name">Admin User</p>
-            <p className="user-role">Administrador</p>
+            <p className="user-name">{fullName}</p>
+            <p className="user-role">{user?.role ? user.role.name : "Rol"}</p>
           </div>
         </div>
-        <button className="logout-btn">
+        <button className="logout-btn" onClick={() => logout()}>
           <LogOut size={14} />
           <span>Cerrar Sesión</span>
         </button>

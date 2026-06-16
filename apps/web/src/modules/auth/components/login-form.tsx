@@ -21,12 +21,16 @@ export function LoginForm({
   const {
     register,
     handleSubmit,
+    clearErrors,
     formState: { errors },
   } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues,
+    mode: "onTouched",
+    reValidateMode: "onChange",
   });
 
+  const isDisabled = isSubmitting || Object.keys(errors).length > 0;
   return (
     <div className="w-full text-black space-y-2 p-6">
       <h1 className="text-3xl font-semibold text-center">Iniciar Sesión</h1>
@@ -42,37 +46,36 @@ export function LoginForm({
           label="Email"
           type="email"
           placeholder="prueba@ejemplo.com"
+          required
           error={errors.email?.message}
-          {...register("email")}
+          {...register("email", {
+            onChange: () => clearErrors("email"),
+          })}
         />
 
         <Input
           label="Contraseña"
           type="password"
           placeholder="su contraseña"
+          required
           error={errors.password?.message}
-          {...register("password")}
+          {...register("password", {
+            onChange: () => clearErrors("password"),
+          })}
         />
 
-        <div className="flex justify-between max-sm:gap-3 pt-2">
-          <div className="flex gap-2 items-center">
-            <input type="checkbox" id="remember_ps" />
-            <label htmlFor="remember_ps" className="text-sm">
-              Recordarme
-            </label>
-          </div>
-
-          <a href="#" className="text-sm hover:underline text-end">
+        <div className="flex justify-center max-sm:gap-3 pt-2">
+          <a href="#" className="text-sm hover:underline text-center">
             Contraseña olvidada?
           </a>
         </div>
 
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isDisabled}
           style={{ width: "100%", marginTop: "24px" }}
         >
-          Acceder
+          {isSubmitting ? "Iniciando sesión..." : "Acceder"}
         </Button>
       </form>
     </div>

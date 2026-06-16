@@ -1,5 +1,7 @@
-import { LoginScreen } from "@/modules/auth/screens/login-screen";
+import { redirect } from "next/navigation";
+
+import { AUTH_ROUTES } from "@/modules/auth/constants";
 
 export default function LoginPage() {
-  return <LoginScreen />;
+  redirect(AUTH_ROUTES.login);
 }

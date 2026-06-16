@@ -1,4 +1,6 @@
-import { AuthProvider } from "@/modules/auth";
+"use client";
+
+import { AuthProvider } from "@/modules/auth/components/auth-provider";
 
 import { QueryProvider } from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
