@@ -39,4 +39,5 @@ export interface DataTableToolbarProps {
   refreshing?: boolean;
   createLabel: string;
   onCreate: () => void;
+  actions?: React.ReactNode; // Botones o acciones adicionales mostradas antes del botón principal
 }

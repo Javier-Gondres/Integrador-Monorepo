@@ -13,6 +13,7 @@ export function DataTableToolbar({
   refreshing = false,
   createLabel,
   onCreate,
+  actions,
 }: DataTableToolbarProps) {
   return (
     <div
@@ -35,6 +36,9 @@ export function DataTableToolbar({
             className={refreshing ? "animate-spin" : ""}
           />
         </Button>
+
+        {actions}
+
         <Button variant="primary" onClick={onCreate}>
           <Plus style={{ width: "16px", height: "16px" }} />
           {createLabel}
