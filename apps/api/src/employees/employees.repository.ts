@@ -159,6 +159,16 @@ export class EmployeesRepository {
     });
   }
 
+  findIdByUserId(
+    userId: string,
+    companyId: string,
+  ): Promise<{ id: string } | null> {
+    return prisma.employee.findFirst({
+      where: { userId, companyId },
+      select: { id: true },
+    });
+  }
+
   private buildListWhere(
     companyId: string,
     query: NormalizedQueryEmployees,
