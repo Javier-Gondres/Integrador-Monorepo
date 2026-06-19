@@ -1,4 +1,4 @@
-import { InventoryMovementType } from '@repo/db';
+import { InventoryAdjustmentReason, InventoryMovementType } from '@repo/db';
 import { Type } from 'class-transformer';
 import {
   IsDateString,
@@ -39,6 +39,12 @@ export class QueryInventoryMovementDto {
   type?: InventoryMovementType;
 
   @IsOptional()
+  @IsEnum(InventoryAdjustmentReason, {
+    message: 'adjustmentReason no es una razón de ajuste válida',
+  })
+  adjustmentReason?: InventoryAdjustmentReason;
+
+  @IsOptional()
   @IsDateString({}, { message: 'dateFrom debe ser una fecha válida' })
   dateFrom?: string;
 
@@ -52,6 +58,7 @@ export type NormalizedQueryInventoryMovement = {
   take: number;
   search?: string;
   type?: InventoryMovementType;
+  adjustmentReason?: InventoryAdjustmentReason;
   dateFrom?: string;
   dateTo?: string;
 };
