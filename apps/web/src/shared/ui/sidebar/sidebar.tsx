@@ -2,6 +2,7 @@
 
 import {
   Box,
+  ClipboardEdit,
   Grid2x2,
   History,
   LayoutDashboard,
@@ -32,6 +33,11 @@ const navItems = [
   { section: "Inventarios" },
   { label: "Stock", icon: ShelvingUnit, href: "/inventories" },
   { label: "Movimientos", icon: History, href: "/inventory-movements" },
+  {
+    label: "Ajustes",
+    icon: ClipboardEdit,
+    href: "/inventory-adjustments",
+  },
   { label: "Compras", icon: ReceiptText, href: "/purchase-history" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
