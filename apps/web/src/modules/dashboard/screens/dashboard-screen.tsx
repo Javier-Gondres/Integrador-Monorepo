@@ -72,6 +72,13 @@ const availableModules = [
     icon: ReceiptText,
     tone: "red",
   },
+  {
+    title: "Ajustes de inventario",
+    description: "corrige los numeros de los inventarios según los conteos",
+    href: "/inventory-adjustments",
+    icon: ReceiptText,
+    tone: "red",
+  },
 ];
 
 export function DashboardScreen() {
