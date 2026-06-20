@@ -1,18 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { InventoryMovementType } from '@repo/db';
-import { BranchRepository } from 'src/branch/branch.repository';
-import type { CompanyContext } from 'src/common/company';
-import { BusinessException, ErrorCodes, InventoryException } from 'src/common/errors';
-import { normalizeAdjustmentReason } from 'src/common/inventory/normalize-adjustment-reason';
-import { EmployeesService } from 'src/employees/employees.service';
-import { ProductsRepository } from 'src/products/products.repository';
+import { Injectable } from "@nestjs/common";
+import { InventoryMovementType } from "@repo/db";
+import { BranchRepository } from "src/branch/branch.repository";
+import type { CompanyContext } from "src/common/company";
+import {
+  BusinessException,
+  ErrorCodes,
+  InventoryException,
+} from "src/common/errors";
+import { normalizeAdjustmentReason } from "src/common/inventory/normalize-adjustment-reason";
+import { EmployeesService } from "src/employees/employees.service";
+import { ProductsRepository } from "src/products/products.repository";
 
-import { CreateInventoryAdjustmentDto } from './dto/create-inventory-adjustment.dto';
+import { CreateInventoryAdjustmentDto } from "./dto/create-inventory-adjustment.dto";
 import {
   NormalizedQueryInventoryMovement,
   QueryInventoryMovementDto,
-} from './dto/query-inventory-movement.dto';
-import { InventoryMovementRepository } from './inventory-movement.repository';
+} from "./dto/query-inventory-movement.dto";
+import { InventoryMovementRepository } from "./inventory-movement.repository";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -34,7 +38,7 @@ export class InventoryMovementService {
     if (!branchId) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        'No hay una sucursal seleccionada',
+        "No hay una sucursal seleccionada",
       );
     }
 
@@ -62,19 +66,20 @@ export class InventoryMovementService {
     userId: string,
     dto: CreateInventoryAdjustmentDto,
   ) {
-    const [branch, product, employee] = await Promise.all([
+    //como el usuario de prueba no esta asociado a un empleado se comenta temporalmente la busqueda de empleado
+    const [branch, product /* , employee */] = await Promise.all([
       this.branchRepository.findByIdInCompany(dto.branchId, company.companyId),
       this.productsRepository.findByIdInCompany(
         dto.productId,
         company.companyId,
       ),
-      this.employeesService.findIdByUserId(userId, company.companyId),
+      // this.employeesService.findIdByUserId(userId, company.companyId),
     ]);
 
     if (!branch) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        'La sucursal no existe',
+        "La sucursal no existe",
       );
     }
     if (!product) {
@@ -92,7 +97,7 @@ export class InventoryMovementService {
       quantity: dto.quantity,
       adjustmentReason: adjustmentReason!,
       notes: dto.notes?.trim() || null,
-      performedByEmployeeId: employee.id,
+      performedByEmployeeId: undefined /* employee.id */,
     });
   }
 
