@@ -1,22 +1,22 @@
-import { Injectable } from "@nestjs/common";
-import { InventoryMovementType } from "@repo/db";
-import { BranchRepository } from "src/branch/branch.repository";
-import type { CompanyContext } from "src/common/company";
+import { Injectable } from '@nestjs/common';
+import { InventoryMovementType } from '@repo/db';
+import { BranchRepository } from 'src/branch/branch.repository';
+import type { CompanyContext } from 'src/common/company';
 import {
   BusinessException,
   ErrorCodes,
   InventoryException,
-} from "src/common/errors";
-import { normalizeAdjustmentReason } from "src/common/inventory/normalize-adjustment-reason";
-import { EmployeesService } from "src/employees/employees.service";
-import { ProductsRepository } from "src/products/products.repository";
+} from 'src/common/errors';
+import { normalizeAdjustmentReason } from 'src/common/inventory/normalize-adjustment-reason';
+import { EmployeesService } from 'src/employees/employees.service';
+import { ProductsRepository } from 'src/products/products.repository';
 
-import { CreateInventoryAdjustmentDto } from "./dto/create-inventory-adjustment.dto";
+import { CreateInventoryAdjustmentDto } from './dto/create-inventory-adjustment.dto';
 import {
   NormalizedQueryInventoryMovement,
   QueryInventoryMovementDto,
-} from "./dto/query-inventory-movement.dto";
-import { InventoryMovementRepository } from "./inventory-movement.repository";
+} from './dto/query-inventory-movement.dto';
+import { InventoryMovementRepository } from './inventory-movement.repository';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -38,7 +38,7 @@ export class InventoryMovementService {
     if (!branchId) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "No hay una sucursal seleccionada",
+        'No hay una sucursal seleccionada',
       );
     }
 
@@ -79,7 +79,7 @@ export class InventoryMovementService {
     if (!branch) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        "La sucursal no existe",
+        'La sucursal no existe',
       );
     }
     if (!product) {

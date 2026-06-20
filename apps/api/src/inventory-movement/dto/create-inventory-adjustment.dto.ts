@@ -24,10 +24,7 @@ export class CreateInventoryAdjustmentDto {
   productId!: string;
 
   @Type(() => Number)
-  @IsNumber(
-    { maxDecimalPlaces: 3 },
-    { message: 'quantity debe ser un número' },
-  )
+  @IsNumber({ maxDecimalPlaces: 3 }, { message: 'quantity debe ser un número' })
   @NotEquals(0, { message: 'quantity no puede ser 0' })
   quantity!: number;
 
