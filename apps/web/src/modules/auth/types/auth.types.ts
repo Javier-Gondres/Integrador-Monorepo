@@ -1,3 +1,5 @@
+import type { PermissionCode } from "@repo/shared";
+
 export type { AuthSession, AuthUser, Permission, Role } from "@/types/auth";
 
 export interface LoginCredentials {
@@ -17,7 +19,7 @@ export interface SessionResponse {
   companyId: string | null;
   branchId: string | null;
   role: string | null;
-  permissions: string[];
+  permissions: PermissionCode[];
 }
 
 /** Respuesta de GET /auth/profile — perfil básico global, sin contexto de empresa. */

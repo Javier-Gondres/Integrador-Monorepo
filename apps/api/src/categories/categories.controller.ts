@@ -1,3 +1,4 @@
+import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -21,31 +22,31 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @RequirePermissions('categories.read')
+  @RequirePermissions(Permission.CATEGORIES_READ)
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryCategoriesDto) {
     return this.categoriesService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequirePermissions('categories.read')
+  @RequirePermissions(Permission.CATEGORIES_READ)
   @Get('all')
   findAllActive(@CompanyId() companyId: string) {
     return this.categoriesService.findAllByCompany(companyId);
   }
 
-  @RequirePermissions('categories.read')
+  @RequirePermissions(Permission.CATEGORIES_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.categoriesService.findByIdInCompany(id, companyId);
   }
 
-  @RequirePermissions('categories.create')
+  @RequirePermissions(Permission.CATEGORIES_CREATE)
   @Post()
   create(@Body() dto: CreateCategoryDto, @CompanyId() companyId: string) {
     return this.categoriesService.create(companyId, dto);
   }
 
-  @RequirePermissions('categories.update')
+  @RequirePermissions(Permission.CATEGORIES_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -55,19 +56,19 @@ export class CategoriesController {
     return this.categoriesService.update(id, companyId, dto);
   }
 
-  @RequirePermissions('categories.update')
+  @RequirePermissions(Permission.CATEGORIES_UPDATE)
   @Patch(':id/activate')
   activate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.categoriesService.activate(id, companyId);
   }
 
-  @RequirePermissions('categories.update')
+  @RequirePermissions(Permission.CATEGORIES_UPDATE)
   @Patch(':id/deactivate')
   deactivate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.categoriesService.deactivate(id, companyId);
   }
 
-  @RequirePermissions('categories.delete')
+  @RequirePermissions(Permission.CATEGORIES_DELETE)
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.categoriesService.remove(id, companyId);

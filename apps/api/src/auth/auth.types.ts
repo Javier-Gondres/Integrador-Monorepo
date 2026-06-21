@@ -1,4 +1,5 @@
 import { RoleName } from '@repo/db';
+import type { PermissionCode } from '@repo/shared';
 
 export type AccessTokenPayload = {
   sub: string;
@@ -6,7 +7,7 @@ export type AccessTokenPayload = {
   companyId: string | null;
   branchId: string | null;
   role: RoleName | null;
-  permissions: string[];
+  permissions: PermissionCode[];
   isSuperAdmin: boolean;
 };
 
@@ -26,7 +27,7 @@ export type AuthContext = {
   companyId: string | null;
   branchId: string | null;
   role: RoleName | null;
-  permissions: string[];
+  permissions: PermissionCode[];
   isSuperAdmin: boolean;
 };
 
@@ -46,7 +47,7 @@ export type UserAuthContext = {
   membership: {
     companyId: string;
     defaultBranchId: string | null;
-    role: { name: RoleName; permissions: string[] };
+    role: { name: RoleName; permissions: PermissionCode[] };
   } | null;
 };
 

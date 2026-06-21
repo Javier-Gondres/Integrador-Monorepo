@@ -1,3 +1,5 @@
+import type { PermissionCode } from "@repo/shared";
+
 import { useAuthStore } from "../store/auth-store";
 
 /**
@@ -16,8 +18,8 @@ import { useAuthStore } from "../store/auth-store";
  * @example
  * const { can, isSuperAdmin } = usePermissions();
  *
- * if (can("products.create")) { ... }     // permisos RBAC empresarial
- * if (isSuperAdmin) { ... }               // administración de plataforma
+ * if (can(Permission.PRODUCTS_CREATE)) { ... }  // permisos RBAC empresarial
+ * if (isSuperAdmin) { ... }                     // administración de plataforma
  */
 export function usePermissions() {
   const user = useAuthStore((s) => s.user);
@@ -26,17 +28,17 @@ export function usePermissions() {
   const permissions = user?.permissions ?? [];
 
   /** Devuelve true si el usuario tiene el permiso especificado. */
-  function can(permission: string): boolean {
+  function can(permission: PermissionCode): boolean {
     return permissions.includes(permission);
   }
 
   /** Devuelve true si el usuario tiene TODOS los permisos especificados. */
-  function canAll(...perms: string[]): boolean {
+  function canAll(...perms: PermissionCode[]): boolean {
     return perms.every((p) => permissions.includes(p));
   }
 
   /** Devuelve true si el usuario tiene AL MENOS UNO de los permisos especificados. */
-  function canAny(...perms: string[]): boolean {
+  function canAny(...perms: PermissionCode[]): boolean {
     return perms.some((p) => permissions.includes(p));
   }
 

@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { Permission } from '@repo/shared';
 import { CompanyId } from 'src/common/company';
 import { RequirePermissions } from 'src/common/permissions';
 
@@ -18,25 +19,25 @@ import { UpdateBranchDto } from './dto/update-branch.dto';
 export class BranchController {
   constructor(private readonly branchService: BranchService) {}
 
-  @RequirePermissions('branches.read')
+  @RequirePermissions(Permission.BRANCHES_READ)
   @Get()
   findAll(@CompanyId() companyId: string) {
     return this.branchService.findAllByCompany(companyId);
   }
 
-  @RequirePermissions('branches.read')
+  @RequirePermissions(Permission.BRANCHES_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.branchService.findByIdInCompany(id, companyId);
   }
 
-  @RequirePermissions('branches.create')
+  @RequirePermissions(Permission.BRANCHES_CREATE)
   @Post()
   create(@Body() dto: CreateBranchDto, @CompanyId() companyId: string) {
     return this.branchService.create(companyId, dto);
   }
 
-  @RequirePermissions('branches.update')
+  @RequirePermissions(Permission.BRANCHES_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -46,19 +47,19 @@ export class BranchController {
     return this.branchService.update(id, companyId, dto);
   }
 
-  @RequirePermissions('branches.update')
+  @RequirePermissions(Permission.BRANCHES_UPDATE)
   @Patch(':id/activate')
   activate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.branchService.activate(id, companyId);
   }
 
-  @RequirePermissions('branches.update')
+  @RequirePermissions(Permission.BRANCHES_UPDATE)
   @Patch(':id/deactivate')
   deactivate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.branchService.deactivate(id, companyId);
   }
 
-  @RequirePermissions('branches.delete')
+  @RequirePermissions(Permission.BRANCHES_DELETE)
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.branchService.remove(id, companyId);

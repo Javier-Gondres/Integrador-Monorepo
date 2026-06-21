@@ -1,3 +1,4 @@
+import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -23,19 +24,19 @@ import { EmployeesService } from './employees.service';
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
-  @RequirePermissions('employees.read')
+  @RequirePermissions(Permission.EMPLOYEES_READ)
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryEmployeesDto) {
     return this.employeesService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequirePermissions('employees.read')
+  @RequirePermissions(Permission.EMPLOYEES_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.employeesService.findByIdInCompany(id, companyId);
   }
 
-  @RequirePermissions('employees.create')
+  @RequirePermissions(Permission.EMPLOYEES_CREATE)
   @Post()
   create(
     @Body() dto: CreateEmployeeDto,
@@ -45,13 +46,13 @@ export class EmployeesController {
     return this.employeesService.create(companyId, dto, auth.role);
   }
 
-  @RequirePermissions('employees.update')
+  @RequirePermissions(Permission.EMPLOYEES_UPDATE)
   @Patch(':id/restore')
   restore(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.employeesService.restore(id, companyId);
   }
 
-  @RequirePermissions('employees.update')
+  @RequirePermissions(Permission.EMPLOYEES_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -61,7 +62,7 @@ export class EmployeesController {
     return this.employeesService.update(id, companyId, dto);
   }
 
-  @RequirePermissions('employees.delete')
+  @RequirePermissions(Permission.EMPLOYEES_DELETE)
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.employeesService.remove(id, companyId);

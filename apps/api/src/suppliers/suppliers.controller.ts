@@ -1,3 +1,4 @@
+import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -21,31 +22,31 @@ import { SuppliersService } from './suppliers.service';
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
-  @RequirePermissions('suppliers.read')
+  @RequirePermissions(Permission.SUPPLIERS_READ)
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QuerySuppliersDto) {
     return this.suppliersService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequirePermissions('suppliers.read')
+  @RequirePermissions(Permission.SUPPLIERS_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.suppliersService.findByIdInCompany(id, companyId);
   }
 
-  @RequirePermissions('suppliers.create')
+  @RequirePermissions(Permission.SUPPLIERS_CREATE)
   @Post()
   create(@Body() dto: CreateSupplierDto, @CompanyId() companyId: string) {
     return this.suppliersService.create(companyId, dto);
   }
 
-  @RequirePermissions('suppliers.update')
+  @RequirePermissions(Permission.SUPPLIERS_UPDATE)
   @Patch(':id/restore')
   restore(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.suppliersService.restore(id, companyId);
   }
 
-  @RequirePermissions('suppliers.update')
+  @RequirePermissions(Permission.SUPPLIERS_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -55,7 +56,7 @@ export class SuppliersController {
     return this.suppliersService.update(id, companyId, dto);
   }
 
-  @RequirePermissions('suppliers.delete')
+  @RequirePermissions(Permission.SUPPLIERS_DELETE)
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.suppliersService.remove(id, companyId);

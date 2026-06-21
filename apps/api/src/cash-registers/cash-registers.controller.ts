@@ -1,3 +1,4 @@
+import { Permission } from '@repo/shared';
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { AuthContext } from 'src/auth/auth.types';
 import { Auth } from 'src/auth/decorators/auth.decorator';
@@ -31,7 +32,7 @@ export class CashRegistersController {
     );
   }
 
-  @RequirePermissions('cash.read')
+  @RequirePermissions(Permission.CASH_READ)
   @Get()
   async findAll(
     @Company() company: CompanyContext,
@@ -41,7 +42,7 @@ export class CashRegistersController {
     return this.cashRegistersService.findAllByBranch(branchId);
   }
 
-  @RequirePermissions('cash.manage')
+  @RequirePermissions(Permission.CASH_MANAGE)
   @Post()
   async create(
     @Company() company: CompanyContext,
@@ -51,7 +52,7 @@ export class CashRegistersController {
     return this.cashRegistersService.create(branchId, dto.name);
   }
 
-  @RequirePermissions('cash.open')
+  @RequirePermissions(Permission.CASH_OPEN)
   @Post(':id/open-shift')
   async openShift(
     @Param('id') id: string,
@@ -69,7 +70,7 @@ export class CashRegistersController {
     );
   }
 
-  @RequirePermissions('cash.close')
+  @RequirePermissions(Permission.CASH_CLOSE)
   @Post(':id/close-shift/:shiftId')
   async closeShift(
     @Param('id') id: string,
@@ -81,7 +82,7 @@ export class CashRegistersController {
     return this.cashRegistersService.closeShift(id, branchId, shiftId, dto);
   }
 
-  @RequirePermissions('cash.read')
+  @RequirePermissions(Permission.CASH_READ)
   @Get(':id/shifts')
   async getShiftsHistory(
     @Param('id') id: string,

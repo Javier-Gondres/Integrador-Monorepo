@@ -1,3 +1,4 @@
+import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -21,19 +22,19 @@ import { UpdateDiscountDto } from './dto/update-discount.dto';
 export class DiscountsController {
   constructor(private readonly discountsService: DiscountsService) {}
 
-  @RequirePermissions('discounts.read')
+  @RequirePermissions(Permission.DISCOUNTS_READ)
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryDiscountsDto) {
     return this.discountsService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequirePermissions('discounts.read')
+  @RequirePermissions(Permission.DISCOUNTS_READ)
   @Get('current')
   findCurrent(@CompanyId() companyId: string) {
     return this.discountsService.findCurrentByCompany(companyId);
   }
 
-  @RequirePermissions('discounts.read')
+  @RequirePermissions(Permission.DISCOUNTS_READ)
   @Get('applicable/:productId')
   findApplicableToProduct(
     @Param('productId') productId: string,
@@ -42,19 +43,19 @@ export class DiscountsController {
     return this.discountsService.findApplicableToProduct(productId, companyId);
   }
 
-  @RequirePermissions('discounts.read')
+  @RequirePermissions(Permission.DISCOUNTS_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.discountsService.findByIdInCompany(id, companyId);
   }
 
-  @RequirePermissions('discounts.create')
+  @RequirePermissions(Permission.DISCOUNTS_CREATE)
   @Post()
   create(@Body() dto: CreateDiscountDto, @CompanyId() companyId: string) {
     return this.discountsService.create(companyId, dto);
   }
 
-  @RequirePermissions('discounts.update')
+  @RequirePermissions(Permission.DISCOUNTS_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -64,19 +65,19 @@ export class DiscountsController {
     return this.discountsService.update(id, companyId, dto);
   }
 
-  @RequirePermissions('discounts.update')
+  @RequirePermissions(Permission.DISCOUNTS_UPDATE)
   @Patch(':id/activate')
   activate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.discountsService.activate(id, companyId);
   }
 
-  @RequirePermissions('discounts.update')
+  @RequirePermissions(Permission.DISCOUNTS_UPDATE)
   @Patch(':id/deactivate')
   deactivate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.discountsService.deactivate(id, companyId);
   }
 
-  @RequirePermissions('discounts.delete')
+  @RequirePermissions(Permission.DISCOUNTS_DELETE)
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.discountsService.remove(id, companyId);

@@ -1,3 +1,4 @@
+import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -22,25 +23,25 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @RequirePermissions('users.read')
+  @RequirePermissions(Permission.USERS_READ)
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryUsersDto) {
     return this.usersService.findAllByCompany(companyId, query);
   }
 
-  @RequirePermissions('users.read')
+  @RequirePermissions(Permission.USERS_READ)
   @Get('roles')
   listRoles(@Auth() auth: AuthContext) {
     return this.usersService.listRoles(auth.role);
   }
 
-  @RequirePermissions('users.read')
+  @RequirePermissions(Permission.USERS_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.usersService.findByIdInCompany(id, companyId);
   }
 
-  @RequirePermissions('users.create')
+  @RequirePermissions(Permission.USERS_CREATE)
   @Post()
   create(
     @Body() createUserDto: CreateUserDto,
@@ -50,7 +51,7 @@ export class UsersController {
     return this.usersService.create(companyId, createUserDto, auth.role);
   }
 
-  @RequirePermissions('users.activate')
+  @RequirePermissions(Permission.USERS_ACTIVATE)
   @Patch(':id/activate')
   activate(
     @Param('id') id: string,
@@ -60,7 +61,7 @@ export class UsersController {
     return this.usersService.activateUser(id, companyId, auth.role);
   }
 
-  @RequirePermissions('users.deactivate')
+  @RequirePermissions(Permission.USERS_DEACTIVATE)
   @Patch(':id/deactivate')
   deactivate(
     @Param('id') id: string,
@@ -75,7 +76,7 @@ export class UsersController {
     );
   }
 
-  @RequirePermissions('users.update')
+  @RequirePermissions(Permission.USERS_UPDATE)
   @Patch(':id/restore')
   restore(
     @Param('id') id: string,
@@ -85,7 +86,7 @@ export class UsersController {
     return this.usersService.restoreUser(id, companyId, auth.role);
   }
 
-  @RequirePermissions('users.update')
+  @RequirePermissions(Permission.USERS_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -101,7 +102,7 @@ export class UsersController {
     );
   }
 
-  @RequirePermissions('users.delete')
+  @RequirePermissions(Permission.USERS_DELETE)
   @Delete(':id')
   remove(
     @Param('id') id: string,

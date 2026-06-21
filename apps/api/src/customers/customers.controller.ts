@@ -1,3 +1,4 @@
+import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -22,13 +23,13 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
-  @RequirePermissions('customers.read')
+  @RequirePermissions(Permission.CUSTOMERS_READ)
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryCustomersDto) {
     return this.customersService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequirePermissions('customers.read')
+  @RequirePermissions(Permission.CUSTOMERS_READ)
   @Get('check-uniqueness')
   checkUniqueness(
     @CompanyId() companyId: string,
@@ -37,19 +38,19 @@ export class CustomersController {
     return this.customersService.checkUniqueness(companyId, query);
   }
 
-  @RequirePermissions('customers.read')
+  @RequirePermissions(Permission.CUSTOMERS_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.customersService.findByIdInCompany(id, companyId);
   }
 
-  @RequirePermissions('customers.create')
+  @RequirePermissions(Permission.CUSTOMERS_CREATE)
   @Post()
   create(@Body() dto: CreateCustomerDto, @CompanyId() companyId: string) {
     return this.customersService.create(companyId, dto);
   }
 
-  @RequirePermissions('customers.update')
+  @RequirePermissions(Permission.CUSTOMERS_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -59,19 +60,19 @@ export class CustomersController {
     return this.customersService.update(id, companyId, dto);
   }
 
-  @RequirePermissions('customers.update')
+  @RequirePermissions(Permission.CUSTOMERS_UPDATE)
   @Patch(':id/activate')
   activate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.customersService.activate(id, companyId);
   }
 
-  @RequirePermissions('customers.update')
+  @RequirePermissions(Permission.CUSTOMERS_UPDATE)
   @Patch(':id/deactivate')
   deactivate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.customersService.deactivate(id, companyId);
   }
 
-  @RequirePermissions('customers.delete')
+  @RequirePermissions(Permission.CUSTOMERS_DELETE)
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.customersService.remove(id, companyId);

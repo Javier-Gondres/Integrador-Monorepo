@@ -1,4 +1,5 @@
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
+import type { PermissionCode } from '@repo/shared';
 
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { CompanyGuard } from '../../company/guards/company.guard';
@@ -15,7 +16,7 @@ export const PERMISSIONS_KEY = 'permissions';
  * - Catálogo company-wide no depende del estado de la sucursal; ver
  *   `common/tenant-access/tenant-access.policy.ts`.
  */
-export function RequirePermissions(...permissions: string[]) {
+export function RequirePermissions(...permissions: PermissionCode[]) {
   return applyDecorators(
     SetMetadata(PERMISSIONS_KEY, permissions),
     UseGuards(JwtAuthGuard, CompanyGuard, PermissionGuard),

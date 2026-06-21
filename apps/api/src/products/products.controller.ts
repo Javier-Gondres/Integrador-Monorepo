@@ -1,3 +1,4 @@
+import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -21,25 +22,25 @@ import { ProductsService } from './products.service';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @RequirePermissions('products.read')
+  @RequirePermissions(Permission.PRODUCTS_READ)
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryProductsDto) {
     return this.productsService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequirePermissions('products.read')
+  @RequirePermissions(Permission.PRODUCTS_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.productsService.findByIdInCompany(id, companyId);
   }
 
-  @RequirePermissions('products.create')
+  @RequirePermissions(Permission.PRODUCTS_CREATE)
   @Post()
   create(@Body() dto: CreateProductDto, @CompanyId() companyId: string) {
     return this.productsService.create(companyId, dto);
   }
 
-  @RequirePermissions('products.update')
+  @RequirePermissions(Permission.PRODUCTS_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -49,19 +50,19 @@ export class ProductsController {
     return this.productsService.update(id, companyId, dto);
   }
 
-  @RequirePermissions('products.update')
+  @RequirePermissions(Permission.PRODUCTS_UPDATE)
   @Patch(':id/activate')
   activate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.productsService.activate(id, companyId);
   }
 
-  @RequirePermissions('products.update')
+  @RequirePermissions(Permission.PRODUCTS_UPDATE)
   @Patch(':id/deactivate')
   deactivate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.productsService.deactivate(id, companyId);
   }
 
-  @RequirePermissions('products.delete')
+  @RequirePermissions(Permission.PRODUCTS_DELETE)
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.productsService.remove(id, companyId);

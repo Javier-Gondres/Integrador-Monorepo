@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import type { PermissionCode } from '@repo/shared';
 import * as bcrypt from 'bcrypt';
 import { AuthException } from 'src/common/errors';
 
@@ -52,7 +53,7 @@ export class AuthService {
             role: {
               name: membership.role.name,
               permissions: (membership.role.permissions ?? []).map(
-                (rp) => rp.permission.code,
+                (rp) => rp.permission.code as PermissionCode,
               ),
             },
           }
