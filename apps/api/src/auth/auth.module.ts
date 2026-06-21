@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
+import { CompanyStatusRepository } from '../common/company/company-status.repository';
 import { CompanyGuard } from '../common/company/guards/company.guard';
 import { CompanyOwnerOrPlatformAdminGuard } from '../common/company/guards/company-owner-or-platform-admin.guard';
-import { CompanyStatusRepository } from '../common/company/company-status.repository';
 import { PermissionGuard } from '../common/permissions/guards/permission.guard';
 import { PlatformAdminGuard } from '../common/platform/guards/platform-admin.guard';
 import { AuthController } from './auth.controller';

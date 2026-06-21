@@ -1,4 +1,3 @@
-import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -9,6 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Permission } from '@repo/shared';
 import { AuthContext } from 'src/auth/auth.types';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CompanyId } from 'src/common/company';

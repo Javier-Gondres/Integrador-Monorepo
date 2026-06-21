@@ -1,4 +1,3 @@
-import { Permission } from '@repo/shared';
 import {
   Body,
   Controller,
@@ -9,6 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Permission } from '@repo/shared';
 import { CompanyId } from 'src/common/company';
 import { RequirePermissions } from 'src/common/permissions';
 

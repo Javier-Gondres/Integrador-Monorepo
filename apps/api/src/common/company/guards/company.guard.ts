@@ -3,8 +3,8 @@ import { Request } from 'express';
 import { AuthException } from 'src/common/errors';
 
 import type { AuthContext } from '../../../auth/auth.types';
-import { CompanyStatusRepository } from '../company-status.repository';
 import type { CompanyContext } from '../company-context.types';
+import { CompanyStatusRepository } from '../company-status.repository';
 import { assertHasCompanyMembership } from '../helpers/assert-company-access';
 
 function toCompanyContext(auth: AuthContext): CompanyContext {
@@ -48,7 +48,7 @@ export class CompanyGuard implements CanActivate {
     }
 
     const isActive = await this.companyStatusRepository.isCompanyActive(
-      auth.companyId!,
+      auth.companyId,
     );
 
     if (!isActive) {

@@ -66,7 +66,9 @@ export const Permission = {
 
 export type PermissionCode = (typeof Permission)[keyof typeof Permission];
 
-export const ALL_PERMISSION_CODES = Object.values(Permission) as PermissionCode[];
+export const ALL_PERMISSION_CODES = Object.values(
+  Permission,
+) as PermissionCode[];
 
 export type PermissionDefinition = {
   code: PermissionCode;
@@ -75,7 +77,10 @@ export type PermissionDefinition = {
 
 /** Catálogo completo para seed y documentación. */
 export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
-  { code: Permission.USERS_CREATE, description: "Crear usuarios en la empresa" },
+  {
+    code: Permission.USERS_CREATE,
+    description: "Crear usuarios en la empresa",
+  },
   { code: Permission.USERS_READ, description: "Ver usuarios de la empresa" },
   {
     code: Permission.USERS_UPDATE,
@@ -89,7 +94,10 @@ export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
     code: Permission.USERS_DEACTIVATE,
     description: "Desactivar usuarios de la empresa",
   },
-  { code: Permission.USERS_DELETE, description: "Eliminar usuarios de la empresa" },
+  {
+    code: Permission.USERS_DELETE,
+    description: "Eliminar usuarios de la empresa",
+  },
 
   { code: Permission.EMPLOYEES_CREATE, description: "Registrar empleados" },
   { code: Permission.EMPLOYEES_READ, description: "Ver empleados" },

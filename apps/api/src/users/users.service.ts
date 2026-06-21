@@ -15,8 +15,8 @@ import {
   assertCanManageUser,
   getAssignableRoles,
 } from './helpers/assert-assignable-role';
-import { UsersRepository } from './users.repository';
 import type { PublicUserWithMembership } from './users.repository';
+import { UsersRepository } from './users.repository';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;

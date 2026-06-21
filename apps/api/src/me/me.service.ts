@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 
 import { AuthService } from '../auth/auth.service';
 import { AuthContext } from '../auth/auth.types';
-import { BranchAccessService } from '../branch/branch-access.service';
 import {
   type BranchRecord,
   BranchRepository,
 } from '../branch/branch.repository';
+import { BranchAccessService } from '../branch/branch-access.service';
 import { AuthException, BusinessException, ErrorCodes } from '../common/errors';
 import { CompanyRepository } from '../company/company.repository';
 import { ChangePasswordDto } from '../users/dto/change-password.dto';

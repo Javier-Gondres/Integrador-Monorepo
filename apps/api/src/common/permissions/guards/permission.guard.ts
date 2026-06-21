@@ -1,9 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { PermissionCode } from '@repo/shared';
 import { Request } from 'express';
 import { AuthException } from 'src/common/errors';
 
+import type { PermissionCode } from '@repo/shared';
 import type { AuthContext } from '../../../auth/auth.types';
 import { PERMISSIONS_KEY } from '../decorators/require-permissions.decorator';
 

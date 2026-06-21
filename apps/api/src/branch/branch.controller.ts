@@ -7,9 +7,8 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { Permission } from '@repo/shared';
 import { CompanyId } from 'src/common/company';
-import { RequirePermissions } from 'src/common/permissions';
+import { Permission, RequirePermissions } from 'src/common/permissions';
 
 import { BranchService } from './branch.service';
 import { CreateBranchDto } from './dto/create-branch.dto';

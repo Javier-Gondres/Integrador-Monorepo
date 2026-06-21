@@ -439,7 +439,6 @@ async function ensureRoles(): Promise<void> {
   }
 }
 
-
 async function ensurePermissions(): Promise<void> {
   for (const perm of ALL_PERMISSIONS) {
     await prisma.permission.upsert({

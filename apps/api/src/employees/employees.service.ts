@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RoleName } from '@repo/db';
-import { Prisma } from '@repo/db';
+import { Prisma, RoleName } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
 import { BranchAccessService } from '../branch/branch-access.service';
