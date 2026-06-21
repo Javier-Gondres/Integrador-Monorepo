@@ -120,6 +120,13 @@ export class UsersRepository {
     });
   }
 
+  findRoleById(id: string): Promise<RoleListItem | null> {
+    return prisma.role.findUnique({
+      where: { id },
+      select: { id: true, name: true, description: true },
+    });
+  }
+
   findPasswordHashById(userId: string) {
     return prisma.user.findUnique({
       where: { id: userId },
@@ -151,6 +158,32 @@ export class UsersRepository {
         select: { id: true },
       });
       return row !== null;
+    });
+  }
+
+  async findSoftDeletedUserInCompany(
+    userId: string,
+    companyId: string,
+  ): Promise<PublicUserWithMembership | null> {
+    return runWithDeleted(async () => {
+      const user = await prisma.user.findFirst({
+        where: {
+          id: userId,
+          deletedAt: { not: null },
+          memberships: {
+            some: { companyId, deletedAt: { not: null } },
+          },
+        },
+        select: {
+          ...publicUserSelect,
+          memberships: {
+            where: { companyId },
+            select: membershipRelationSelectFull,
+            take: 1,
+          },
+        },
+      });
+      return user ? (withMembership(user) as PublicUserWithMembership) : null;
     });
   }
 

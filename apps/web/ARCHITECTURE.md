@@ -910,40 +910,58 @@ modules/categories/
 
 ## 18. Autenticación y RBAC
 
-### Modelo multiempresa esperado
+### Modelo multiempresa
 
 ```
-Company
- └── Branch
-      └── User
-           └── Role
-                └── Permission
+Company (+ isActive)
+ └── Branch (+ isActive)
+      └── Employee (+ branchId, isActive) → User → Role → Permission[]
 ```
 
-### Módulo auth (scaffold)
+**Capas de acceso (backend):** ver `apps/api/docs/tenant-access.md`.
+
+- **Empresa inactiva** → `CompanyGuard` bloquea tenant (403).
+- **Sucursal inactiva** → `BranchAccessService` bloquea flujos branch-scoped (403).
+- **Catálogo** (`products`, `categories`, etc.) → company-wide; no depende de sucursal activa.
+
+### Módulo auth
 
 ```
 modules/auth/
-├── api/get-session.ts    # GET /auth/me, POST login/logout
-├── hooks/use-auth.ts     # useCurrentUser, useHasPermission
-├── hooks/use-login.ts
-├── schemas/login.schema.ts
+├── api/get-session.ts      # GET /auth/session + /auth/profile
+├── api/switch-branch.ts    # POST /me/switch-branch → nuevo accessToken
+├── hooks/use-auth.ts
+├── hooks/use-permissions.ts
+├── store/auth-store.ts
 └── components/auth-provider.tsx
 ```
 
-Uso futuro de permisos:
+`getSession()` reconstruye el usuario desde JWT + perfil BD.
+
+### Permisos en UI
 
 ```tsx
-const canEdit = useHasPermission("products:update");
+import { usePermissions } from "@/modules/auth";
+import { Can } from "@/shared/ui";
+
+const { can, isSuperAdmin } = usePermissions();
+
+if (can("products.create")) { ... }   // RBAC tenant (desde JWT)
+if (isSuperAdmin) { ... }             // plataforma — NO bypass en can()
 ```
 
-### Scaffolds RBAC
+```tsx
+<Can permission="users.delete">
+  <DeleteUserButton />
+</Can>
+```
 
-- `modules/users/` — tipos + query keys
-- `modules/roles/` — tipos + query keys
-- `modules/permissions/` — tipos + query keys
+**Reglas:**
 
-**No mezclar auth en `shared/`.** Toda autenticación vive en `modules/auth/`.
+- `isSuperAdmin` **no** otorga permisos tenant en `can()` / `<Can>`.
+- El backend (`PermissionGuard`) es la autoridad real; la UI solo oculta controles.
+
+Documentación API: `apps/api/docs/auth-and-utilities.md`.
 
 ---
 
@@ -1019,4 +1037,4 @@ pnpm lint             # ESLint (max-warnings 0)
 
 ---
 
-_Última actualización: refactor arquitectónico con containers, mappers, data-table y scaffolds RBAC._
+_Estructura actual: containers, mappers, data-table, RBAC tenant (`usePermissions`, `<Can>`). Ver §18 y `apps/api/docs/tenant-access.md`._

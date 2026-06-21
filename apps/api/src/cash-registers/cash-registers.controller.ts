@@ -1,9 +1,10 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { AuthContext } from 'src/auth/auth.types';
 import { Auth } from 'src/auth/decorators/auth.decorator';
-import { Company, RequireCompany } from 'src/common/company';
+import { BranchAccessService } from 'src/branch/branch-access.service';
+import { Company } from 'src/common/company';
 import type { CompanyContext } from 'src/common/company/company-context.types';
-import { BusinessException, ErrorCodes } from 'src/common/errors';
+import { RequirePermissions } from 'src/common/permissions';
 
 import { CashRegistersService } from './cash-registers.service';
 import { CloseShiftDto } from './dto/close-shift.dto';
@@ -11,72 +12,83 @@ import { CreateCashRegisterDto } from './dto/create-cash-register.dto';
 import { OpenShiftDto } from './dto/open-shift.dto';
 import { QueryShiftsDto } from './dto/query-shifts.dto';
 
+/** Branch-scoped: valida sucursal activa vía BranchAccessService. Apertura de turno: `employees/policies/employee-branch.policy`. */
 @Controller('cash-registers')
 export class CashRegistersController {
-  constructor(private readonly cashRegistersService: CashRegistersService) {}
+  constructor(
+    private readonly cashRegistersService: CashRegistersService,
+    private readonly branchAccessService: BranchAccessService,
+  ) {}
 
-  private getBranchId(company: CompanyContext): string {
-    if (!company.branchId) {
-      throw new BusinessException(
-        ErrorCodes.UNAUTHORIZED,
-        'Debe seleccionar una sucursal activa',
-      );
-    }
-    return company.branchId;
+  private resolveBranchId(
+    company: CompanyContext,
+    branchId?: string,
+  ): Promise<string> {
+    return this.branchAccessService.resolveBranchId(
+      company.companyId,
+      branchId,
+      company.branchId,
+    );
   }
 
-  @RequireCompany()
+  @RequirePermissions('cash.read')
   @Get()
-  findAll(
+  async findAll(
     @Company() company: CompanyContext,
     @Query('branchId') queryBranchId?: string,
   ) {
-    const branchId = queryBranchId || this.getBranchId(company);
+    const branchId = await this.resolveBranchId(company, queryBranchId);
     return this.cashRegistersService.findAllByBranch(branchId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('cash.manage')
   @Post()
-  create(
+  async create(
     @Company() company: CompanyContext,
     @Body() dto: CreateCashRegisterDto,
   ) {
-    const branchId = dto.branchId || this.getBranchId(company);
+    const branchId = await this.resolveBranchId(company, dto.branchId);
     return this.cashRegistersService.create(branchId, dto.name);
   }
 
-  @RequireCompany()
+  @RequirePermissions('cash.open')
   @Post(':id/open-shift')
-  openShift(
+  async openShift(
     @Param('id') id: string,
     @Body() dto: OpenShiftDto,
     @Company() company: CompanyContext,
     @Auth() auth: AuthContext,
   ) {
-    const branchId = this.getBranchId(company);
-    return this.cashRegistersService.openShift(id, branchId, auth.userId, dto);
+    const branchId = await this.resolveBranchId(company);
+    return this.cashRegistersService.openShift(
+      id,
+      branchId,
+      company.companyId,
+      auth.userId,
+      dto,
+    );
   }
 
-  @RequireCompany()
+  @RequirePermissions('cash.close')
   @Post(':id/close-shift/:shiftId')
-  closeShift(
+  async closeShift(
     @Param('id') id: string,
     @Param('shiftId') shiftId: string,
     @Body() dto: CloseShiftDto,
     @Company() company: CompanyContext,
   ) {
-    const branchId = this.getBranchId(company);
+    const branchId = await this.resolveBranchId(company);
     return this.cashRegistersService.closeShift(id, branchId, shiftId, dto);
   }
 
-  @RequireCompany()
+  @RequirePermissions('cash.read')
   @Get(':id/shifts')
-  getShiftsHistory(
+  async getShiftsHistory(
     @Param('id') id: string,
     @Company() company: CompanyContext,
     @Query() query: QueryShiftsDto,
   ) {
-    const branchId = this.getBranchId(company);
+    const branchId = await this.resolveBranchId(company);
     return this.cashRegistersService.getShiftsHistory(id, branchId, query);
   }
 }

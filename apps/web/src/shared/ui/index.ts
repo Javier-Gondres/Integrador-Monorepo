@@ -1,4 +1,5 @@
 export { Badge } from "./badge";
+export { Can } from "./can";
 export { Button } from "./button";
 export { Input, SearchInput, Textarea } from "./input";
 export { Modal } from "./modal";

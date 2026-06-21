@@ -17,6 +17,7 @@ import {
 import { AuthService } from './auth.service';
 import { AuthContext, RefreshGuardRequestUser } from './auth.types';
 import { Auth } from './decorators/auth.decorator';
+import { JwtAuth } from './decorators/jwt-auth.decorator';
 import { LoginDto } from './dto/login.dto/login.dto';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import {
@@ -68,6 +69,35 @@ export class AuthController {
     await this.authService.logoutSession(req.user.refreshTokenPayload);
     clearRefreshTokenCookie(res);
     return { message: 'Sesión cerrada' };
+  }
+
+  /**
+   * Reconstruye la sesión del usuario autenticado a partir del JWT.
+   * No requiere empresa activa: válido para SuperAdmin, tenant users y usuarios
+   * en proceso de onboarding.
+   */
+  @JwtAuth()
+  @Get('session')
+  getSession(@Auth() auth: AuthContext) {
+    return {
+      userId: auth.userId,
+      email: auth.email,
+      isSuperAdmin: auth.isSuperAdmin,
+      companyId: auth.companyId,
+      branchId: auth.branchId,
+      role: auth.role,
+      permissions: auth.permissions,
+    };
+  }
+
+  /**
+   * Perfil básico global desde BD. No requiere empresa activa.
+   * Complementa GET /auth/session con datos que no viajan en el JWT.
+   */
+  @JwtAuth()
+  @Get('profile')
+  getProfile(@Auth() auth: AuthContext) {
+    return this.authService.getBasicProfile(auth.userId);
   }
 
   @RequireCompany()

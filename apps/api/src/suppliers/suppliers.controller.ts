@@ -8,42 +8,44 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CompanyId, RequireCompany } from 'src/common/company';
+import { CompanyId } from 'src/common/company';
+import { RequirePermissions } from 'src/common/permissions';
 
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { QuerySuppliersDto } from './dto/query-suppliers.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { SuppliersService } from './suppliers.service';
 
+/** Catálogo company-wide: no depende del estado de la sucursal del JWT. Ver `common/tenant-access`. */
 @Controller('suppliers')
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
-  @RequireCompany()
+  @RequirePermissions('suppliers.read')
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QuerySuppliersDto) {
     return this.suppliersService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequireCompany()
+  @RequirePermissions('suppliers.read')
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.suppliersService.findByIdInCompany(id, companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('suppliers.create')
   @Post()
   create(@Body() dto: CreateSupplierDto, @CompanyId() companyId: string) {
     return this.suppliersService.create(companyId, dto);
   }
 
-  @RequireCompany()
+  @RequirePermissions('suppliers.update')
   @Patch(':id/restore')
   restore(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.suppliersService.restore(id, companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('suppliers.update')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -53,7 +55,7 @@ export class SuppliersController {
     return this.suppliersService.update(id, companyId, dto);
   }
 
-  @RequireCompany()
+  @RequirePermissions('suppliers.delete')
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.suppliersService.remove(id, companyId);

@@ -8,42 +8,44 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CompanyId, RequireCompany } from 'src/common/company';
+import { CompanyId } from 'src/common/company';
+import { RequirePermissions } from 'src/common/permissions';
 
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
+/** Catálogo company-wide: no depende del estado de la sucursal del JWT. Ver `common/tenant-access`. */
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @RequireCompany()
+  @RequirePermissions('categories.read')
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryCategoriesDto) {
     return this.categoriesService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequireCompany()
+  @RequirePermissions('categories.read')
   @Get('all')
   findAllActive(@CompanyId() companyId: string) {
     return this.categoriesService.findAllByCompany(companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('categories.read')
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.categoriesService.findByIdInCompany(id, companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('categories.create')
   @Post()
   create(@Body() dto: CreateCategoryDto, @CompanyId() companyId: string) {
     return this.categoriesService.create(companyId, dto);
   }
 
-  @RequireCompany()
+  @RequirePermissions('categories.update')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -53,19 +55,19 @@ export class CategoriesController {
     return this.categoriesService.update(id, companyId, dto);
   }
 
-  @RequireCompany()
+  @RequirePermissions('categories.update')
   @Patch(':id/activate')
   activate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.categoriesService.activate(id, companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('categories.update')
   @Patch(':id/deactivate')
   deactivate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.categoriesService.deactivate(id, companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('categories.delete')
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.categoriesService.remove(id, companyId);

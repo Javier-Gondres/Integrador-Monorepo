@@ -64,6 +64,19 @@ export class EmployeesRepository {
     });
   }
 
+  /** Contexto mínimo para validar operaciones branch-scoped (p. ej. apertura de turno). */
+  findOperationalContextByUserId(userId: string) {
+    return prisma.employee.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        companyId: true,
+        branchId: true,
+        isActive: true,
+      },
+    });
+  }
+
   async create(data: CreateEmployeeData): Promise<CreateEmployeeResult> {
     return prisma.$transaction(async (tx) => {
       const role = await tx.role.findUnique({

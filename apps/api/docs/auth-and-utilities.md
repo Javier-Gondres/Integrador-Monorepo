@@ -11,11 +11,12 @@ Guía de referencia para el backend `apps/api` (NestJS + Prisma, ERP multiempres
 3. [Contextos de request](#contextos-de-request)
 4. [Guards](#guards)
 5. [Decorators](#decorators)
-6. [Utilidades de errores](#utilidades-de-errores)
-7. [Multiempresa (tenant)](#multiempresa-tenant)
-8. [Validación y respuestas API](#validación-y-respuestas-api)
-9. [Observabilidad](#observabilidad)
-10. [Ejemplos por módulo](#ejemplos-por-módulo)
+6. [Acceso tenant (capas)](#acceso-tenant-capas)
+7. [Utilidades de errores](#utilidades-de-errores)
+8. [Multiempresa (tenant)](#multiempresa-tenant)
+9. [Validación y respuestas API](#validación-y-respuestas-api)
+10. [Observabilidad](#observabilidad)
+11. [Ejemplos por módulo](#ejemplos-por-módulo)
 
 ---
 
@@ -28,7 +29,23 @@ El módulo de auth usa **dos tokens**:
 | **Access token**  | 15 min   | Header `Authorization: Bearer <token>` | Rutas protegidas (API)      |
 | **Refresh token** | 7 días   | Cookie HTTP-only `refreshToken`        | Renovar sesión sin re-login |
 
-El access token solo lleva `{ sub: userId }`. El contexto completo (empresa, rol, sucursal) se **recarga desde la BD** en cada request autenticado vía `JwtStrategy`.
+El access token incluye claims de sesión tenant:
+
+```typescript
+type AccessTokenPayload = {
+  sub: string; // userId
+  email: string;
+  companyId: string | null;
+  branchId: string | null;
+  role: RoleName | null;
+  permissions: string[];
+  isSuperAdmin: boolean;
+};
+```
+
+En **login**, **refresh** e **issueAccessToken** (`switchBranch`) los claims se construyen desde BD (`findAuthContext`).
+
+En cada request, `JwtStrategy.validate()` **revalida solo** `user.isActive` en BD; el resto de claims proviene del JWT (ventana de validez ~15 min si cambian permisos/rol en BD).
 
 ### Endpoints
 
@@ -37,7 +54,9 @@ El access token solo lleva `{ sub: userId }`. El contexto completo (empresa, rol
 | `POST` | `/auth/login`   | Pública               | Valida credenciales, devuelve `accessToken`, setea cookie refresh |
 | `POST` | `/auth/refresh` | `JwtRefreshAuthGuard` | Renueva tokens usando cookie                                      |
 | `POST` | `/auth/logout`  | `JwtRefreshAuthGuard` | Revoca refresh token y borra cookie                               |
-| `GET`  | `/auth/me`      | `@RequireCompany()`   | Devuelve `auth` + `company` del usuario                           |
+| `GET`  | `/auth/session` | `@JwtAuth()`          | Sesión desde JWT (sin exigir empresa activa)                      |
+| `GET`  | `/auth/profile` | `@JwtAuth()`          | Perfil básico desde BD (`firstName`, `lastName`)                  |
+| `GET`  | `/auth/me`      | `@RequireCompany()`   | Devuelve `auth` + `company` del tenant activo                     |
 
 ### Login (sin Passport Local)
 
@@ -77,7 +96,8 @@ sequenceDiagram
 
   Cliente->>API: GET /recurso (Authorization: Bearer)
   API->>API: JwtAuthGuard → JwtStrategy.validate()
-  JwtStrategy->>DB: findAuthContext(userId)
+  JwtStrategy->>DB: isUserActive(userId)
+  JwtStrategy->>API: AuthContext desde payload JWT
   API-->>Cliente: respuesta protegida
 ```
 
@@ -105,13 +125,16 @@ Tras autenticación, Express expone estos campos (ver `src/types/express.d.ts`):
 ```typescript
 type AuthContext = {
   userId: string;
-  companyId: string | null; // de UserCompany.membership
-  branchId: string | null; // defaultBranchId
-  role: RoleName | null; // OWNER, ADMIN, MANAGER, etc.
+  email: string;
+  companyId: string | null;
+  branchId: string | null;
+  role: RoleName | null;
+  permissions: string[];
+  isSuperAdmin: boolean;
 };
 ```
 
-Se construye en `toAuthContext()` desde la membership del usuario (`auth/mappers/auth-context.mapper.ts`).
+Se construye en login/refresh desde BD (`toAuthContext`) o en cada request desde el payload JWT (`toAuthContextFromPayload`).
 
 > **Regla del schema:** un usuario tiene **como máximo una empresa** (`UserCompany.userId` es `@unique`).
 
@@ -133,28 +156,32 @@ Solo disponible cuando el usuario tiene membership **y** pasó `CompanyGuard`.
 
 Contexto del usuario autenticado (perfil, empresa, sucursal). **No** administra otros usuarios (eso es `/users`).
 
-| Método  | Ruta                | Protección          | Descripción                                |
-| ------- | ------------------- | ------------------- | ------------------------------------------ |
-| `GET`   | `/me`               | `@RequireCompany()` | Perfil + membership en la empresa activa   |
-| `PATCH` | `/me`               | `@RequireCompany()` | Actualizar nombre/apellido propios         |
-| `PATCH` | `/me/password`      | `@JwtAuth()`        | Cambiar contraseña (revoca refresh tokens) |
-| `GET`   | `/me/company`       | `@JwtAuth()`        | Empresa del usuario (única membership)     |
-| `GET`   | `/me/branch`        | `@RequireCompany()` | Sucursal por defecto (`defaultBranchId`)   |
-| `POST`  | `/me/switch-branch` | `@RequireCompany()` | Actualiza `UserCompany.defaultBranchId`    |
+| Método  | Ruta                | Protección          | Descripción                                                                                |
+| ------- | ------------------- | ------------------- | ------------------------------------------------------------------------------------------ |
+| `GET`   | `/me`               | `@RequireCompany()` | Perfil + membership en la empresa activa                                                   |
+| `PATCH` | `/me`               | `@RequireCompany()` | Actualizar nombre/apellido propios                                                         |
+| `PATCH` | `/me/password`      | `@JwtAuth()`        | Cambiar contraseña (revoca refresh tokens)                                                 |
+| `GET`   | `/me/company`       | `@JwtAuth()`        | Empresa del usuario (única membership)                                                     |
+| `GET`   | `/me/branch`        | `@RequireCompany()` | Sucursal por defecto (`defaultBranchId`)                                                   |
+| `POST`  | `/me/switch-branch` | `@RequireCompany()` | Actualiza `defaultBranchId`; emite nuevo `accessToken`; sucursal destino debe estar activa |
 
-> **Regla de dominio:** un usuario = una empresa (`@@unique([userId, deletedAt])` en `UserCompany`). Una sucursal activa por sesión vía `defaultBranchId`. Para listar todas las sucursales del tenant, usar `GET /branches`.
+> **Regla de dominio:** un usuario = una empresa. Una sucursal activa por sesión vía `defaultBranchId`. Para listar todas las sucursales del tenant, usar `GET /branches`.
 
-### `/users` (solo administración)
+### `/users` (administración — RBAC)
 
-| Método   | Ruta                                             | Descripción                 |
-| -------- | ------------------------------------------------ | --------------------------- |
-| `GET`    | `/users`                                         | Listado paginado del equipo |
-| `GET`    | `/users/roles`                                   | Catálogo de roles           |
-| `GET`    | `/users/:id`                                     | Detalle de otro usuario     |
-| `POST`   | `/users`                                         | Crear usuario en la empresa |
-| `PATCH`  | `/users/:id`                                     | Actualizar otro usuario     |
-| `PATCH`  | `/users/:id/activate` / `deactivate` / `restore` | Estado                      |
-| `DELETE` | `/users/:id`                                     | Soft delete                 |
+Todos los endpoints usan `@RequirePermissions(...)`. Jerarquía de roles en `src/users/helpers/assert-assignable-role.ts`.
+
+| Método   | Ruta                    | Permiso(s)         | Descripción                 |
+| -------- | ----------------------- | ------------------ | --------------------------- |
+| `GET`    | `/users`                | `users.read`       | Listado paginado del equipo |
+| `GET`    | `/users/roles`          | `users.read`       | Roles asignables por actor  |
+| `GET`    | `/users/:id`            | `users.read`       | Detalle de otro usuario     |
+| `POST`   | `/users`                | `users.create`     | Crear usuario en la empresa |
+| `PATCH`  | `/users/:id`            | `users.update`     | Actualizar otro usuario     |
+| `PATCH`  | `/users/:id/activate`   | `users.activate`   | Activar                     |
+| `PATCH`  | `/users/:id/deactivate` | `users.deactivate` | Desactivar                  |
+| `PATCH`  | `/users/:id/restore`    | `users.update`     | Restaurar soft delete       |
+| `DELETE` | `/users/:id`            | `users.delete`     | Soft delete                 |
 
 ---
 
@@ -167,18 +194,20 @@ Orden de ejecución en NestJS: **Middleware → Guards → Pipes → Controller*
 - Archivo: `src/auth/guards/jwt-auth.guard.ts`
 - Estrategia Passport: `jwt`
 - Lee: `Authorization: Bearer <accessToken>`
-- Ejecuta `JwtStrategy.validate()` → carga `AuthContext` desde BD
+- Ejecuta `JwtStrategy.validate()` → revalida `user.isActive` en BD; construye `AuthContext` desde payload JWT
 - Setea: `request.auth = request.user`
 
-**Cuándo usarlo:** cualquier ruta que requiera usuario autenticado.
+**Cuándo usarlo:** rutas de sesión global o como primer guard en cadenas tenant.
 
 ```typescript
-@UseGuards(JwtAuthGuard)
-@Get('profile')
-getProfile(@Auth() auth: AuthContext) {
+@JwtAuth()
+@Get('session')
+getSession(@Auth() auth: AuthContext) {
   return auth;
 }
 ```
+
+Alias: `@JwtAuth()` = `@UseGuards(JwtAuthGuard)`.
 
 ### `JwtRefreshAuthGuard`
 
@@ -189,23 +218,60 @@ getProfile(@Auth() auth: AuthContext) {
 
 **Cuándo usarlo:** `/auth/refresh` y `/auth/logout`.
 
-### `CompanyGuard`
+### `CompanyGuard` (capa 1 — empresa)
 
 - Archivo: `src/common/company/guards/company.guard.ts`
 - **Requiere JWT previo** (`JwtAuthGuard` debe ir antes)
 - Valida:
   - Usuario autenticado
-  - `companyId` presente (membership)
+  - `companyId` presente (membership en JWT)
   - `role` presente
+  - **`company.isActive === true` en BD** (`CompanyStatusRepository`)
 - Setea: `request.auth` y `request.company`
+
+**No aplica en:** `@JwtAuth()` ni `@RequireCompanyOwnerOrPlatformAdmin()`.
 
 **Errores:**
 
-| Caso        | HTTP | Código                        |
-| ----------- | ---- | ----------------------------- |
-| Sin JWT     | 401  | `UNAUTHORIZED`                |
-| Sin empresa | 403  | `UNAUTHORIZED_COMPANY_ACCESS` |
-| Sin rol     | 403  | `UNAUTHORIZED_COMPANY_ACCESS` |
+| Caso              | HTTP | Código                        |
+| ----------------- | ---- | ----------------------------- |
+| Sin JWT           | 401  | `UNAUTHORIZED`                |
+| Sin empresa / rol | 403  | `UNAUTHORIZED_COMPANY_ACCESS` |
+| Empresa inactiva  | 403  | `UNAUTHORIZED_COMPANY_ACCESS` |
+
+### `PermissionGuard` (RBAC tenant)
+
+- Archivo: `src/common/permissions/guards/permission.guard.ts`
+- **Requiere** `JwtAuthGuard` + `CompanyGuard` previos (vía `@RequirePermissions()`)
+- Valida que `auth.permissions` del JWT incluya **todos** los permisos del decorador
+- **No** hace bypass por `isSuperAdmin`
+
+```typescript
+@RequirePermissions('products.read')
+@Get()
+findAll(@CompanyId() companyId: string) { ... }
+```
+
+### `CompanyOwnerOrPlatformAdminGuard`
+
+- Archivo: `src/common/company/guards/company-owner-or-platform-admin.guard.ts`
+- Permite **OWNER** (con membership) o **SUPER_ADMIN** (flag en JWT)
+- **No** valida `company.isActive` (reactivación / gestión de empresas suspendidas)
+- Servicios deben usar `assertCompanyAccessOrPlatformAdmin` para evitar IDOR cross-tenant
+
+### `PlatformAdminGuard`
+
+- Archivo: `src/common/platform/guards/platform-admin.guard.ts`
+- Implementado; **sin rutas** de plataforma aún (`@RequirePlatformAdmin()`)
+
+### `BranchAccessService` (capa 2 — sucursal)
+
+- Archivo: `src/branch/branch-access.service.ts`
+- **No es un guard Nest**; se invoca en servicios/controllers branch-scoped
+- Valida existencia de sucursal en empresa + **`branch.isActive === true`**
+- Métodos: `assertBranchInCompany()`, `resolveBranchId()`
+
+Ver guía detallada: [`tenant-access.md`](./tenant-access.md).
 
 ---
 
@@ -225,10 +291,11 @@ list(@Auth() auth: AuthContext) {
 }
 ```
 
-### `@RequireCompany()` — atajo de guards
+### `@RequireCompany()` — tenant con empresa activa
 
 - Archivo: `src/common/company/decorators/require-company.decorator.ts`
 - Aplica: `@UseGuards(JwtAuthGuard, CompanyGuard)` en ese orden
+- Incluye validación de **empresa activa** (capa 1)
 
 ```typescript
 @RequireCompany()
@@ -237,6 +304,17 @@ list(@CompanyId() companyId: string) {
   return this.productsService.findByCompany(companyId);
 }
 ```
+
+### `@RequirePermissions(...)` — tenant + RBAC
+
+- Archivo: `src/common/permissions/decorators/require-permissions.decorator.ts`
+- Aplica: `JwtAuthGuard` → `CompanyGuard` → `PermissionGuard`
+- Uso estándar en controllers de negocio (`products`, `users`, `cash-registers`, etc.)
+
+### `@RequireCompanyOwnerOrPlatformAdmin()` — gestión de Company
+
+- Para `GET/PATCH/DELETE /companies/:id` (fuera del catálogo RBAC)
+- OWNER de su empresa o SUPER_ADMIN de plataforma
 
 ### `@Company()` — contexto de tenant
 
@@ -247,6 +325,23 @@ list(@CompanyId() companyId: string) {
 
 - Devuelve: `string` (companyId activo)
 - Útil para queries Prisma: `where: { companyId }`
+
+---
+
+## Acceso tenant (capas)
+
+Documentación completa: **[`tenant-access.md`](./tenant-access.md)**.
+
+Resumen:
+
+| Tipo de módulo                                                             | Guards / servicios                            | ¿Depende de sucursal activa? |
+| -------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------- |
+| Catálogo (`products`, `categories`, `customers`, `suppliers`, `discounts`) | `@RequirePermissions`                         | **No** (company-wide)        |
+| Branch-scoped (`cash-registers`, `employees` con `branchId`)               | `@RequirePermissions` + `BranchAccessService` | **Sí**                       |
+| Gestión Company                                                            | `@RequireCompanyOwnerOrPlatformAdmin`         | No (permite reactivar)       |
+| Sesión                                                                     | `@JwtAuth`                                    | No                           |
+
+**Empleado ↔ sucursal:** operaciones como `openShift` usan `assertEmployeeForBranchOperation()` — el turno siempre queda asociado al empleado del usuario autenticado, activo y asignado a la sucursal operativa.
 
 ---
 
@@ -345,22 +440,30 @@ switch (response.error) {
 
 ### En controllers (capa HTTP)
 
-Proteger rutas de negocio con `@RequireCompany()`:
+**Catálogo y administración tenant** — `@RequirePermissions()`:
 
 ```typescript
-import { RequireCompany, CompanyId } from 'src/common/company';
+import { CompanyId } from 'src/common/company';
+import { RequirePermissions } from 'src/common/permissions';
 
-@RequireCompany()
-@Controller('products')
-export class ProductsController {
-  @Get()
-  findAll(@CompanyId() companyId: string) {
-    return this.productsService.findAll(companyId);
-  }
+@RequirePermissions('products.read')
+@Get()
+findAll(@CompanyId() companyId: string) {
+  return this.productsService.findAll(companyId);
 }
 ```
 
-El módulo debe importar `AuthModule` para resolver `JwtAuthGuard` y `CompanyGuard`.
+**Flujos branch-scoped** — además invocar `BranchAccessService`:
+
+```typescript
+const branchId = await this.branchAccessService.resolveBranchId(
+  company.companyId,
+  queryBranchId,
+  company.branchId,
+);
+```
+
+El módulo debe importar `AuthModule` (guards) y `BranchModule` si usa sucursales.
 
 ### En services (anti cross-tenant)
 
@@ -533,28 +636,33 @@ export class LoginDto {
 ## Checklist para nuevos endpoints
 
 - [ ] ¿Es público o requiere auth?
-- [ ] ¿Es operación de tenant? → `@RequireCompany()`
+- [ ] ¿Es operación de tenant? → `@RequirePermissions()` (o `@RequireCompany()` si no hay permiso granular)
+- [ ] ¿Es branch-scoped? → `BranchAccessService` + política empleado ↔ sucursal si aplica
+- [ ] ¿Es catálogo company-wide? → no exigir sucursal activa (ver `tenant-access.md`)
 - [ ] ¿Body/query validado con DTO + class-validator?
 - [ ] ¿Listados filtrados por `companyId`?
 - [ ] ¿Recursos por ID validados con `assertCompanyAccess`?
 - [ ] ¿Errores de negocio con `AuthException` / `BusinessException` / `InventoryException`?
-- [ ] ¿Movimientos de inventario? → `normalizeAdjustmentReason()` antes de persistir
 - [ ] ¿Prisma sin try/catch innecesario?
 
 ---
 
 ## Archivos clave
 
-| Tema                  | Ruta                                          |
-| --------------------- | --------------------------------------------- |
-| Auth controller       | `src/auth/auth.controller.ts`                 |
-| Auth service          | `src/auth/auth.service.ts`                    |
-| JWT strategy          | `src/auth/strategies/jwt.strategy.ts`         |
-| Refresh strategy      | `src/auth/strategies/jwt-refresh.strategy.ts` |
-| JwtAuthGuard          | `src/auth/guards/jwt-auth.guard.ts`           |
-| Decorator `@Auth`     | `src/auth/decorators/auth.decorator.ts`       |
-| Company guard/helpers | `src/common/company/`                         |
-| Errores globales      | `src/common/errors/`                          |
-| Bootstrap app         | `src/bootstrap/create-nest-app.ts`            |
-| Tests e2e contrato    | `test/api-contract.e2e-spec.ts`               |
-| Requests de ejemplo   | `http/auth.http`                              |
+| Tema                      | Ruta                                                   |
+| ------------------------- | ------------------------------------------------------ |
+| **Acceso tenant (doc)**   | `docs/tenant-access.md`                                |
+| Política capas (código)   | `src/common/tenant-access/`                            |
+| Empleado ↔ sucursal       | `src/employees/policies/employee-branch.policy.ts`     |
+| Auth controller           | `src/auth/auth.controller.ts`                          |
+| Auth service              | `src/auth/auth.service.ts`                             |
+| JWT strategy              | `src/auth/strategies/jwt.strategy.ts`                  |
+| Refresh strategy          | `src/auth/strategies/jwt-refresh.strategy.ts`          |
+| JwtAuthGuard / `@JwtAuth` | `src/auth/guards/`, `decorators/jwt-auth.decorator.ts` |
+| Company guard/helpers     | `src/common/company/`                                  |
+| Permission guard          | `src/common/permissions/`                              |
+| Branch access             | `src/branch/branch-access.service.ts`                  |
+| Jerarquía roles           | `src/users/helpers/assert-assignable-role.ts`          |
+| Errores globales          | `src/common/errors/`                                   |
+| Bootstrap app             | `src/bootstrap/create-nest-app.ts`                     |
+| Seed permisos RBAC        | `packages/database/prisma/seed.ts`                     |

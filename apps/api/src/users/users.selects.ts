@@ -13,7 +13,14 @@ export const publicUserSelect = {
 export const membershipRelationSelect = {
   companyId: true,
   defaultBranchId: true,
-  role: { select: { name: true } },
+  role: {
+    select: {
+      name: true,
+      permissions: {
+        select: { permission: { select: { code: true } } },
+      },
+    },
+  },
 } as const;
 
 export const membershipRelationSelectFull = {
@@ -21,7 +28,15 @@ export const membershipRelationSelectFull = {
   companyId: true,
   roleId: true,
   defaultBranchId: true,
-  role: { select: { id: true, name: true } },
+  role: {
+    select: {
+      id: true,
+      name: true,
+      permissions: {
+        select: { permission: { select: { code: true } } },
+      },
+    },
+  },
   company: { select: { id: true, name: true, slug: true } },
 } as const;
 
@@ -30,7 +45,11 @@ export type UserMembership = {
   companyId: string;
   roleId: string;
   defaultBranchId: string | null;
-  role: { id: string; name: RoleName };
+  role: {
+    id: string;
+    name: RoleName;
+    permissions?: { permission: { code: string } }[];
+  };
   company: { id: string; name: string; slug: string };
 };
 

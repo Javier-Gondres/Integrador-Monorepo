@@ -10,7 +10,7 @@ import {
 import { AuthContext } from 'src/auth/auth.types';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { JwtAuth } from 'src/auth/decorators/jwt-auth.decorator';
-import { RequireCompany } from 'src/common/company';
+import { RequireCompanyOwnerOrPlatformAdmin } from 'src/common/company';
 
 import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
@@ -32,13 +32,13 @@ export class CompanyController {
     return this.companyService.findMyCompanies(auth.userId);
   }
 
-  @RequireCompany()
+  @RequireCompanyOwnerOrPlatformAdmin()
   @Get(':id')
   findById(@Param('id') id: string, @Auth() auth: AuthContext) {
     return this.companyService.findByIdForUser(id, auth);
   }
 
-  @RequireCompany()
+  @RequireCompanyOwnerOrPlatformAdmin()
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -48,19 +48,19 @@ export class CompanyController {
     return this.companyService.update(id, auth, dto);
   }
 
-  @RequireCompany()
+  @RequireCompanyOwnerOrPlatformAdmin()
   @Patch(':id/activate')
   activate(@Param('id') id: string, @Auth() auth: AuthContext) {
     return this.companyService.activate(id, auth);
   }
 
-  @RequireCompany()
+  @RequireCompanyOwnerOrPlatformAdmin()
   @Patch(':id/deactivate')
   deactivate(@Param('id') id: string, @Auth() auth: AuthContext) {
     return this.companyService.deactivate(id, auth);
   }
 
-  @RequireCompany()
+  @RequireCompanyOwnerOrPlatformAdmin()
   @Delete(':id')
   remove(@Param('id') id: string, @Auth() auth: AuthContext) {
     return this.companyService.remove(id, auth);

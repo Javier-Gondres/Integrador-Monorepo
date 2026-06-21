@@ -9,17 +9,18 @@ export interface Role {
   id: string;
   name: string;
   description?: string | null;
-  permissions: Permission[];
 }
 
 export interface AuthUser {
   id: string;
   email: string;
-  firstName?: string | null;
-  lastName?: string | null;
+  firstName: string;
+  lastName: string;
+  isSuperAdmin: boolean;
   companyId?: string;
   branchId?: string;
   role?: Role;
+  permissions: string[];
 }
 
 export interface AuthSession {

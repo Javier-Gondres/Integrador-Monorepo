@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 import { BusinessException, ErrorCodes } from '../common/errors';
+import { EmployeesRepository } from '../employees/employees.repository';
+import { assertEmployeeForBranchOperation } from '../employees/policies/employee-branch.policy';
 import { CashRegistersRepository } from './cash-registers.repository';
 import { CloseShiftDto } from './dto/close-shift.dto';
 import { OpenShiftDto } from './dto/open-shift.dto';
@@ -10,6 +12,7 @@ import { QueryShiftsDto } from './dto/query-shifts.dto';
 export class CashRegistersService {
   constructor(
     private readonly cashRegistersRepository: CashRegistersRepository,
+    private readonly employeesRepository: EmployeesRepository,
   ) {}
 
   async findAllByBranch(branchId: string) {
@@ -102,6 +105,7 @@ export class CashRegistersService {
   async openShift(
     id: string,
     branchId: string,
+    companyId: string,
     userId: string,
     dto: OpenShiftDto,
   ) {
@@ -121,24 +125,18 @@ export class CashRegistersService {
       );
     }
 
-    let employeeId = dto.empleadoId;
+    const employeeContext =
+      await this.employeesRepository.findOperationalContextByUserId(userId);
 
-    // Si el frontend envía emp-XXX, ignoramos y buscamos el empleado del usuario logueado
-    if (employeeId.startsWith('emp-')) {
-      const emp =
-        await this.cashRegistersRepository.getEmployeeIdByUserId(userId);
-      if (!emp) {
-        throw new BusinessException(
-          ErrorCodes.VALIDATION_ERROR,
-          'El usuario actual no tiene un empleado asociado.',
-        );
-      }
-      employeeId = emp.id;
-    }
+    const employee = assertEmployeeForBranchOperation(
+      employeeContext,
+      branchId,
+      companyId,
+    );
 
     await this.cashRegistersRepository.openShift(
       id,
-      employeeId,
+      employee.id,
       dto.montoApertura,
     );
 

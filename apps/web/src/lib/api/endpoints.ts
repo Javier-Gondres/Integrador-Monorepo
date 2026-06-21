@@ -9,10 +9,13 @@ export const ENDPOINTS = {
     login: "/auth/login",
     logout: "/auth/logout",
     refresh: "/auth/refresh",
+    session: "/auth/session",
+    profile: "/auth/profile",
   },
   me: {
     profile: "/me",
     company: "/me/company",
+    switchBranch: "/me/switch-branch",
   },
   products: {
     root: "/products",

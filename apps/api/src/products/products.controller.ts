@@ -8,36 +8,38 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CompanyId, RequireCompany } from 'src/common/company';
+import { CompanyId } from 'src/common/company';
+import { RequirePermissions } from 'src/common/permissions';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductsDto } from './dto/query-products.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
 
+/** Catálogo company-wide: no depende del estado de la sucursal del JWT. Ver `common/tenant-access`. */
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @RequireCompany()
+  @RequirePermissions('products.read')
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryProductsDto) {
     return this.productsService.findPaginatedByCompany(companyId, query);
   }
 
-  @RequireCompany()
+  @RequirePermissions('products.read')
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.productsService.findByIdInCompany(id, companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('products.create')
   @Post()
   create(@Body() dto: CreateProductDto, @CompanyId() companyId: string) {
     return this.productsService.create(companyId, dto);
   }
 
-  @RequireCompany()
+  @RequirePermissions('products.update')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -47,19 +49,19 @@ export class ProductsController {
     return this.productsService.update(id, companyId, dto);
   }
 
-  @RequireCompany()
+  @RequirePermissions('products.update')
   @Patch(':id/activate')
   activate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.productsService.activate(id, companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('products.update')
   @Patch(':id/deactivate')
   deactivate(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.productsService.deactivate(id, companyId);
   }
 
-  @RequireCompany()
+  @RequirePermissions('products.delete')
   @Delete(':id')
   remove(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.productsService.remove(id, companyId);

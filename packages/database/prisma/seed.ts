@@ -7,6 +7,7 @@
  *   pnpm --filter @repo/db run db:seed:dev
  *
  * Credenciales:
+ *   superadmin@ejemplo.com / Password123  (SUPER_ADMIN, sin tenant)
  *   prueba@ejemplo.com / Password123  (OWNER)
  *   admin@ejemplo.com / Password123   (ADMIN)
  *   cajero@ejemplo.com / Password123    (CASHIER, vinculado a Employee)
@@ -80,6 +81,12 @@ type SeedUser = {
   role: RoleName;
   defaultBranchName?: string;
 };
+
+const SUPER_ADMIN_USER = {
+  email: "superadmin@ejemplo.com",
+  firstName: "Super",
+  lastName: "Admin",
+} as const;
 
 const DEMO_USERS: SeedUser[] = [
   {
@@ -431,6 +438,198 @@ async function ensureRoles(): Promise<void> {
   }
 }
 
+const ALL_PERMISSIONS: { code: string; description: string }[] = [
+  { code: "users.create", description: "Crear usuarios en la empresa" },
+  { code: "users.read", description: "Ver usuarios de la empresa" },
+  { code: "users.update", description: "Actualizar usuarios de la empresa" },
+  { code: "users.activate", description: "Activar usuarios de la empresa" },
+  {
+    code: "users.deactivate",
+    description: "Desactivar usuarios de la empresa",
+  },
+  { code: "users.delete", description: "Eliminar usuarios de la empresa" },
+
+  { code: "employees.create", description: "Registrar empleados" },
+  { code: "employees.read", description: "Ver empleados" },
+  { code: "employees.update", description: "Actualizar empleados" },
+  { code: "employees.delete", description: "Eliminar empleados" },
+
+  { code: "products.create", description: "Crear productos" },
+  { code: "products.read", description: "Ver productos" },
+  { code: "products.update", description: "Actualizar productos" },
+  { code: "products.delete", description: "Eliminar productos" },
+
+  { code: "categories.create", description: "Crear categorías" },
+  { code: "categories.read", description: "Ver categorías" },
+  { code: "categories.update", description: "Actualizar categorías" },
+  { code: "categories.delete", description: "Eliminar categorías" },
+
+  { code: "discounts.create", description: "Crear descuentos" },
+  { code: "discounts.read", description: "Ver descuentos" },
+  { code: "discounts.update", description: "Actualizar descuentos" },
+  { code: "discounts.delete", description: "Eliminar descuentos" },
+
+  { code: "customers.create", description: "Registrar clientes" },
+  { code: "customers.read", description: "Ver clientes" },
+  { code: "customers.update", description: "Actualizar clientes" },
+  { code: "customers.delete", description: "Eliminar clientes" },
+
+  { code: "suppliers.create", description: "Registrar proveedores" },
+  { code: "suppliers.read", description: "Ver proveedores" },
+  { code: "suppliers.update", description: "Actualizar proveedores" },
+  { code: "suppliers.delete", description: "Eliminar proveedores" },
+
+  { code: "inventory.read", description: "Ver inventario" },
+  { code: "inventory.adjust", description: "Ajustar inventario" },
+  {
+    code: "inventory.transfer",
+    description: "Transferir inventario entre sucursales",
+  },
+
+  { code: "sales.create", description: "Registrar ventas" },
+  { code: "sales.read", description: "Ver ventas" },
+  { code: "sales.cancel", description: "Cancelar ventas" },
+
+  { code: "purchases.create", description: "Registrar compras" },
+  { code: "purchases.read", description: "Ver compras" },
+
+  { code: "cash.read", description: "Ver cajas y turnos" },
+  { code: "cash.open", description: "Abrir turno de caja" },
+  { code: "cash.close", description: "Cerrar turno de caja" },
+  { code: "cash.manage", description: "Administrar cajas" },
+
+  { code: "branches.create", description: "Crear sucursales" },
+  { code: "branches.read", description: "Ver sucursales" },
+  { code: "branches.update", description: "Actualizar sucursales" },
+  { code: "branches.delete", description: "Eliminar sucursales" },
+
+  { code: "reports.read", description: "Ver reportes" },
+];
+
+const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
+  [RoleName.OWNER]: ALL_PERMISSIONS.map((p) => p.code),
+
+  [RoleName.ADMIN]: [
+    "users.create",
+    "users.read",
+    "users.update",
+    "users.activate",
+    "users.deactivate",
+    "users.delete",
+    "employees.create",
+    "employees.read",
+    "employees.update",
+    "employees.delete",
+    "products.create",
+    "products.read",
+    "products.update",
+    "products.delete",
+    "categories.create",
+    "categories.read",
+    "categories.update",
+    "categories.delete",
+    "discounts.create",
+    "discounts.read",
+    "discounts.update",
+    "discounts.delete",
+    "customers.create",
+    "customers.read",
+    "customers.update",
+    "customers.delete",
+    "suppliers.create",
+    "suppliers.read",
+    "suppliers.update",
+    "suppliers.delete",
+    "cash.read",
+    "cash.manage",
+    "branches.create",
+    "branches.read",
+    "branches.update",
+    "branches.delete",
+    "reports.read",
+  ],
+
+  [RoleName.MANAGER]: [
+    "products.read",
+    "categories.read",
+    "discounts.read",
+    "sales.create",
+    "sales.read",
+    "sales.cancel",
+    "purchases.create",
+    "purchases.read",
+    "customers.create",
+    "customers.read",
+    "customers.update",
+    "suppliers.read",
+    "inventory.read",
+    "inventory.adjust",
+    "inventory.transfer",
+    "cash.read",
+    "branches.read",
+    "reports.read",
+  ],
+
+  [RoleName.CASHIER]: [
+    "products.read",
+    "categories.read",
+    "discounts.read",
+    "sales.create",
+    "sales.read",
+    "customers.create",
+    "customers.read",
+    "customers.update",
+    "cash.read",
+    "cash.open",
+    "cash.close",
+  ],
+
+  [RoleName.INVENTORY_ASSISTANT]: [
+    "products.read",
+    "categories.read",
+    "suppliers.read",
+    "inventory.read",
+    "inventory.adjust",
+    "inventory.transfer",
+    "branches.read",
+  ],
+};
+
+async function ensurePermissions(): Promise<void> {
+  for (const perm of ALL_PERMISSIONS) {
+    await prisma.permission.upsert({
+      where: { code: perm.code },
+      create: { code: perm.code, description: perm.description },
+      update: { description: perm.description },
+    });
+  }
+}
+
+async function ensureRolePermissions(): Promise<void> {
+  for (const [roleName, permCodes] of Object.entries(ROLE_PERMISSIONS) as [
+    RoleName,
+    string[],
+  ][]) {
+    const role = await prisma.role.findFirst({ where: { name: roleName } });
+    if (!role) continue;
+
+    for (const code of permCodes) {
+      const permission = await prisma.permission.findUnique({
+        where: { code },
+      });
+      if (!permission) continue;
+
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
+        create: { roleId: role.id, permissionId: permission.id },
+        update: {},
+      });
+    }
+  }
+}
+
 async function ensureDemoCompany() {
   const existing = await prisma.company.findFirst({
     where: { slug: DEMO_COMPANY_SLUG },
@@ -505,6 +704,41 @@ async function ensureUser(
       passwordHash,
       firstName,
       lastName,
+      lastLoginAt: new Date(),
+    },
+    select: { id: true, email: true },
+  });
+}
+
+/** Operador de plataforma: sin membresía tenant (UserCompany). */
+async function ensureSuperAdminUser(
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+) {
+  const normalized = normalizeEmail(email);
+  const existing = await prisma.user.findFirst({
+    where: { email: normalized, deletedAt: null },
+    select: { id: true, email: true },
+  });
+
+  if (existing) {
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { isSuperAdmin: true, firstName, lastName },
+    });
+    return existing;
+  }
+
+  const passwordHash = await hashPassword(password);
+  return prisma.user.create({
+    data: {
+      email: normalized,
+      passwordHash,
+      firstName,
+      lastName,
+      isSuperAdmin: true,
       lastLoginAt: new Date(),
     },
     select: { id: true, email: true },
@@ -2003,8 +2237,17 @@ async function main(): Promise<void> {
   const password = process.env.SEED_USER_PASSWORD ?? DEFAULT_SEED_PASSWORD;
 
   await ensureRoles();
+  await ensurePermissions();
+  await ensureRolePermissions();
   const company = await ensureDemoCompany();
   const branches = await ensureDemoBranches(company.id);
+
+  await ensureSuperAdminUser(
+    SUPER_ADMIN_USER.email,
+    password,
+    SUPER_ADMIN_USER.firstName,
+    SUPER_ADMIN_USER.lastName,
+  );
 
   const users: { email: string; id: string }[] = [];
   for (const seedUser of DEMO_USERS) {
@@ -2088,9 +2331,13 @@ async function main(): Promise<void> {
   ]);
 
   console.log("Seed completado:");
+  console.log(`  permisos: ${ALL_PERMISSIONS.length}`);
   console.log(`  empresa: ${company.name} (${company.slug})`);
   console.log(`  sucursales: ${branches.size}`);
-  console.log(`  usuarios: ${users.length} (password: ${password})`);
+  console.log(`  usuarios tenant: ${users.length} (password: ${password})`);
+  console.log(
+    `  super admin: ${SUPER_ADMIN_USER.email} (password: ${password}, sin empresa)`,
+  );
   console.log(`  proveedores: ${suppliers.size}`);
   console.log(`  categorías: ${categories.size}`);
   console.log(`  productos: ${products.length}`);

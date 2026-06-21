@@ -3,7 +3,10 @@ import slugify from 'slug';
 import { getDefinedData } from 'src/common/helpers/object.utils';
 
 import { AuthContext } from '../auth/auth.types';
-import { assertCompanyAccess } from '../common/company';
+import {
+  assertCanManageCompany,
+  assertCompanyAccessOrPlatformAdmin,
+} from '../common/company';
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { CompanyRepository } from './company.repository';
 import { CreateCompanyDto } from './dto/create-company.dto';
@@ -62,7 +65,7 @@ export class CompanyService {
   }
 
   async findByIdForUser(id: string, auth: AuthContext) {
-    assertCompanyAccess(id, auth.companyId);
+    assertCompanyAccessOrPlatformAdmin(id, auth);
 
     const company = await this.companyRepository.findByIdWithBranches(id);
     if (!company) {
@@ -76,6 +79,7 @@ export class CompanyService {
   }
 
   async update(id: string, auth: AuthContext, dto: UpdateCompanyDto) {
+    assertCanManageCompany(auth);
     await this.findByIdForUser(id, auth);
 
     const updateData = getDefinedData(dto);
@@ -117,6 +121,7 @@ export class CompanyService {
   }
 
   async activate(id: string, auth: AuthContext) {
+    assertCanManageCompany(auth);
     const company = await this.findByIdForUser(id, auth);
 
     if (company.isActive) {
@@ -130,6 +135,7 @@ export class CompanyService {
   }
 
   async deactivate(id: string, auth: AuthContext) {
+    assertCanManageCompany(auth);
     const company = await this.findByIdForUser(id, auth);
     if (!company.isActive) {
       return company;
@@ -140,6 +146,7 @@ export class CompanyService {
   }
 
   async remove(id: string, auth: AuthContext) {
+    assertCanManageCompany(auth);
     await this.findByIdForUser(id, auth);
     await this.companyRepository.softDelete(id);
 

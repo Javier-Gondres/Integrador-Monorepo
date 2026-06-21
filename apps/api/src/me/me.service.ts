@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
+import { AuthService } from '../auth/auth.service';
 import { AuthContext } from '../auth/auth.types';
+import { BranchAccessService } from '../branch/branch-access.service';
 import {
   type BranchRecord,
   BranchRepository,
@@ -20,7 +22,9 @@ export class MeService {
     private readonly meRepository: MeRepository,
     private readonly companyRepository: CompanyRepository,
     private readonly branchRepository: BranchRepository,
+    private readonly branchAccessService: BranchAccessService,
     private readonly usersService: UsersService,
+    private readonly authService: AuthService,
   ) {}
 
   getProfile(userId: string, companyId: string) {
@@ -104,24 +108,10 @@ export class MeService {
       throw AuthException.unauthorizedCompanyAccess();
     }
 
-    const branch = await this.branchRepository.findByIdInCompany(
+    await this.branchAccessService.assertBranchInCompany(
       dto.branchId,
       auth.companyId,
     );
-
-    if (!branch) {
-      throw BusinessException.notFound(
-        ErrorCodes.RECORD_NOT_FOUND,
-        'La sucursal no existe en esta empresa',
-      );
-    }
-
-    if (!branch.isActive) {
-      throw BusinessException.forbidden(
-        ErrorCodes.VALIDATION_ERROR,
-        'La sucursal no está activa',
-      );
-    }
 
     await this.meRepository.updateDefaultBranch(
       auth.userId,
@@ -129,9 +119,12 @@ export class MeService {
       dto.branchId,
     );
 
+    const accessToken = await this.authService.issueAccessToken(auth.userId);
+
     return {
       message: 'Sucursal activa actualizada',
       branchId: dto.branchId,
+      accessToken,
     };
   }
 }

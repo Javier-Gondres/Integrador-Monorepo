@@ -279,7 +279,6 @@ export function CajasScreen() {
       {modal?.type === "abrir" && (
         <AbrirTurnoModal
           caja={modal.caja}
-          branchId={selectedBranchId}
           onConfirm={handleConfirmAbrir}
           onClose={() => setModal(null)}
           loading={loading}
