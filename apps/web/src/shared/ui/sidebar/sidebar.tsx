@@ -9,6 +9,7 @@ import {
   LogOut,
   ShelvingUnit,
   Tag,
+  Trash2,
   Truck,
   Users,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const navItems = [
   { section: "Inventarios" },
   { label: "Stock", icon: ShelvingUnit, href: "/inventories" },
   { label: "Transferencias", icon: ArrowLeftRight, href: "/transferencias" },
+  { label: "Mermas", icon: Trash2, href: "/mermas" },
   { label: "Movimientos", icon: History, href: "/inventory-movements" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
