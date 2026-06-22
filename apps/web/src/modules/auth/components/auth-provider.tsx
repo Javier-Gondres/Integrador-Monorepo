@@ -19,6 +19,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       useAuthStore.getState();
 
     if (accessToken && user) {
+      if (user.companyId && !user.companySlug) {
+        void restoreSession()
+          .catch(() => {
+            clearAuth();
+          })
+          .finally(() => {
+            setAuthReady(true);
+          });
+        return;
+      }
+
       setAuthReady(true);
       return;
     }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
+import { Permission } from "@/modules/auth";
 import { DataTable, DataTableToolbar } from "@/shared/data-table";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { Select } from "@/shared/ui";
@@ -62,6 +63,7 @@ export function DiscountsTableContainer({
         refreshing={isFetching}
         createLabel="Nuevo Descuento"
         onCreate={onCreate}
+        createPermission={Permission.DISCOUNTS_CREATE}
       />
 
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

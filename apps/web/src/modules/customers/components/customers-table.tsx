@@ -1,8 +1,12 @@
+"use client";
+
+import { Permission } from "@repo/shared";
 import { Pencil, Trash2 } from "lucide-react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import type { DataTableColumn } from "@/shared/data-table";
 import { Button } from "@/shared/ui/button";
+import { Can } from "@/shared/ui/can";
 import { StatusToggle } from "@/shared/ui/status-toggle";
 
 import type { Customer } from "../types/customer.types";
@@ -53,12 +57,14 @@ export function getCustomersTableColumns(
       id: "status",
       header: "Estado",
       cell: (customer) => (
-        <StatusToggle
-          isActive={customer.isActive}
-          onToggle={() =>
-            actions.onToggleStatus(customer.id, customer.isActive)
-          }
-        />
+        <Can permission={Permission.CUSTOMERS_UPDATE}>
+          <StatusToggle
+            isActive={customer.isActive}
+            onToggle={() =>
+              actions.onToggleStatus(customer.id, customer.isActive)
+            }
+          />
+        </Can>
       ),
     },
     {
@@ -74,24 +80,28 @@ export function getCustomersTableColumns(
             gap: "8px",
           }}
         >
-          <Button
-            variant="icon"
-            onClick={() => actions.onEdit(customer)}
-            title="Editar"
-            style={{ width: "34px", height: "34px", borderRadius: "7px" }}
-            className="hover:border-blue-400 hover:text-blue-600 transition-colors"
-          >
-            <Pencil style={{ width: "14px", height: "14px" }} />
-          </Button>
-          <Button
-            variant="icon"
-            onClick={() => actions.onDelete(customer.id)}
-            title="Eliminar"
-            style={{ width: "34px", height: "34px", borderRadius: "7px" }}
-            className="hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-          >
-            <Trash2 style={{ width: "14px", height: "14px" }} />
-          </Button>
+          <Can permission={Permission.CUSTOMERS_UPDATE}>
+            <Button
+              variant="icon"
+              onClick={() => actions.onEdit(customer)}
+              title="Editar"
+              style={{ width: "34px", height: "34px", borderRadius: "7px" }}
+              className="hover:border-blue-400 hover:text-blue-600 transition-colors"
+            >
+              <Pencil style={{ width: "14px", height: "14px" }} />
+            </Button>
+          </Can>
+          <Can permission={Permission.CUSTOMERS_DELETE}>
+            <Button
+              variant="icon"
+              onClick={() => actions.onDelete(customer.id)}
+              title="Eliminar"
+              style={{ width: "34px", height: "34px", borderRadius: "7px" }}
+              className="hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <Trash2 style={{ width: "14px", height: "14px" }} />
+            </Button>
+          </Can>
         </div>
       ),
     },

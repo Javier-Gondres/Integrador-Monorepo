@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
+import { Permission } from "@/modules/auth";
 import { DataTable, DataTableToolbar } from "@/shared/data-table";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 
@@ -53,6 +54,7 @@ export function SuppliersTableContainer({
         refreshing={isFetching}
         createLabel="Nuevo Proveedor"
         onCreate={onCreate}
+        createPermission={Permission.SUPPLIERS_CREATE}
       />
 
       <DataTable

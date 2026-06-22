@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
+import { Permission } from "@/modules/auth";
 import { DataTable, DataTableToolbar } from "@/shared/data-table";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 
@@ -55,6 +56,7 @@ export function CategoriesTableContainer({
         refreshing={isFetching}
         createLabel="Nueva Categoría"
         onCreate={onCreate}
+        createPermission={Permission.CATEGORIES_CREATE}
       />
 
       <DataTable
