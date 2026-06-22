@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, prisma } from '@repo/db';
+import { InventoryAdjustmentReason, Prisma, prisma } from '@repo/db';
 import { PaginatedResult } from 'src/common/types/repository.types';
 
 import { NormalizedQueryInventoryMovement } from './dto/query-inventory-movement.dto';
@@ -61,5 +61,58 @@ export class InventoryMovementRepository {
         ],
       }),
     };
+  }
+
+  async createWasteTransaction(
+    companyId: string,
+    branchId: string,
+    productId: string,
+    quantity: number,
+    adjustmentReason: InventoryAdjustmentReason,
+    employeeId?: string,
+    notes?: string,
+    referenceNumber?: string,
+  ): Promise<InventoryMovementRecord> {
+    return prisma.$transaction(async (tx) => {
+      const inventory = await tx.inventory.findUnique({
+        where: {
+          branchId_productId: {
+            branchId,
+            productId,
+          },
+        },
+      });
+
+      if (!inventory) {
+        throw new Error('INVENTORY_NOT_FOUND');
+      }
+
+      const newQuantity = Number(inventory.quantity) - quantity;
+
+      if (newQuantity < 0) {
+        throw new Error('INSUFFICIENT_INVENTORY');
+      }
+
+      await tx.inventory.update({
+        where: { id: inventory.id },
+        data: { quantity: newQuantity },
+      });
+
+      const movement = await tx.inventoryMovement.create({
+        data: {
+          branchId,
+          productId,
+          type: 'WASTE',
+          quantity: quantity,
+          adjustmentReason,
+          notes,
+          referenceNumber,
+          performedByEmployeeId: employeeId,
+        },
+        select: inventoryMovementSelect,
+      });
+
+      return movement;
+    });
   }
 }
