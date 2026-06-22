@@ -5,7 +5,9 @@ import { mapInventoriesPageToUi } from "../mappers/inventory.mapper";
 import { inventoryKeys } from "../query-keys";
 import type { InventoryFilters } from "../types/inventory.types";
 
-export function useInfiniteInventories(filters?: Omit<InventoryFilters, "page">) {
+export function useInfiniteInventories(
+  filters?: Omit<InventoryFilters, "page">,
+) {
   return useInfiniteQuery({
     queryKey: [...inventoryKeys.list(filters), "infinite"],
     queryFn: async ({ pageParam = 1 }) => {

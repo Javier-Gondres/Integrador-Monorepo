@@ -12,7 +12,10 @@ interface WasteFormModalContainerProps {
   onClose: () => void;
 }
 
-export function WasteFormModalContainer({ branchId, onClose }: WasteFormModalContainerProps) {
+export function WasteFormModalContainer({
+  branchId,
+  onClose,
+}: WasteFormModalContainerProps) {
   const { mutateAsync: createWaste, isPending } = useCreateWasteMutation();
 
   const handleSubmit = async (data: CreateWastePayload) => {
@@ -32,7 +35,11 @@ export function WasteFormModalContainer({ branchId, onClose }: WasteFormModalCon
       title="Registrar Merma"
       description="Completa los detalles para registrar una salida por merma del inventario."
     >
-      <WasteForm branchId={branchId} onSubmit={handleSubmit} isSubmitting={isPending} />
+      <WasteForm
+        branchId={branchId}
+        onSubmit={handleSubmit}
+        isSubmitting={isPending}
+      />
     </Modal>
   );
 }

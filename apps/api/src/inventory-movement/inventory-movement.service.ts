@@ -16,7 +16,7 @@ const DEFAULT_TAKE = 10;
 export class InventoryMovementService {
   constructor(
     private readonly inventoryMovementRepository: InventoryMovementRepository,
-  ) { }
+  ) {}
 
   async findAllByBranch(
     company: CompanyContext,

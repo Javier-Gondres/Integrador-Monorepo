@@ -22,7 +22,7 @@ export function useIntersectionObserver({
           onIntersect();
         }
       },
-      { rootMargin }
+      { rootMargin },
     );
 
     const el = ref.current;

@@ -1,4 +1,10 @@
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/react";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -36,7 +42,10 @@ export function AsyncCombobox({
   placeholder = "Seleccione una opción...",
   disabled = false,
 }: AsyncComboboxProps) {
-  const selectedOption = useMemo(() => options.find((opt) => opt.id === value), [options, value]);
+  const selectedOption = useMemo(
+    () => options.find((opt) => opt.id === value),
+    [options, value],
+  );
 
   const observerRef = useIntersectionObserver({
     onIntersect: () => {
@@ -49,7 +58,11 @@ export function AsyncCombobox({
 
   return (
     <div className="relative w-full">
-      <Combobox value={selectedOption ?? null} onChange={(opt: AsyncComboboxOption | null) => onChange(opt?.id ?? "")} disabled={disabled}>
+      <Combobox
+        value={selectedOption ?? null}
+        onChange={(opt: AsyncComboboxOption | null) => onChange(opt?.id ?? "")}
+        disabled={disabled}
+      >
         <div className="relative">
           <ComboboxInput
             className="w-full h-10 px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -60,9 +73,15 @@ export function AsyncCombobox({
           />
           <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
             {isLoading ? (
-              <Loader2 className="w-4 h-4 text-gray-400 animate-spin" aria-hidden="true" />
+              <Loader2
+                className="w-4 h-4 text-gray-400 animate-spin"
+                aria-hidden="true"
+              />
             ) : (
-              <ChevronsUpDown className="w-4 h-4 text-gray-400" aria-hidden="true" />
+              <ChevronsUpDown
+                className="w-4 h-4 text-gray-400"
+                aria-hidden="true"
+              />
             )}
           </ComboboxButton>
         </div>
@@ -82,7 +101,9 @@ export function AsyncCombobox({
                 {({ selected }) => (
                   <>
                     <div className="flex flex-col">
-                      <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
+                      <span
+                        className={`block truncate ${selected ? "font-medium" : "font-normal"}`}
+                      >
                         {opt.name}
                       </span>
                       {opt.description && (

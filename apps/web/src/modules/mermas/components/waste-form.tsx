@@ -8,11 +8,17 @@ import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { AsyncCombobox, Button } from "@/shared/ui";
 import { Input, Textarea } from "@/shared/ui/input";
 
-import type { CreateWastePayload, InventoryAdjustmentReason } from "../types/waste.types";
+import type {
+  CreateWastePayload,
+  InventoryAdjustmentReason,
+} from "../types/waste.types";
 
 const schema = z.object({
   productId: z.string().min(1, "Producto es requerido"),
-  quantity: z.coerce.number().int("La cantidad debe ser un número entero").min(1, "La cantidad debe ser al menos 1"),
+  quantity: z.coerce
+    .number()
+    .int("La cantidad debe ser un número entero")
+    .min(1, "La cantidad debe ser al menos 1"),
   adjustmentReason: z.enum([
     "DAMAGE",
     "THEFT",
@@ -40,7 +46,11 @@ const REASON_OPTIONS = [
   { value: "OTHER", label: "Otro" },
 ];
 
-export function WasteForm({ branchId, onSubmit, isSubmitting }: WasteFormProps) {
+export function WasteForm({
+  branchId,
+  onSubmit,
+  isSubmitting,
+}: WasteFormProps) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 400);
 
@@ -57,7 +67,8 @@ export function WasteForm({ branchId, onSubmit, isSubmitting }: WasteFormProps) 
     take: 20,
   });
 
-  const inventories = inventoriesData?.pages.flatMap((page) => page.items) ?? [];
+  const inventories =
+    inventoriesData?.pages.flatMap((page) => page.items) ?? [];
 
   // Mapeamos a AsyncComboboxOption
   const options = inventories.map((inv: any) => ({
@@ -83,7 +94,10 @@ export function WasteForm({ branchId, onSubmit, isSubmitting }: WasteFormProps) 
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6 overflow-y-auto">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="p-6 space-y-6 overflow-y-auto"
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Producto - Toma ambas columnas si se desea, o una. Lo dejamos en 1 col completa para mejor lectura */}
         <div className="space-y-2 md:col-span-2">
@@ -105,7 +119,11 @@ export function WasteForm({ branchId, onSubmit, isSubmitting }: WasteFormProps) 
               />
             )}
           />
-          {errors.productId && <p className="text-sm text-red-500">{errors.productId.message as string}</p>}
+          {errors.productId && (
+            <p className="text-sm text-red-500">
+              {errors.productId.message as string}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -116,7 +134,11 @@ export function WasteForm({ branchId, onSubmit, isSubmitting }: WasteFormProps) 
             placeholder="Ej: 5"
             {...register("quantity")}
           />
-          {errors.quantity && <p className="text-sm text-red-500">{errors.quantity.message as string}</p>}
+          {errors.quantity && (
+            <p className="text-sm text-red-500">
+              {errors.quantity.message as string}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -131,7 +153,11 @@ export function WasteForm({ branchId, onSubmit, isSubmitting }: WasteFormProps) 
               </option>
             ))}
           </select>
-          {errors.adjustmentReason && <p className="text-sm text-red-500">{errors.adjustmentReason.message as string}</p>}
+          {errors.adjustmentReason && (
+            <p className="text-sm text-red-500">
+              {errors.adjustmentReason.message as string}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2 md:col-span-2">
@@ -143,20 +169,15 @@ export function WasteForm({ branchId, onSubmit, isSubmitting }: WasteFormProps) 
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <label className="text-sm font-medium text-gray-700">Nº de Referencia (Opcional)</label>
-          <Input
-            placeholder="Ej. ACTA-001"
-            {...register("referenceNumber")}
-          />
+          <label className="text-sm font-medium text-gray-700">
+            Nº de Referencia (Opcional)
+          </label>
+          <Input placeholder="Ej. ACTA-001" {...register("referenceNumber")} />
         </div>
       </div>
 
       <div className="pt-4 flex justify-end gap-2">
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={isSubmitting}
-        >
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
           {isSubmitting ? "Guardando..." : "Registrar Merma"}
         </Button>
       </div>

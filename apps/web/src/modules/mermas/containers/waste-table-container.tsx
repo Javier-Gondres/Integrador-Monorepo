@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useState } from "react";
 
 import { DataTable } from "@/shared/data-table/data-table";
@@ -26,7 +25,10 @@ const REASON_LABELS: Record<string, string> = {
   OTHER: "Otro",
 };
 
-export function WasteTableContainer({ branchId, onCreate }: WasteTableContainerProps) {
+export function WasteTableContainer({
+  branchId,
+  onCreate,
+}: WasteTableContainerProps) {
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearch = useDebouncedValue(searchValue, 500);
 
@@ -46,7 +48,9 @@ export function WasteTableContainer({ branchId, onCreate }: WasteTableContainerP
       header: "Producto",
       cell: (row) => (
         <div className="flex flex-col">
-          <span className="font-semibold text-gray-900">{row.product.name}</span>
+          <span className="font-semibold text-gray-900">
+            {row.product.name}
+          </span>
           <span className="text-xs text-gray-500">{row.product.code}</span>
         </div>
       ),
@@ -66,7 +70,14 @@ export function WasteTableContainer({ branchId, onCreate }: WasteTableContainerP
       header: "Motivo",
       align: "center",
       cell: (row) => (
-        <Badge variant={row.adjustmentReason === "EXPIRED" || row.adjustmentReason === "DAMAGE" ? "error" : "warning"}>
+        <Badge
+          variant={
+            row.adjustmentReason === "EXPIRED" ||
+            row.adjustmentReason === "DAMAGE"
+              ? "error"
+              : "warning"
+          }
+        >
           {REASON_LABELS[row.adjustmentReason] || row.adjustmentReason}
         </Badge>
       ),
