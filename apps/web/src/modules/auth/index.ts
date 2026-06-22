@@ -4,4 +4,5 @@ export { AuthProvider } from "./components/auth-provider";
 export { PermissionGuard } from "./components/permission-guard";
 export { useAuth } from "./hooks/use-auth";
 export { usePermissions } from "./hooks/use-permissions";
-export { Permission, type PermissionCode } from "@repo/shared";
+export { Permission, TenantRole, type PermissionCode } from "@repo/shared";
+export { canManageCompanyAccess } from "./hooks/use-permissions";

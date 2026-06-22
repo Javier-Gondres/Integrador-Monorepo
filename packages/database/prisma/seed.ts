@@ -6,11 +6,13 @@
  * Uso:
  *   pnpm --filter @repo/db run db:seed:dev
  *
- * Credenciales:
- *   superadmin@ejemplo.com / Password123  (SUPER_ADMIN, sin tenant)
- *   prueba@ejemplo.com / Password123  (OWNER)
- *   admin@ejemplo.com / Password123   (ADMIN)
- *   cajero@ejemplo.com / Password123    (CASHIER, vinculado a Employee)
+ * Credenciales (password: Password123):
+ *   superadmin@ejemplo.com  — SUPER_ADMIN, sin tenant
+ *   prueba@ejemplo.com      — OWNER
+ *   admin@ejemplo.com       — ADMIN
+ *   manager@ejemplo.com     — MANAGER
+ *   cajero@ejemplo.com      — CASHIER
+ *   inventario@ejemplo.com  — INVENTORY_ASSISTANT
  */
 import bcrypt from "bcrypt";
 import { ALL_PERMISSIONS, ROLE_PERMISSION_MATRIX } from "@repo/shared";
@@ -105,11 +107,25 @@ const DEMO_USERS: SeedUser[] = [
     defaultBranchName: "Sucursal Centro",
   },
   {
+    email: "manager@ejemplo.com",
+    firstName: "María",
+    lastName: "García",
+    role: RoleName.MANAGER,
+    defaultBranchName: "Sucursal Centro",
+  },
+  {
     email: "cajero@ejemplo.com",
     firstName: "Carlos",
     lastName: "Ruiz",
     role: RoleName.CASHIER,
     defaultBranchName: "Sucursal Norte",
+  },
+  {
+    email: "inventario@ejemplo.com",
+    firstName: "Ana",
+    lastName: "López",
+    role: RoleName.INVENTORY_ASSISTANT,
+    defaultBranchName: "Sucursal Centro",
   },
 ];
 
@@ -276,6 +292,7 @@ const DEMO_EMPLOYEES: DemoEmployee[] = [
     position: "Gerente de tienda",
     salary: 45000,
     branchName: "Sucursal Centro",
+    linkUserEmail: "manager@ejemplo.com",
     hireDate: new Date("2024-01-15"),
   },
   {
@@ -295,6 +312,7 @@ const DEMO_EMPLOYEES: DemoEmployee[] = [
     position: "Asistente de inventario",
     salary: 22000,
     branchName: "Sucursal Centro",
+    linkUserEmail: "inventario@ejemplo.com",
     hireDate: new Date("2025-02-10"),
   },
   {
@@ -1048,7 +1066,7 @@ async function ensureDemoCashRegisters(ctx: SeedContext) {
 async function ensureDemoCashShifts(ctx: SeedContext) {
   const centro = branchByName(ctx, "Sucursal Centro");
   const norte = branchByName(ctx, "Sucursal Norte");
-  const cashierCentro = employeeByEmail(ctx, "maria.garcia@empleados.seed");
+  const cashierCentro = employeeByEmail(ctx, "manager@ejemplo.com");
   const cashierNorte = employeeByEmail(ctx, "cajero@ejemplo.com");
 
   const closedShift = await prisma.cashShift.upsert({
@@ -1106,7 +1124,7 @@ async function ensureDemoPurchases(
   const lays = productByCode(ctx, "SNK-LAYS-40");
   const leche = productByCode(ctx, "LAC-LECHE-1L");
   const combo = productByCode(ctx, "COMBO-SNACK-BEB");
-  const receivedBy = employeeByEmail(ctx, "ana.lopez@empleados.seed");
+  const receivedBy = employeeByEmail(ctx, "inventario@ejemplo.com");
 
   const initialItems = [
     {
@@ -1276,7 +1294,7 @@ async function ensureDemoPurchases(
     },
   });
 
-  const inventoryAssistant = employeeByEmail(ctx, "ana.lopez@empleados.seed");
+  const inventoryAssistant = employeeByEmail(ctx, "inventario@ejemplo.com");
 
   await prisma.$transaction(async (tx) => {
     await recordMovementIfAbsent(
@@ -1834,7 +1852,7 @@ async function ensureDemoTransfer(ctx: SeedContext) {
   const centro = branchByName(ctx, "Sucursal Centro");
   const norte = branchByName(ctx, "Sucursal Norte");
   const cola355 = productByCode(ctx, "BEB-COLA-355");
-  const inventoryAssistant = employeeByEmail(ctx, "ana.lopez@empleados.seed");
+  const inventoryAssistant = employeeByEmail(ctx, "inventario@ejemplo.com");
   const transferQty = 20;
 
   await prisma.transfer.upsert({

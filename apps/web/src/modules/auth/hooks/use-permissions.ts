@@ -1,6 +1,14 @@
-import type { PermissionCode } from "@repo/shared";
+import { type PermissionCode, TenantRole } from "@repo/shared";
 
 import { useAuthStore } from "../store/auth-store";
+
+/** Paridad con `canAccessNav` para `{ type: "role", role: TenantRole.OWNER }`. */
+export function canManageCompanyAccess(
+  roleName: string | null | undefined,
+  isSuperAdmin: boolean,
+): boolean {
+  return roleName === TenantRole.OWNER || isSuperAdmin;
+}
 
 /**
  * Helper de autorización del lado del cliente para permisos de tenant (RBAC empresarial).
@@ -26,6 +34,8 @@ export function usePermissions() {
 
   const isSuperAdmin = user?.isSuperAdmin ?? false;
   const permissions = user?.permissions ?? [];
+  const roleName = user?.role?.name;
+  const canManageCompany = canManageCompanyAccess(roleName, isSuperAdmin);
 
   /** Devuelve true si el usuario tiene el permiso especificado. */
   function can(permission: PermissionCode): boolean {
@@ -42,5 +52,13 @@ export function usePermissions() {
     return perms.some((p) => permissions.includes(p));
   }
 
-  return { can, canAll, canAny, isSuperAdmin, permissions };
+  return {
+    can,
+    canAll,
+    canAny,
+    isSuperAdmin,
+    canManageCompany,
+    roleName,
+    permissions,
+  };
 }
