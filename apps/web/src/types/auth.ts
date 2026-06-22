@@ -20,6 +20,7 @@ export interface AuthUser {
   lastName: string;
   isSuperAdmin: boolean;
   companyId?: string;
+  companySlug?: string;
   branchId?: string;
   role?: Role;
   permissions: PermissionCode[];

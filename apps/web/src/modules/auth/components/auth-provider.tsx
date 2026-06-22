@@ -15,10 +15,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initialized.current = true;
 
-    const { accessToken, setAuthReady, clearAuth } = useAuthStore.getState();
+    const { accessToken, user, setAuthReady, clearAuth } =
+      useAuthStore.getState();
 
-    if (accessToken) {
+    if (accessToken && user) {
       setAuthReady(true);
+      return;
+    }
+
+    if (accessToken && !user) {
+      void restoreSession()
+        .catch(() => {
+          clearAuth();
+        })
+        .finally(() => {
+          setAuthReady(true);
+        });
       return;
     }
 

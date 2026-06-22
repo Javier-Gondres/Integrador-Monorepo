@@ -1,6 +1,6 @@
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
-
 import type { PermissionCode } from '@repo/shared';
+
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { CompanyGuard } from '../../company/guards/company.guard';
 import { PermissionGuard } from '../guards/permission.guard';

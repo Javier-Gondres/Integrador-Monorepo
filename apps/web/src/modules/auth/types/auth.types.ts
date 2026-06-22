@@ -30,6 +30,15 @@ export interface BasicProfileResponse {
   lastName: string;
 }
 
+export interface MyCompanyResponse {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  role: string;
+  defaultBranchId: string | null;
+}
+
 export interface SwitchBranchResponse {
   message: string;
   branchId: string;

@@ -7,4 +7,5 @@ export const DEV_TEST_USER = {
 export const AUTH_ROUTES = {
   login: "/",
   dashboard: "/dashboard",
+  forbidden: "/forbidden",
 } as const;

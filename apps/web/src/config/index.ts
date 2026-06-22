@@ -12,3 +12,10 @@ export {
   type NavLink,
   type NavSection,
 } from "./nav";
+export {
+  canAccessRoute,
+  getRequiredPermission,
+  resolveRouteAccess,
+  ROUTE_ACCESS_RULES,
+  type RouteAccessRule,
+} from "./route-access";

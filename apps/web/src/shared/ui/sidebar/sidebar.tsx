@@ -24,9 +24,9 @@ export function Sidebar() {
         isSuperAdmin,
         roleName: user?.role?.name,
         hasTenant: Boolean(user?.companyId),
-        companySlug: null,
+        companySlug: user?.companySlug ?? null,
       }),
-    [can, isSuperAdmin, user?.role?.name, user?.companyId],
+    [can, isSuperAdmin, user?.role?.name, user?.companyId, user?.companySlug],
   );
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "Usuario";
