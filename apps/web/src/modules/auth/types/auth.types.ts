@@ -39,6 +39,14 @@ export interface MyCompanyResponse {
   defaultBranchId: string | null;
 }
 
+export interface MyBranchResponse {
+  id: string;
+  companyId: string;
+  name: string;
+  address: string | null;
+  isActive: boolean;
+}
+
 export interface SwitchBranchResponse {
   message: string;
   branchId: string;

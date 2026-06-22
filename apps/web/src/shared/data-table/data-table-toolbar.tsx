@@ -46,11 +46,13 @@ export function DataTableToolbar({
             className={refreshing ? "animate-spin" : ""}
           />
         </Button>
-        {createPermission ? (
-          <Can permission={createPermission}>{createButton}</Can>
-        ) : (
-          createButton
-        )}
+        {createLabel ? (
+          createPermission ? (
+            <Can permission={createPermission}>{createButton}</Can>
+          ) : (
+            createButton
+          )
+        ) : null}
       </div>
     </div>
   );

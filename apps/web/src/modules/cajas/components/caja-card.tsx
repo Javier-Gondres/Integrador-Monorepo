@@ -1,5 +1,6 @@
 "use client";
 
+import { Permission } from "@repo/shared";
 import {
   Clock,
   History,
@@ -11,6 +12,7 @@ import {
 import Link from "next/link";
 
 import { ERP_COLORS as C } from "@/constants/theme";
+import { Can } from "@/shared/ui/can";
 
 import type { Caja } from "../types/caja.types";
 import { formatCurrency, formatElapsed } from "../utils/format";
@@ -74,22 +76,22 @@ export function CajaCard({ caja, onAbrir, onCerrar }: Props) {
             <Link
               href={`/cajas/${caja.id}`}
               title="Ver historial"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 26,
-                height: 26,
-                borderRadius: 6,
-                background: C.pageBg,
-                color: C.mutedText,
-                border: `1px solid ${C.cardBorder}`,
-                flexShrink: 0,
-              }}
-              className="hover:border-blue-400 hover:text-blue-500 transition-colors"
-            >
-              <History size={13} />
-            </Link>
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 26,
+                  height: 26,
+                  borderRadius: 6,
+                  background: C.pageBg,
+                  color: C.mutedText,
+                  border: `1px solid ${C.cardBorder}`,
+                  flexShrink: 0,
+                }}
+                className="hover:border-blue-400 hover:text-blue-500 transition-colors"
+              >
+                <History size={13} />
+              </Link>
           </div>
           {caja.descripcion && (
             <p style={{ fontSize: 12, color: C.mutedText, margin: 0 }}>
@@ -224,58 +226,73 @@ export function CajaCard({ caja, onAbrir, onCerrar }: Props) {
       )}
 
       {/* footer */}
-      <div
-        style={{
-          borderTop: `1px solid ${C.divider}`,
-          padding: "14px 20px",
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
+      <Can permission={Permission.CASH_CLOSE}>
         {abierta ? (
-          <button
-            onClick={() => onCerrar(caja)}
+          <div
             style={{
+              borderTop: `1px solid ${C.divider}`,
+              padding: "14px 20px",
               display: "flex",
-              alignItems: "center",
-              gap: 7,
-              padding: "9px 18px",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              border: `1px solid #fecaca`,
-              cursor: "pointer",
-              background: C.dangerBg,
-              color: C.danger,
+              justifyContent: "flex-end",
             }}
-            className="hover:bg-red-100 transition-colors"
           >
-            <StopCircle size={15} />
-            Cerrar turno
-          </button>
-        ) : (
-          <button
-            onClick={() => onAbrir(caja)}
+            <button
+              onClick={() => onCerrar(caja)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "9px 18px",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                border: `1px solid #fecaca`,
+                cursor: "pointer",
+                background: C.dangerBg,
+                color: C.danger,
+              }}
+              className="hover:bg-red-100 transition-colors"
+            >
+              <StopCircle size={15} />
+              Cerrar turno
+            </button>
+          </div>
+        ) : null}
+      </Can>
+
+      <Can permission={Permission.CASH_OPEN}>
+        {!abierta ? (
+          <div
             style={{
+              borderTop: `1px solid ${C.divider}`,
+              padding: "14px 20px",
               display: "flex",
-              alignItems: "center",
-              gap: 7,
-              padding: "9px 18px",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              border: "none",
-              cursor: "pointer",
-              background: C.greenText,
-              color: "#fff",
+              justifyContent: "flex-end",
             }}
-            className="hover:opacity-90 transition-opacity"
           >
-            <PlayCircle size={15} />
-            Abrir turno
-          </button>
-        )}
-      </div>
+            <button
+              onClick={() => onAbrir(caja)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "9px 18px",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                border: "none",
+                cursor: "pointer",
+                background: C.greenText,
+                color: "#fff",
+              }}
+              className="hover:opacity-90 transition-opacity"
+            >
+              <PlayCircle size={15} />
+              Abrir turno
+            </button>
+          </div>
+        ) : null}
+      </Can>
     </div>
   );
 }

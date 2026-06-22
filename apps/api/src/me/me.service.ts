@@ -77,26 +77,31 @@ export class MeService {
       throw AuthException.unauthorizedCompanyAccess();
     }
 
-    const membership = await this.companyRepository.findMyCompanyForUser(
-      auth.userId,
-    );
+    let branchId = auth.branchId;
 
-    if (!membership?.defaultBranchId) {
+    if (!branchId) {
+      const membership = await this.companyRepository.findMyCompanyForUser(
+        auth.userId,
+      );
+      branchId = membership?.defaultBranchId ?? null;
+    }
+
+    if (!branchId) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        'No tienes una sucursal por defecto asignada',
+        'No tienes una sucursal activa asignada',
       );
     }
 
     const branch = await this.branchRepository.findByIdInCompany(
-      membership.defaultBranchId,
+      branchId,
       auth.companyId,
     );
 
     if (!branch) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        'La sucursal por defecto no existe en esta empresa',
+        'La sucursal activa no existe en esta empresa',
       );
     }
 
