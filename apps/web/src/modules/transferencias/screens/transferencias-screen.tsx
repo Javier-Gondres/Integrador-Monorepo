@@ -4,9 +4,8 @@ import { AlertTriangle, Send } from "lucide-react";
 import { useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
-import { PageHeader } from "@/shared/ui";
+import { PageHeader, SucursalPanel } from "@/shared/ui";
 
-import { SucursalPanel } from "../components/sucursal-panel";
 import { TransferenciaArrow } from "../components/transferencia-arrow";
 import { TransferenciaItemsForm } from "../components/transferencia-items-form";
 import { TransferenciaResumen } from "../components/transferencia-resumen";
@@ -108,7 +107,7 @@ export function TransferenciasScreen() {
             selectedId={origenId}
             onSelect={(id) => {
               setOrigenId(id);
-              setItems([]); // Clear items when origin changes as stock needs revalidation
+              setItems([]);
             }}
             disabledId={destinoId}
           />
