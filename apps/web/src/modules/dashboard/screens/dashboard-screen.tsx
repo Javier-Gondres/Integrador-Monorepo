@@ -1,46 +1,8 @@
 import {
-  ArrowRight,
-  CircleCheckBig,
-  Package,
-  Tag,
-  Truck,
-  Users,
-} from "lucide-react";
-import Link from "next/link";
-
+  DashboardHeroActions,
+  DashboardQuickLinksSection,
+} from "../components/dashboard-quick-links";
 import styles from "./dashboard-screen.module.css";
-
-const availableModules = [
-  {
-    title: "Productos",
-    description: "Registra tu catálogo y prepara la base operativa del ERP.",
-    href: "/products",
-    icon: Package,
-    tone: "blue",
-  },
-  {
-    title: "Categorías",
-    description:
-      "Organiza los productos por familias y estructura el catálogo.",
-    href: "/categories",
-    icon: Tag,
-    tone: "emerald",
-  },
-  {
-    title: "Empleados",
-    description: "Da de alta al equipo que va a operar el sistema.",
-    href: "/employees",
-    icon: Users,
-    tone: "violet",
-  },
-  {
-    title: "Proveedores",
-    description: "Centraliza los contactos que abastecen la operación.",
-    href: "/suppliers",
-    icon: Truck,
-    tone: "amber",
-  },
-];
 
 export function DashboardScreen() {
   return (
@@ -54,51 +16,11 @@ export function DashboardScreen() {
             administrar tu negocio.
           </p>
 
-          <div className={styles.heroActions}>
-            <Link href="/products" className={styles.primaryAction}>
-              Abrir productos
-              <ArrowRight size={16} />
-            </Link>
-            <Link href="/categories" className={styles.secondaryAction}>
-              Revisar categorías
-            </Link>
-          </div>
+          <DashboardHeroActions />
         </div>
       </section>
 
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <div>
-            <p className={styles.sectionKicker}>Atajo rápido</p>
-            <h2 className={styles.sectionTitle}>
-              Accesos directos al catálogo
-            </h2>
-          </div>
-        </div>
-
-        <div className={styles.quickGrid}>
-          {availableModules.map((module) => {
-            const Icon = module.icon;
-
-            return (
-              <Link
-                key={module.title}
-                href={module.href}
-                className={styles.quickCard}
-              >
-                <span className={styles.quickIcon}>
-                  <Icon size={16} />
-                </span>
-                <span className={styles.quickText}>
-                  <strong>{module.title}</strong>
-                  <span>Ir al formulario de registro</span>
-                </span>
-                <CircleCheckBig size={16} className={styles.quickMark} />
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      <DashboardQuickLinksSection />
     </main>
   );
 }

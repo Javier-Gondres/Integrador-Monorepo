@@ -1,9 +1,9 @@
 import { apiFetch } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 
-import { getSession } from "./get-session";
 import { useAuthStore } from "../store/auth-store";
 import type { SwitchBranchResponse } from "../types/auth.types";
+import { getSession } from "./get-session";
 
 /**
  * Cambia la sucursal activa del usuario, renueva el access token

@@ -1,6 +1,6 @@
 export { Badge } from "./badge";
-export { Can } from "./can";
 export { Button } from "./button";
+export { Can } from "./can";
 export { Input, SearchInput, Textarea } from "./input";
 export { Modal } from "./modal";
 export { PageHeader } from "./page-header";
