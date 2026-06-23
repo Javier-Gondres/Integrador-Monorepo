@@ -11,6 +11,8 @@ import {
 } from "@/config/platform-nav";
 import { useAuth, usePermissions } from "@/modules/auth";
 
+import { isNavLinkActive } from "./is-nav-link-active";
+
 type PlatformNavItem = {
   label: string;
   href: string;
@@ -22,12 +24,15 @@ export function PlatformSidebar() {
   const { logout, user } = useAuth();
   const { isSuperAdmin } = usePermissions();
 
-  const navItems = useMemo((): PlatformNavItem[] => {
+  const { navItems, navHrefs } = useMemo(() => {
     const items: PlatformNavItem[] = [...PLATFORM_NAV_ITEMS];
     if (user?.companyId) {
       items.push(TENANT_NAV_LINK);
     }
-    return items;
+    return {
+      navItems: items,
+      navHrefs: items.map((item) => item.href),
+    };
   }, [user?.companyId]);
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "Super Admin";
@@ -48,8 +53,7 @@ export function PlatformSidebar() {
         <p className="sidebar-section">Administración</p>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active = isNavLinkActive(pathname, item.href, navHrefs);
 
           return (
             <Link

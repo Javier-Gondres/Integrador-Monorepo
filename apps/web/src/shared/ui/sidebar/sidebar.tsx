@@ -9,25 +9,31 @@ import {
   DASHBOARD_NAV_ITEMS,
   filterNavItems,
   isNavSection,
+  type NavLink,
 } from "@/config/nav";
 import { useAuth, usePermissions } from "@/modules/auth";
+
+import { isNavLinkActive } from "./is-nav-link-active";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const { can, isSuperAdmin } = usePermissions();
 
-  const navItems = useMemo(
-    () =>
-      filterNavItems(DASHBOARD_NAV_ITEMS, {
-        can,
-        isSuperAdmin,
-        roleName: user?.role?.name,
-        hasTenant: Boolean(user?.companyId),
-        companySlug: user?.companySlug ?? null,
-      }),
-    [can, isSuperAdmin, user?.role?.name, user?.companyId, user?.companySlug],
-  );
+  const { navItems, navHrefs } = useMemo(() => {
+    const items = filterNavItems(DASHBOARD_NAV_ITEMS, {
+      can,
+      isSuperAdmin,
+      roleName: user?.role?.name,
+      hasTenant: Boolean(user?.companyId),
+      companySlug: user?.companySlug ?? null,
+    });
+    const hrefs = items
+      .filter((item): item is NavLink => !isNavSection(item))
+      .map((item) => item.href);
+
+    return { navItems: items, navHrefs: hrefs };
+  }, [can, isSuperAdmin, user?.role?.name, user?.companyId, user?.companySlug]);
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "Usuario";
 
@@ -47,15 +53,17 @@ export function Sidebar() {
         {navItems.map((item, i) => {
           if (isNavSection(item)) {
             return (
-              <p key={`section-${item.section}-${i}`} className="sidebar-section">
+              <p
+                key={`section-${item.section}-${i}`}
+                className="sidebar-section"
+              >
                 {item.section}
               </p>
             );
           }
 
           const Icon = item.icon;
-          const active =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active = isNavLinkActive(pathname, item.href, navHrefs);
 
           return (
             <Link
