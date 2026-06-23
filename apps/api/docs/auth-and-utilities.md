@@ -273,7 +273,23 @@ findAll(@CompanyId() companyId: string) { ... }
 ### `PlatformAdminGuard`
 
 - Archivo: `src/common/platform/guards/platform-admin.guard.ts`
-- Implementado; **sin rutas** de plataforma aún (`@RequirePlatformAdmin()`)
+- Implementado en rutas `/platform/*` (`@RequirePlatformAdmin()`)
+- Solo valida `auth.isSuperAdmin`; **sin** `CompanyGuard` ni `PermissionGuard`
+
+### `/platform` (administración SaaS)
+
+Todos los endpoints usan `@RequirePlatformAdmin()` a nivel de controller.
+
+| Método   | Ruta                                 | Descripción                       |
+| -------- | ------------------------------------ | --------------------------------- |
+| `GET`    | `/platform/overview`                 | Totales de empresas activas/inactivas |
+| `GET`    | `/platform/companies`                | Listado paginado cross-tenant     |
+| `GET`    | `/platform/companies/:id`            | Detalle                           |
+| `POST`   | `/platform/companies`                | Company + branch + owner          |
+| `PATCH`  | `/platform/companies/:id/activate`   | Reactivar tenant                  |
+| `PATCH`  | `/platform/companies/:id/deactivate` | Suspender tenant                  |
+
+Ver también: `docs/platform-admin-roadmap.md`.
 
 ### `BranchAccessService` (capa 2 — sucursal)
 

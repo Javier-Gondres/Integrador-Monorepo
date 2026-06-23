@@ -200,6 +200,7 @@ Actor de **plataforma** (operador del SaaS), no empleado ni dueño de una tienda
 - No reemplaza al `OWNER` dentro de la empresa: el Owner configura sucursales, empleados, catálogo, etc.
 - No debe confundirse con `RoleName.OWNER`: el Owner es **tenant-scoped**; el Super Admin es **platform-scoped**.
 - **Creación de usuarios:** el Super Admin provisiona el tenant (empresa + owner inicial y, en el futuro, operadores de plataforma). **No** comparte el mismo flujo que el Owner, que solo **invita** usuarios a su empresa. Detalle: `docs/user-management-roadmap.md`.
+- **Regla enforceada (Opción A):** un Super Admin **no puede** tener `UserCompany`. `POST /companies` y `createWithOnboarding` lo rechazan; el JWT ignora membresía tenant si `isSuperAdmin` (`super-admin-tenant.policy.ts`).
 
 ```text
 SUPER_ADMIN     →  opera el producto (muchas empresas)
@@ -427,14 +428,28 @@ erDiagram
 | Enum `RoleName` + seed `RolePermission`    | Implementado                                          |
 | Jerarquía roles (`assert-assignable-role`) | Implementado (users / employees.create)               |
 | Política empleado ↔ sucursal + `openShift` | Implementado                                          |
-| `User.isSuperAdmin` + guard plataforma     | Infra lista; **sin rutas `/platform`**                |
-| UI permisos (`usePermissions`, `<Can>`)    | Hook/componente listos; adopción parcial en pantallas |
+| `User.isSuperAdmin` + guard plataforma     | Implementado; rutas `/platform/*` + UI web        |
+| UI permisos (`usePermissions`, `<Can>`)    | Implementado en pantallas tenant                    |
+| UI plataforma (`/platform/*`, `CanPlatformAdmin`) | Implementado (empresas + overview)          |
 
 Los permisos tenant se derivan de `UserCompany.role` al emitir JWT (login/refresh/switchBranch). **No** mezclar con `isSuperAdmin` en endpoints tenant.
 
 Documentación detallada: `apps/api/docs/tenant-access.md`.
 
-**Siguiente paso:** rutas y frontend de administración de plataforma (`@RequirePlatformAdmin()`), no reimplementar RBAC tenant.
+**Siguiente paso:** ampliar plataforma (usuarios globales, auditoría, impersonación). RBAC tenant y UI base ya adoptados.
+
+### Rutas de plataforma implementadas (API + web)
+
+| Método   | Ruta                              | Descripción                          |
+| -------- | --------------------------------- | ------------------------------------ |
+| `GET`    | `/platform/overview`              | Métricas de tenants                  |
+| `GET`    | `/platform/companies`             | Listado paginado cross-tenant        |
+| `GET`    | `/platform/companies/:id`         | Detalle de empresa                   |
+| `POST`   | `/platform/companies`             | Company + branch + owner (`User`)    |
+| `PATCH`  | `/platform/companies/:id/activate`   | Reactivar tenant                  |
+| `PATCH`  | `/platform/companies/:id/deactivate` | Suspender tenant                  |
+
+Web: `/platform/dashboard`, `/platform/companies` — protegidas por `PlatformGuard` (`isSuperAdmin`). Super Admin **sin** tenant es redirigido aquí tras login.
 
 ---
 

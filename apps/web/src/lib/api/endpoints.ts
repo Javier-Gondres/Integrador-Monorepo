@@ -62,6 +62,13 @@ export const ENDPOINTS = {
     activate: (id: string) => `/users/${id}/activate`,
     deactivate: (id: string) => `/users/${id}/deactivate`,
   },
+  platform: {
+    overview: "/platform/overview",
+    companies: "/platform/companies",
+    companyById: (id: string) => `/platform/companies/${id}`,
+    activateCompany: (id: string) => `/platform/companies/${id}/activate`,
+    deactivateCompany: (id: string) => `/platform/companies/${id}/deactivate`,
+  },
   cashRegisters: {
     root: "/cash-registers",
     byId: (id: string) => `/cash-registers/${id}`,

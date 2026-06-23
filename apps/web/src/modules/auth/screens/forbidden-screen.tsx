@@ -16,6 +16,11 @@ const MESSAGES = {
     description:
       "Tu cuenta no tiene una empresa activa asignada. Las pantallas del ERP requieren membresía tenant.",
   },
+  "platform-admin": {
+    title: "Acceso restringido a plataforma",
+    description:
+      "Esta sección es exclusiva para Super Admin. Si necesitas operar el ERP de una empresa, usa el dashboard tenant.",
+  },
 } as const;
 
 const primaryLinkClassName =
@@ -26,6 +31,9 @@ type ForbiddenReason = keyof typeof MESSAGES;
 function resolveReason(raw: string | null): ForbiddenReason {
   if (raw === "no-tenant") {
     return "no-tenant";
+  }
+  if (raw === "platform-admin") {
+    return "platform-admin";
   }
   return "no-permission";
 }
@@ -49,6 +57,10 @@ export function ForbiddenScreen() {
           {reason === "no-tenant" ? (
             <Link href={AUTH_ROUTES.login} className={primaryLinkClassName}>
               Volver al inicio
+            </Link>
+          ) : reason === "platform-admin" ? (
+            <Link href={AUTH_ROUTES.dashboard} className={primaryLinkClassName}>
+              Ir al dashboard
             </Link>
           ) : (
             <Link href={AUTH_ROUTES.dashboard} className={primaryLinkClassName}>

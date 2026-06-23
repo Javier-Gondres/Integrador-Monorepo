@@ -220,6 +220,7 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | `branches`    | Pantalla legacy migrada (lista + CRUD básico)       |
 | `auth`        | Scaffold (API hooks, sin UI de login aún)           |
 | `users`       | **Provisional** — CRUD en `/users`; ver nota §18.1   |
+| `platform`    | Admin SaaS — `/platform/*` (Super Admin)             |
 | `roles`       | Scaffold RBAC                                       |
 | `permissions` | Scaffold RBAC                                       |
 
@@ -981,6 +982,28 @@ La pantalla `/users` y el módulo `modules/users/` son **provisionales**. Implem
 - Personal operativo con ficha laboral sigue dándose de alta por **`/employees`** (`POST /employees`), no por sustituir ese flujo con `/users`.
 
 Documentación completa: [`docs/user-management-roadmap.md`](../../docs/user-management-roadmap.md).
+
+### 18.2 Super Admin — plataforma (`/platform/*`)
+
+Separado del RBAC tenant. Usa `isSuperAdmin` del JWT, **no** `can()` ni `<Can>`.
+
+| Componente | Uso |
+| ---------- | --- |
+| `PlatformGuard` | Protege layout `(platform)` — solo Super Admin |
+| `CanPlatformAdmin` | Equivalente UI de `@RequirePlatformAdmin()` |
+| `PlatformSidebar` | Nav: panel + empresas (+ enlace ERP si tiene tenant) |
+| `getPostLoginRoute()` | Super Admin sin `companyId` → `/platform/dashboard` |
+
+Rutas web:
+
+| URL | Pantalla |
+| --- | -------- |
+| `/platform/dashboard` | Métricas de tenants |
+| `/platform/companies` | Alta/suspensión de empresas + owner inicial |
+
+API: `GET|POST /platform/companies`, `GET /platform/overview` — ver `docs/platform-admin-roadmap.md`.
+
+El ítem **Admin SaaS** en el sidebar tenant (`access: { type: "platform" }`) enlaza a plataforma cuando el Super Admin también opera un tenant.
 
 ---
 

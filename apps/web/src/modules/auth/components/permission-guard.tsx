@@ -18,6 +18,7 @@ type PermissionGuardProps = {
  * Complementa al sidebar: bloquea acceso directo por URL.
  *
  * - `/forbidden` siempre permitida (evita loop de redirect).
+ * - Super Admin sin tenant → redirige a `/platform/dashboard`.
  * - Rutas sin regla en `route-access.ts` pasan (404 de Next si no existen).
  * - El backend sigue siendo la autoridad real.
  */
@@ -29,6 +30,7 @@ export function PermissionGuard({ children }: PermissionGuardProps) {
   const { can, isSuperAdmin } = usePermissions();
 
   const isForbiddenPage = pathname === AUTH_ROUTES.forbidden;
+
   const allowed = isForbiddenPage
     ? true
     : canAccessRoute(pathname, {
@@ -39,19 +41,37 @@ export function PermissionGuard({ children }: PermissionGuardProps) {
       });
 
   useEffect(() => {
-    if (!isAuthReady || !user || isForbiddenPage || allowed) {
+    if (!isAuthReady || !user || isForbiddenPage) {
       return;
     }
 
-    const reason = user.companyId ? "no-permission" : "no-tenant";
-    router.replace(`${AUTH_ROUTES.forbidden}?reason=${reason}`);
-  }, [allowed, isAuthReady, isForbiddenPage, router, user]);
+    if (!user.companyId && isSuperAdmin) {
+      router.replace(AUTH_ROUTES.platformDashboard);
+      return;
+    }
+
+    if (!user.companyId) {
+      router.replace(`${AUTH_ROUTES.forbidden}?reason=no-tenant`);
+      return;
+    }
+
+    if (!allowed) {
+      router.replace(`${AUTH_ROUTES.forbidden}?reason=no-permission`);
+    }
+  }, [
+    allowed,
+    isAuthReady,
+    isForbiddenPage,
+    isSuperAdmin,
+    router,
+    user,
+  ]);
 
   if (!isAuthReady || !user) {
     return null;
   }
 
-  if (!isForbiddenPage && !allowed) {
+  if (!isForbiddenPage && (!user.companyId || !allowed)) {
     return null;
   }
 

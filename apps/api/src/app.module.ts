@@ -12,6 +12,7 @@ import { CustomersModule } from './customers/customers.module';
 import { DiscountsModule } from './discounts/discounts.module';
 import { EmployeesModule } from './employees/employees.module';
 import { MeModule } from './me/me.module';
+import { PlatformModule } from './platform/platform.module';
 import { ProductsModule } from './products/products.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { UsersModule } from './users/users.module';
@@ -33,6 +34,7 @@ const envFilePath =
     CompanyModule,
     BranchModule,
     MeModule,
+    PlatformModule,
     EmployeesModule,
     DiscountsModule,
     SuppliersModule,

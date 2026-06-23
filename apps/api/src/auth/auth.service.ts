@@ -17,6 +17,7 @@ import {
   UserAuthContext,
 } from './auth.types';
 import { REFRESH_TOKEN_MAX_AGE_MS } from './refresh-token.cookie';
+import { stripTenantMembershipForSuperAdmin } from '../common/platform';
 
 const ACCESS_TOKEN_DURATION = '15m' as const;
 const REFRESH_TOKEN_DURATION = '7d' as const;
@@ -41,7 +42,7 @@ export class AuthService {
     // Ver comentario en UserCompany en auth.prisma para el razonamiento completo.
     const membership = user.memberships[0] ?? null;
 
-    return {
+    return stripTenantMembershipForSuperAdmin({
       id: user.id,
       email: user.email,
       isActive: user.isActive,
@@ -58,7 +59,7 @@ export class AuthService {
             },
           }
         : null,
-    };
+    });
   }
 
   async isUserActive(userId: string): Promise<boolean> {
@@ -163,14 +164,18 @@ export class AuthService {
     userId: string,
     userContext: UserAuthContext | null,
   ): AccessTokenPayload {
+    const isSuperAdmin = userContext?.isSuperAdmin ?? false;
+    const membership =
+      isSuperAdmin ? null : (userContext?.membership ?? null);
+
     return {
       sub: userId,
       email: userContext?.email ?? '',
-      companyId: userContext?.membership?.companyId ?? null,
-      branchId: userContext?.membership?.defaultBranchId ?? null,
-      role: userContext?.membership?.role.name ?? null,
-      permissions: userContext?.membership?.role.permissions ?? [],
-      isSuperAdmin: userContext?.isSuperAdmin ?? false,
+      companyId: membership?.companyId ?? null,
+      branchId: membership?.defaultBranchId ?? null,
+      role: membership?.role.name ?? null,
+      permissions: membership?.role.permissions ?? [],
+      isSuperAdmin,
     };
   }
 

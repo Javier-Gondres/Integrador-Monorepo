@@ -9,10 +9,10 @@ import { getErrorMessage } from "@/lib/api/errors";
 import { getSession } from "../api/get-session";
 import { login as loginApi } from "../api/login";
 import { logout as logoutApi } from "../api/logout";
-import { AUTH_ROUTES } from "../constants";
 import { authKeys } from "../query-keys";
 import { useAuthStore } from "../store/auth-store";
 import type { LoginCredentials } from "../types/auth.types";
+import { getPostLoginRoute } from "../utils/post-login-route";
 
 export function useAuth() {
   const queryClient = useQueryClient();
@@ -33,10 +33,10 @@ export function useAuth() {
 
       return token;
     },
-    onSuccess: () => {
+    onSuccess: (_token, _variables, _context) => {
       void queryClient.invalidateQueries({ queryKey: authKeys.all });
       toast.success("Sesión iniciada");
-      router.replace(AUTH_ROUTES.dashboard);
+      router.replace(getPostLoginRoute(useAuthStore.getState().user));
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "No se pudo iniciar sesión"));

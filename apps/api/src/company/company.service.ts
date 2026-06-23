@@ -8,6 +8,7 @@ import {
   assertCompanyAccessOrPlatformAdmin,
 } from '../common/company';
 import { BusinessException, ErrorCodes } from '../common/errors';
+import { assertSuperAdminCannotJoinTenant } from '../common/platform';
 import { CompanyRepository } from './company.repository';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -18,9 +19,12 @@ const DEFAULT_BRANCH_NAME = 'Sucursal principal';
 export class CompanyService {
   constructor(private readonly companyRepository: CompanyRepository) {}
 
-  async createOnboarding(userId: string, dto: CreateCompanyDto) {
-    const hasMembership =
-      await this.companyRepository.hasActiveMembership(userId);
+  async createOnboarding(auth: AuthContext, dto: CreateCompanyDto) {
+    assertSuperAdminCannotJoinTenant(auth);
+
+    const hasMembership = await this.companyRepository.hasActiveMembership(
+      auth.userId,
+    );
     if (hasMembership) {
       throw BusinessException.conflict(
         ErrorCodes.DUPLICATE_RECORD,
@@ -43,7 +47,7 @@ export class CompanyService {
     }
 
     return this.companyRepository.createWithOnboarding({
-      userId,
+      userId: auth.userId,
       name: dto.name.trim(),
       slug: companySlug,
       rnc,

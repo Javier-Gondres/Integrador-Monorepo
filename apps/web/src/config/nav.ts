@@ -11,6 +11,7 @@ import {
   type LucideIcon,
   MapPin,
   Percent,
+  Shield,
   Tag,
   Truck,
   UserCog,
@@ -23,12 +24,14 @@ import {
  * - `permission`: RBAC empresarial vía JWT (`can()`). `isSuperAdmin` NO hace bypass.
  * - `role`: pantallas de administración de empresa (equivalente a `@RequireCompanyOwnerOrPlatformAdmin`).
  *   Super Admin sí ve estos ítems (paridad con el API).
+ * - `platform`: rutas `/platform/*` — solo Super Admin (`isSuperAdmin`).
  * - `public`: visible para cualquier usuario autenticado con tenant activo.
  */
 export type NavAccess =
   | { type: "public" }
   | { type: "permission"; permission: PermissionCode }
-  | { type: "role"; role: TenantRoleName };
+  | { type: "role"; role: TenantRoleName }
+  | { type: "platform" };
 
 export type NavSection = {
   section: string;
@@ -136,6 +139,13 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
     dynamicSlug: true,
     access: { type: "permission", permission: Permission.BRANCHES_READ },
   },
+  { section: "Plataforma" },
+  {
+    label: "Admin SaaS",
+    icon: Shield,
+    href: "/platform/dashboard",
+    access: { type: "platform" },
+  },
 ];
 
 export const DASHBOARD_QUICK_LINKS: DashboardQuickLink[] = [
@@ -182,6 +192,10 @@ export function canAccessNav(
   access: NavAccess,
   ctx: NavFilterContext,
 ): boolean {
+  if (access.type === "platform") {
+    return ctx.isSuperAdmin;
+  }
+
   if (!ctx.hasTenant) {
     return false;
   }

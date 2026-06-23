@@ -23,7 +23,7 @@ export class CompanyController {
   @JwtAuth()
   @Post()
   create(@Auth() auth: AuthContext, @Body() dto: CreateCompanyDto) {
-    return this.companyService.createOnboarding(auth.userId, dto);
+    return this.companyService.createOnboarding(auth, dto);
   }
 
   @JwtAuth()
