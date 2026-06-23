@@ -962,7 +962,7 @@ if (isSuperAdmin) { ... }             // plataforma — NO bypass en can()
 - `isSuperAdmin` **no** otorga permisos tenant en `can()` / `<Can>`.
 - El backend (`PermissionGuard`) es la autoridad real; la UI solo oculta controles.
 
-Documentación API: `apps/api/docs/auth-and-utilities.md`.
+Documentación API: `apps/api/docs/auth-and-utilities.md`. Revisión de riesgos: `docs/security-rbac-critical-review.md`.
 
 ### 18.1 Gestión de usuarios en web (provisional)
 
@@ -981,7 +981,8 @@ La pantalla `/users` y el módulo `modules/users/` son **provisionales**. Implem
 - El **Super Admin** crea empresas, el owner inicial y cuentas de plataforma; no sustituye al Owner en la operación diaria del tenant.
 - Personal operativo con ficha laboral sigue dándose de alta por **`/employees`** (`POST /employees`), no por sustituir ese flujo con `/users`.
 
-Documentación completa: [`docs/user-management-roadmap.md`](../../docs/user-management-roadmap.md).
+Documentación completa: [`docs/user-management-roadmap.md`](../../docs/user-management-roadmap.md).  
+Revisión de seguridad y backlog: [`docs/security-rbac-critical-review.md`](../../docs/security-rbac-critical-review.md).
 
 ### 18.2 Super Admin — plataforma (`/platform/*`)
 

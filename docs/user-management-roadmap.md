@@ -7,6 +7,7 @@ Este documento describe el **estado actual** de la pantalla y API de usuarios de
 Documentación relacionada:
 
 - `docs/platform-admin-roadmap.md` — onboarding SaaS y roles de plataforma
+- `docs/security-rbac-critical-review.md` — revisión crítica (delete/expulsar, JWT, empleados huérfanos)
 - `docs/employee-user-registration-flow.md` — alta operativa (`POST /employees`)
 - `apps/api/docs/auth-and-utilities.md` — endpoints `/users` vigentes
 - `apps/web/ARCHITECTURE.md` — §18 Autenticación y RBAC

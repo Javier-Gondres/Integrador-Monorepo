@@ -2,8 +2,9 @@
 
 Este documento describe la **evolución planificada** del ERP multiempresa hacia un modelo de autorización en dos niveles: **plataforma (SaaS)** y **empresa (tenant)**.
 
-> **Importante:** la **administración de plataforma** (rutas `/platform/*`) sigue siendo evolución futura.  
-> El **RBAC tenant**, guards, permisos granulares y flags `isSuperAdmin` **ya están implementados** en la API.
+> **Importante:** la **administración de plataforma** (rutas `/platform/*`) está implementada en API y web básica.  
+> El **RBAC tenant**, guards, permisos granulares y flags `isSuperAdmin` **ya están implementados** en la API.  
+> Revisión de riesgos y checklist: [`docs/security-rbac-critical-review.md`](security-rbac-critical-review.md).
 
 ---
 
@@ -459,6 +460,8 @@ Web: `/platform/dashboard`, `/platform/companies` — protegidas por `PlatformGu
 | ----------------------------------------- | ------------------------------------------------------------------ |
 | `docs/employee-user-registration-flow.md` | Employee siempre con User; `POST /employees` transaccional         |
 | `docs/platform-admin-roadmap.md`          | Plataforma vs tenant, SUPER_ADMIN, onboarding futuro               |
+| `docs/security-rbac-critical-review.md`   | Revisión crítica RBAC/plataforma/web (severidad y checklist)       |
+| `docs/security-rbac-critical-review.md`   | Análisis crítico, hallazgos, backlog de remediación                |
 | `apps/api/docs/tenant-access.md`          | Capas CompanyGuard / BranchAccess / catálogo / empleado ↔ sucursal |
 | `apps/api/docs/auth-and-utilities.md`     | Auth, guards, RBAC, errores                                        |
 | `packages/database/prisma/seed.ts`        | Permisos y matriz por rol                                          |
