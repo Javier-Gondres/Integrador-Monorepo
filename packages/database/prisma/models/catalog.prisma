@@ -4,6 +4,7 @@ enum NcfType {
   GUBERNAMENTAL
   REGIMEN_ESPECIAL
   EXPORTACION
+  NOTA_DE_CREDITO
 }
 
 model Category {
@@ -50,7 +51,7 @@ model Product {
   inventoryMovements InventoryMovement[]
   reservationItems   ReservationItem[]
   saleItems          SaleItem[]
-  purchaseItems PurchaseItem[]
+  purchaseItems      PurchaseItem[]
   returnItems        ReturnItem[]
   transferItems      TransferItem[]
   discounts          Discount[]
@@ -135,6 +136,7 @@ model Customer {
   sales              Sale[]
   accountsReceivable AccountReceivable[]
   reservations       Reservation[]
+  creditNotes        CreditNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,8 +158,9 @@ model NcfSequence {
 
   isActive Boolean @default(true)
 
-  company Company @relation(fields: [companyId], references: [id])
-  sales   Sale[]
+  company     Company      @relation(fields: [companyId], references: [id])
+  sales       Sale[]
+  creditNotes CreditNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
