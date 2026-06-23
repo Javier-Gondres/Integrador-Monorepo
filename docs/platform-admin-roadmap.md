@@ -199,6 +199,7 @@ Actor de **plataforma** (operador del SaaS), no empleado ni dueño de una tienda
 - Puede crear tenants (`Company`) y el primer `OWNER`.
 - No reemplaza al `OWNER` dentro de la empresa: el Owner configura sucursales, empleados, catálogo, etc.
 - No debe confundirse con `RoleName.OWNER`: el Owner es **tenant-scoped**; el Super Admin es **platform-scoped**.
+- **Creación de usuarios:** el Super Admin provisiona el tenant (empresa + owner inicial y, en el futuro, operadores de plataforma). **No** comparte el mismo flujo que el Owner, que solo **invita** usuarios a su empresa. Detalle: `docs/user-management-roadmap.md`.
 
 ```text
 SUPER_ADMIN     →  opera el producto (muchas empresas)
@@ -244,6 +245,8 @@ Configura sucursales (Branch)
       ↓
 Invita o crea más usuarios (futuro RBAC por rol)
 ```
+
+> **Gestión de usuarios (diseño objetivo):** el Owner **invita** miembros a su empresa y puede **expulsarlos** (revocar `UserCompany`), pero **no** debe poder **eliminar** la cuenta global (`User`). Esa operación corresponde al **Super Admin** a nivel plataforma. La UI tenant actual en `/users` es **provisional** y aún no distingue invitar / expulsar / eliminar. Ver `docs/user-management-roadmap.md`.
 
 ### Paso 4 — Owner registra empleados
 

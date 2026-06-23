@@ -224,6 +224,8 @@ Documentación completa: `apps/api/docs/tenant-access.md` y `src/employees/polic
 
 Administración de plataforma con `SUPER_ADMIN` para crear empresas y owners iniciales. Ver `docs/platform-admin-roadmap.md`.
 
+Gestión de usuarios tenant (invitar, expulsar, separación Owner / Super Admin): ver `docs/user-management-roadmap.md`.
+
 ---
 
 ## 10. Justificación

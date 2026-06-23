@@ -219,7 +219,7 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | `companies`   | Pantalla legacy migrada (lista + CRUD básico)       |
 | `branches`    | Pantalla legacy migrada (lista + CRUD básico)       |
 | `auth`        | Scaffold (API hooks, sin UI de login aún)           |
-| `users`       | Scaffold RBAC                                       |
+| `users`       | **Provisional** — CRUD en `/users`; ver nota §18.1   |
 | `roles`       | Scaffold RBAC                                       |
 | `permissions` | Scaffold RBAC                                       |
 
@@ -963,6 +963,25 @@ if (isSuperAdmin) { ... }             // plataforma — NO bypass en can()
 
 Documentación API: `apps/api/docs/auth-and-utilities.md`.
 
+### 18.1 Gestión de usuarios en web (provisional)
+
+La pantalla `/users` y el módulo `modules/users/` son **provisionales**. Implementan un CRUD tenant genérico (`GET|POST|PATCH|DELETE /users`) pero **no** reflejan el diseño final de gestión de identidades.
+
+| Tema | Estado actual | Objetivo |
+| ---- | ------------- | -------- |
+| Super Admin vs Owner | Misma UI para cualquier rol con permiso | Pantallas y flujos separados (plataforma vs tenant) |
+| Alta de usuarios | Formulario «crear usuario» en tenant | Owner **invita** miembros a su empresa; Super Admin crea tenant + owner vía `/platform/*` |
+| Quitar acceso | Botón «Eliminar» → `DELETE /users/:id` | Owner **expulsa** (solo membresía `UserCompany`); **no** elimina la cuenta global |
+| Eliminar cuenta | Expuesto si `can('users.delete')` | Reservado a **plataforma** (Super Admin) |
+
+**Reglas de diseño acordadas (pendientes de implementar):**
+
+- El **Owner** puede invitar y gestionar usuarios de **su** empresa, pero **no** debería poder eliminarlos del sistema — solo **expulsarlos** de la empresa.
+- El **Super Admin** crea empresas, el owner inicial y cuentas de plataforma; no sustituye al Owner en la operación diaria del tenant.
+- Personal operativo con ficha laboral sigue dándose de alta por **`/employees`** (`POST /employees`), no por sustituir ese flujo con `/users`.
+
+Documentación completa: [`docs/user-management-roadmap.md`](../../docs/user-management-roadmap.md).
+
 ---
 
 ## 19. Variables de entorno
@@ -1037,4 +1056,4 @@ pnpm lint             # ESLint (max-warnings 0)
 
 ---
 
-_Estructura actual: containers, mappers, data-table, RBAC tenant (`usePermissions`, `<Can>`). Ver §18 y `apps/api/docs/tenant-access.md`._
+_Estructura actual: containers, mappers, data-table, RBAC tenant (`usePermissions`, `<Can>`). Gestión de usuarios web: **provisional** (§18.1). Ver `docs/user-management-roadmap.md`._
