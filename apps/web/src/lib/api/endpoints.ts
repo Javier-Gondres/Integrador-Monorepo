@@ -56,7 +56,11 @@ export const ENDPOINTS = {
     byId: (id: string) => `/companies/${id}`,
   },
   users: {
+    root: "/users",
     roles: "/users/roles",
+    byId: (id: string) => `/users/${id}`,
+    activate: (id: string) => `/users/${id}/activate`,
+    deactivate: (id: string) => `/users/${id}/deactivate`,
   },
   cashRegisters: {
     root: "/cash-registers",

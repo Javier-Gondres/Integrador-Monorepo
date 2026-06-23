@@ -13,6 +13,7 @@ import {
   Percent,
   Tag,
   Truck,
+  UserCog,
   Users,
 } from "lucide-react";
 
@@ -116,6 +117,12 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
     access: { type: "permission", permission: Permission.SUPPLIERS_READ },
   },
   { section: "Administración" },
+  {
+    label: "Usuarios",
+    icon: UserCog,
+    href: "/users",
+    access: { type: "permission", permission: Permission.USERS_READ },
+  },
   {
     label: "Empresa",
     icon: Building2,

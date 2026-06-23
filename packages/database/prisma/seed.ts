@@ -352,6 +352,11 @@ function demoEmployeeSeedEmail(employee: DemoEmployee): string {
   if (employee.linkUserEmail) {
     return normalizeEmail(employee.linkUserEmail);
   }
+  return legacyEmployeeSeedEmail(employee);
+}
+
+/** Email autogenerado antes de existir `linkUserEmail` en el seed. */
+function legacyEmployeeSeedEmail(employee: DemoEmployee): string {
   const base = `${employee.firstName}.${employee.lastName}`
     .toLowerCase()
     .normalize("NFD")
@@ -648,6 +653,71 @@ async function linkUserToCompany(
   });
 }
 
+/**
+ * Cuando un empleado pasa a usar `linkUserEmail` (p. ej. inventario@ejemplo.com),
+ * elimina el usuario legacy `@empleados.seed` que pudo quedar de seeds anteriores.
+ */
+async function mergeLegacyEmployeeUser(
+  legacyEmail: string,
+  linkedUserId: string,
+  companyId: string,
+  employeeData: {
+    companyId: string;
+    branchId: string;
+    userId: string;
+    phone: string | null;
+    position: string;
+    salary: number;
+    hireDate: Date;
+    isActive: boolean;
+    deletedAt: null;
+  },
+): Promise<void> {
+  const legacyUser = await prisma.user.findFirst({
+    where: { email: normalizeEmail(legacyEmail), deletedAt: null },
+    select: { id: true },
+  });
+
+  if (!legacyUser || legacyUser.id === linkedUserId) {
+    return;
+  }
+
+  await runWithSoftDeleteQueryMode("includeDeleted", async () => {
+    const legacyEmployee = await prisma.employee.findUnique({
+      where: { userId: legacyUser.id },
+      select: { id: true },
+    });
+    const linkedEmployee = await prisma.employee.findUnique({
+      where: { userId: linkedUserId },
+      select: { id: true },
+    });
+
+    if (legacyEmployee && !linkedEmployee) {
+      await prisma.employee.update({
+        where: { id: legacyEmployee.id },
+        data: employeeData,
+      });
+    } else if (legacyEmployee && linkedEmployee) {
+      await prisma.employee.update({
+        where: { id: legacyEmployee.id },
+        data: { deletedAt: new Date(), isActive: false },
+      });
+    }
+  });
+
+  const legacyMembership = await prisma.userCompany.findFirst({
+    where: { userId: legacyUser.id, companyId, deletedAt: null },
+    select: { id: true },
+  });
+
+  if (legacyMembership) {
+    await prisma.userCompany.update({
+      where: { id: legacyMembership.id },
+      data: { deletedAt: new Date() },
+    });
+  }
+}
+
 async function ensureDemoSuppliers(companyId: string) {
   const byName = new Map<string, { id: string; name: string }>();
 
@@ -858,6 +928,15 @@ async function ensureDemoEmployees(
       isActive: true,
       deletedAt: null,
     };
+
+    if (employee.linkUserEmail) {
+      await mergeLegacyEmployeeUser(
+        legacyEmployeeSeedEmail(employee),
+        user.id,
+        companyId,
+        data,
+      );
+    }
 
     const record = await runWithSoftDeleteQueryMode(
       "includeDeleted",
