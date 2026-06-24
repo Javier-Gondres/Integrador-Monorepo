@@ -39,6 +39,7 @@ const SEED_IDS = {
   customerMaria: "seed-customer-maria-rodriguez",
   customerPedro: "seed-customer-pedro-gomez",
   ncfB02: "seed-ncf-sequence-b02",
+  ncfB04: "seed-ncf-sequence-b04",
   discountSummer: "seed-discount-verano",
   discountBebidas: "seed-discount-bebidas",
   discountExclusion: "seed-discount-exclusion-cola-2l",
@@ -56,6 +57,7 @@ const SEED_IDS = {
   saleFromReservation: "seed-sale-from-reservation-lays",
   transferCompleted: "seed-transfer-completed",
   returnFromSale: "seed-return-from-sale",
+  creditNoteFromReturn: "seed-credit-note-from-return",
   accountReceivable: "seed-account-receivable",
   receivablePayment: "seed-receivable-payment",
   accountPayable: "seed-account-payable",
@@ -854,6 +856,26 @@ async function ensureDemoCustomers(companyId: string): Promise<CustomerRef[]> {
 }
 
 async function ensureDemoNcfSequence(companyId: string) {
+  // Secuencia de notas de crédito (B04). currentNumber = 1 porque el seed emite
+  // una nota de crédito (B0400000001) en ensureDemoReturn.
+  await prisma.ncfSequence.upsert({
+    where: { id: SEED_IDS.ncfB04 },
+    create: {
+      id: SEED_IDS.ncfB04,
+      companyId,
+      type: NcfType.NOTA_DE_CREDITO,
+      prefix: "B04",
+      currentNumber: 1,
+      maxNumber: 9_999_999,
+      expirationDate: daysFromNow(365),
+      isActive: true,
+    },
+    update: {
+      expirationDate: daysFromNow(365),
+      isActive: true,
+    },
+  });
+
   return prisma.ncfSequence.upsert({
     where: { id: SEED_IDS.ncfB02 },
     create: {
@@ -1850,6 +1872,25 @@ async function ensureDemoReturn(ctx: SeedContext) {
     },
   });
 
+  // Nota de crédito fiscal emitida por la devolución (NCF tipo NOTA_DE_CREDITO).
+  // La venta de origen es al contado (consumidor final) → sin cliente asociado.
+  await prisma.creditNote.upsert({
+    where: { id: SEED_IDS.creditNoteFromReturn },
+    create: {
+      id: SEED_IDS.creditNoteFromReturn,
+      returnId: SEED_IDS.returnFromSale,
+      ncfSequenceId: SEED_IDS.ncfB04,
+      ncf: "B0400000001",
+      ncfType: NcfType.NOTA_DE_CREDITO,
+      amount: returnSubtotal,
+      isActive: true,
+    },
+    update: {
+      amount: returnSubtotal,
+      isActive: true,
+    },
+  });
+
   await prisma.$transaction(async (tx) => {
     await recordMovementIfAbsent(
       tx,
@@ -2085,6 +2126,7 @@ async function main(): Promise<void> {
     prisma.payablePayment.count(),
     prisma.transfer.count(),
     prisma.return.count(),
+    prisma.creditNote.count(),
   ]);
 
   console.log("Seed completado:");
@@ -2107,6 +2149,7 @@ async function main(): Promise<void> {
   console.log(`  CxC: ${counts[13]} (abonos: ${counts[14]})`);
   console.log(`  CxP: ${counts[15]} (pagos: ${counts[16]})`);
   console.log(`  transferencias: ${counts[17]}, devoluciones: ${counts[18]}`);
+  console.log(`  notas de crédito: ${counts[19]}`);
   console.log(`  refresh tokens: ${refreshTokens}`);
   console.log(`  audit logs: ${auditLogs}`);
   console.log("Vuelve a hacer login para refrescar el contexto JWT.");
