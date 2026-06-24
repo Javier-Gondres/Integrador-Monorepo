@@ -8,11 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { Permission } from '@repo/shared';
-import {
-  Company,
-  type CompanyContext,
-  CompanyId,
-} from 'src/common/company';
+import { Company, type CompanyContext, CompanyId } from 'src/common/company';
 import { RequirePermissions } from 'src/common/permissions';
 
 import { CreateInventoryDto } from './dto/create-inventory.dto';

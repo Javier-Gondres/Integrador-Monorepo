@@ -2,7 +2,10 @@ import { apiFetch } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import type { PaginatedResponse } from "@/types/pagination";
 
-import type { TransferDto, TransferFilters } from "../types/transferencia.types";
+import type {
+  TransferDto,
+  TransferFilters,
+} from "../types/transferencia.types";
 
 export async function getTransfers(filters?: TransferFilters) {
   return apiFetch<PaginatedResponse<TransferDto>>(ENDPOINTS.transfers.root, {

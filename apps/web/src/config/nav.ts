@@ -206,8 +206,7 @@ export const DASHBOARD_QUICK_LINKS: DashboardQuickLink[] = [
   },
   {
     title: "Stock",
-    description:
-      "Asigna productos a las diferentes sucursales de la empresa.",
+    description: "Asigna productos a las diferentes sucursales de la empresa.",
     href: "/inventories",
     icon: ShelvingUnit,
     tone: "blue",

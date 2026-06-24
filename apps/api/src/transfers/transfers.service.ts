@@ -1,10 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  InventoryMovementType,
-  Prisma,
-  prisma,
-  TransferStatus,
-} from '@repo/db';
+import { InventoryMovementType, prisma, TransferStatus } from '@repo/db';
 import { BranchAccessService } from 'src/branch/branch-access.service';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
 import { ProductsRepository } from 'src/products/products.repository';
@@ -41,10 +36,7 @@ export class TransfersService {
         dto.fromBranchId,
         companyId,
       ),
-      this.branchAccessService.assertBranchInCompany(
-        dto.toBranchId,
-        companyId,
-      ),
+      this.branchAccessService.assertBranchInCompany(dto.toBranchId, companyId),
     ]);
 
     for (const item of dto.items) {
