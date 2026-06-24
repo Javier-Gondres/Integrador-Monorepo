@@ -911,6 +911,8 @@ modules/categories/
 
 ## 18. Autenticación y RBAC
 
+> **Guía práctica (API + web):** [`docs/permissions-guide.md`](../../docs/permissions-guide.md) — `usePermissions`, `<Can>`, sidebar, `route-access`, decoradores NestJS y checklist para nuevos módulos.
+
 ### Modelo multiempresa
 
 ```

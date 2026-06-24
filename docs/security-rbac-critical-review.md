@@ -6,13 +6,14 @@ Documento de referencia sobre el **análisis de seguridad y diseño** realizado 
 
 **Documentación relacionada:**
 
-| Archivo                               | Contenido                                          |
-| ------------------------------------- | -------------------------------------------------- |
-| `docs/platform-admin-roadmap.md`      | Plataforma vs tenant, dos flujos de onboarding     |
-| `docs/user-management-roadmap.md`     | Usuarios provisional, invitar/expulsar vs eliminar |
-| `apps/api/docs/auth-and-utilities.md` | Guards, endpoints, semántica HTTP                  |
-| `apps/api/docs/tenant-access.md`      | CompanyGuard, BranchAccess, empleado ↔ sucursal    |
-| `apps/web/ARCHITECTURE.md`            | §18 RBAC, §18.1 usuarios, §18.2 plataforma         |
+| Archivo                               | Contenido                                              |
+| ------------------------------------- | ------------------------------------------------------ |
+| `docs/permissions-guide.md`           | **Guía práctica** — permisos API/web, sidebar, `<Can>` |
+| `docs/platform-admin-roadmap.md`      | Plataforma vs tenant, dos flujos de onboarding         |
+| `docs/user-management-roadmap.md`     | Usuarios provisional, invitar/expulsar vs eliminar     |
+| `apps/api/docs/auth-and-utilities.md` | Guards, endpoints, semántica HTTP                      |
+| `apps/api/docs/tenant-access.md`      | CompanyGuard, BranchAccess, empleado ↔ sucursal        |
+| `apps/web/ARCHITECTURE.md`            | §18 RBAC, §18.1 usuarios, §18.2 plataforma             |
 
 **Última actualización:** refleja fix **Opción A** (Super Admin sin `UserCompany`) y aclaración de **self-service** `POST /companies` como diseño intencional.
 

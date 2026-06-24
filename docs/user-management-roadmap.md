@@ -6,6 +6,7 @@ Este documento describe el **estado actual** de la pantalla y API de usuarios de
 
 Documentación relacionada:
 
+- `docs/permissions-guide.md` — guía práctica RBAC (API + web, sidebar, `<Can>`, guards)
 - `docs/platform-admin-roadmap.md` — onboarding SaaS y roles de plataforma
 - `docs/security-rbac-critical-review.md` — revisión crítica (delete/expulsar, JWT, empleados huérfanos)
 - `docs/employee-user-registration-flow.md` — alta operativa (`POST /employees`)

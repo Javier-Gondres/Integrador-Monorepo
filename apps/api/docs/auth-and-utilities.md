@@ -291,6 +291,8 @@ Todos los endpoints usan `@RequirePlatformAdmin()` a nivel de controller.
 
 Ver también: `docs/platform-admin-roadmap.md`.
 
+**Guía de uso RBAC (API + web):** [`docs/permissions-guide.md`](../../docs/permissions-guide.md).
+
 Ver revisión de riesgos y checklist: `docs/security-rbac-critical-review.md`.
 
 ### `BranchAccessService` (capa 2 — sucursal)
