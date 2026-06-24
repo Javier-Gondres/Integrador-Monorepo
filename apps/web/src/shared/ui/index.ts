@@ -1,3 +1,5 @@
+"use client";
+
 export { Badge } from "./badge";
 export { Button } from "./button";
 export { Can } from "./can";

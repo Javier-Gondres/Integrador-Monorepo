@@ -1,3 +1,5 @@
+"use client";
+
 import { type PermissionCode, TenantRole } from "@repo/shared";
 
 import { useAuthStore } from "../store/auth-store";
