@@ -54,6 +54,11 @@ export const ENDPOINTS = {
   users: {
     roles: "/users/roles",
   },
+  returns: {
+    root: "/returns",
+    byId: (id: string) => `/returns/${id}`,
+    saleLookup: "/returns/sale-lookup",
+  },
   cashRegisters: {
     root: "/cash-registers",
     byId: (id: string) => `/cash-registers/${id}`,
