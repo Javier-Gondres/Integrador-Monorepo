@@ -5,12 +5,15 @@ import {
   type TenantRoleName,
 } from "@repo/shared";
 import {
+  ArrowLeftRight,
   Box,
   Building2,
+  History,
   LayoutDashboard,
   type LucideIcon,
   MapPin,
   Percent,
+  ShelvingUnit,
   Shield,
   Tag,
   Truck,
@@ -99,6 +102,25 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
     href: "/discounts",
     access: { type: "permission", permission: Permission.DISCOUNTS_READ },
   },
+  { section: "Inventarios" },
+  {
+    label: "Stock",
+    icon: ShelvingUnit,
+    href: "/inventories",
+    access: { type: "permission", permission: Permission.INVENTORY_READ },
+  },
+  {
+    label: "Transferencias",
+    icon: ArrowLeftRight,
+    href: "/transferencias",
+    access: { type: "permission", permission: Permission.INVENTORY_READ },
+  },
+  {
+    label: "Movimientos",
+    icon: History,
+    href: "/inventory-movements",
+    access: { type: "permission", permission: Permission.INVENTORY_READ },
+  },
   { section: "Operación" },
   {
     label: "Cajas",
@@ -181,6 +203,23 @@ export const DASHBOARD_QUICK_LINKS: DashboardQuickLink[] = [
     icon: Truck,
     tone: "amber",
     access: { type: "permission", permission: Permission.SUPPLIERS_READ },
+  },
+  {
+    title: "Stock",
+    description:
+      "Asigna productos a las diferentes sucursales de la empresa.",
+    href: "/inventories",
+    icon: ShelvingUnit,
+    tone: "blue",
+    access: { type: "permission", permission: Permission.INVENTORY_READ },
+  },
+  {
+    title: "Movimientos de inventario",
+    description: "Consulta el historial de los inventarios.",
+    href: "/inventory-movements",
+    icon: History,
+    tone: "emerald",
+    access: { type: "permission", permission: Permission.INVENTORY_READ },
   },
 ];
 

@@ -20,9 +20,12 @@ enum InventoryAdjustmentReason {
 model Inventory {
   id String @id @default(cuid())
 
-  branchId  String
-  productId String
-  quantity  Decimal @default(0) @db.Decimal(12, 3)
+  branchId        String
+  productId       String
+  quantity        Decimal @default(0) @db.Decimal(12, 3)
+  minimumQuantity Decimal @default(0) @db.Decimal(12, 3)
+
+  isActive Boolean @default(true)
 
   branch  Branch  @relation(fields: [branchId], references: [id])
   product Product @relation(fields: [productId], references: [id])

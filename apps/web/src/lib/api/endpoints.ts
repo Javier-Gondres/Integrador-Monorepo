@@ -77,4 +77,20 @@ export const ENDPOINTS = {
       `/cash-registers/${id}/close-shift/${shiftId}`,
     shifts: (id: string) => `/cash-registers/${id}/shifts`,
   },
+  inventories: {
+    root: "/inventories",
+    byId: (id: string) => `/inventories/${id}`,
+    activate: (id: string) => `/inventories/${id}/activate`,
+    deactivate: (id: string) => `/inventories/${id}/deactivate`,
+  },
+  inventoryMovements: {
+    root: "/inventory-movements",
+  },
+  transfers: {
+    root: "/transfers",
+    stock: "/transfers/stock",
+    dispatch: (id: string) => `/transfers/${id}/dispatch`,
+    complete: (id: string) => `/transfers/${id}/complete`,
+    cancel: (id: string) => `/transfers/${id}/cancel`,
+  },
 } as const;

@@ -49,6 +49,9 @@ export const ROLE_PERMISSION_MATRIX: Record<
     Permission.BRANCHES_READ,
     Permission.BRANCHES_UPDATE,
     Permission.BRANCHES_DELETE,
+    Permission.INVENTORY_READ,
+    Permission.INVENTORY_ADJUST,
+    Permission.INVENTORY_TRANSFER,
     Permission.REPORTS_READ,
   ],
 
