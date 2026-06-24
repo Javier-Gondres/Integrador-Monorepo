@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { prisma, RoleName } from '@repo/db';
 
 import { assertUserEligibleForTenantMembership } from '../common/platform';
-
 import {
   type CompanyRecord,
   companySelect,

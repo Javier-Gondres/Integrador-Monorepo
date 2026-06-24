@@ -5,10 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
-import {
-  PLATFORM_NAV_ITEMS,
-  TENANT_NAV_LINK,
-} from "@/config/platform-nav";
+import { PLATFORM_NAV_ITEMS, TENANT_NAV_LINK } from "@/config/platform-nav";
 import { useAuth, usePermissions } from "@/modules/auth";
 
 import { isNavLinkActive } from "./is-nav-link-active";

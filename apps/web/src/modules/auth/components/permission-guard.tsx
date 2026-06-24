@@ -58,14 +58,7 @@ export function PermissionGuard({ children }: PermissionGuardProps) {
     if (!allowed) {
       router.replace(`${AUTH_ROUTES.forbidden}?reason=no-permission`);
     }
-  }, [
-    allowed,
-    isAuthReady,
-    isForbiddenPage,
-    isSuperAdmin,
-    router,
-    user,
-  ]);
+  }, [allowed, isAuthReady, isForbiddenPage, isSuperAdmin, router, user]);
 
   if (!isAuthReady || !user) {
     return null;

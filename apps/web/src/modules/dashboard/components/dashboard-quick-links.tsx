@@ -4,10 +4,7 @@ import { ArrowRight, CircleCheckBig } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
-import {
-  DASHBOARD_QUICK_LINKS,
-  filterQuickLinks,
-} from "@/config/nav";
+import { DASHBOARD_QUICK_LINKS, filterQuickLinks } from "@/config/nav";
 import { useAuth, usePermissions } from "@/modules/auth";
 
 import styles from "../screens/dashboard-screen.module.css";

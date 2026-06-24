@@ -62,8 +62,22 @@ export function PlatformOverviewCards() {
         </div>
       ))}
 
-      <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: "12px" }}>
-        <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: C.bodyText }}>
+      <div
+        style={{
+          ...cardStyle,
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            fontSize: "14px",
+            fontWeight: 600,
+            color: C.bodyText,
+          }}
+        >
           Acciones rápidas
         </p>
         <Link

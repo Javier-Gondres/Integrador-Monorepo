@@ -3,10 +3,7 @@ import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/api/errors";
 
-import {
-  activateUser,
-  deactivateUser,
-} from "../api/toggle-user-status";
+import { activateUser, deactivateUser } from "../api/toggle-user-status";
 import { userKeys } from "../query-keys";
 
 export function useToggleUserStatus() {

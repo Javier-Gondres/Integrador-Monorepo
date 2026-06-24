@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import slugify from 'slug';
 import * as bcrypt from 'bcrypt';
+import slugify from 'slug';
 
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { CreatePlatformCompanyDto } from './dto/create-platform-company.dto';

@@ -420,18 +420,18 @@ erDiagram
 
 ## RBAC tenant: estado y siguiente paso
 
-| Capacidad                                  | Estado                                                |
-| ------------------------------------------ | ----------------------------------------------------- |
-| Membresía por empresa (`UserCompany`)      | Implementado                                          |
-| `CompanyGuard` + `company.isActive` en BD  | Implementado                                          |
-| `BranchAccessService` + `branch.isActive`  | Implementado (flujos branch-scoped)                   |
-| `@RequirePermissions` + `PermissionGuard`  | Implementado (controllers tenant)                     |
-| Enum `RoleName` + seed `RolePermission`    | Implementado                                          |
-| Jerarquía roles (`assert-assignable-role`) | Implementado (users / employees.create)               |
-| Política empleado ↔ sucursal + `openShift` | Implementado                                          |
-| `User.isSuperAdmin` + guard plataforma     | Implementado; rutas `/platform/*` + UI web        |
-| UI permisos (`usePermissions`, `<Can>`)    | Implementado en pantallas tenant                    |
-| UI plataforma (`/platform/*`, `CanPlatformAdmin`) | Implementado (empresas + overview)          |
+| Capacidad                                         | Estado                                     |
+| ------------------------------------------------- | ------------------------------------------ |
+| Membresía por empresa (`UserCompany`)             | Implementado                               |
+| `CompanyGuard` + `company.isActive` en BD         | Implementado                               |
+| `BranchAccessService` + `branch.isActive`         | Implementado (flujos branch-scoped)        |
+| `@RequirePermissions` + `PermissionGuard`         | Implementado (controllers tenant)          |
+| Enum `RoleName` + seed `RolePermission`           | Implementado                               |
+| Jerarquía roles (`assert-assignable-role`)        | Implementado (users / employees.create)    |
+| Política empleado ↔ sucursal + `openShift`        | Implementado                               |
+| `User.isSuperAdmin` + guard plataforma            | Implementado; rutas `/platform/*` + UI web |
+| UI permisos (`usePermissions`, `<Can>`)           | Implementado en pantallas tenant           |
+| UI plataforma (`/platform/*`, `CanPlatformAdmin`) | Implementado (empresas + overview)         |
 
 Los permisos tenant se derivan de `UserCompany.role` al emitir JWT (login/refresh/switchBranch). **No** mezclar con `isSuperAdmin` en endpoints tenant.
 
@@ -441,14 +441,14 @@ Documentación detallada: `apps/api/docs/tenant-access.md`.
 
 ### Rutas de plataforma implementadas (API + web)
 
-| Método   | Ruta                              | Descripción                          |
-| -------- | --------------------------------- | ------------------------------------ |
-| `GET`    | `/platform/overview`              | Métricas de tenants                  |
-| `GET`    | `/platform/companies`             | Listado paginado cross-tenant        |
-| `GET`    | `/platform/companies/:id`         | Detalle de empresa                   |
-| `POST`   | `/platform/companies`             | Company + branch + owner (`User`)    |
-| `PATCH`  | `/platform/companies/:id/activate`   | Reactivar tenant                  |
-| `PATCH`  | `/platform/companies/:id/deactivate` | Suspender tenant                  |
+| Método  | Ruta                                 | Descripción                       |
+| ------- | ------------------------------------ | --------------------------------- |
+| `GET`   | `/platform/overview`                 | Métricas de tenants               |
+| `GET`   | `/platform/companies`                | Listado paginado cross-tenant     |
+| `GET`   | `/platform/companies/:id`            | Detalle de empresa                |
+| `POST`  | `/platform/companies`                | Company + branch + owner (`User`) |
+| `PATCH` | `/platform/companies/:id/activate`   | Reactivar tenant                  |
+| `PATCH` | `/platform/companies/:id/deactivate` | Suspender tenant                  |
 
 Web: `/platform/dashboard`, `/platform/companies` — protegidas por `PlatformGuard` (`isSuperAdmin`). Super Admin **sin** tenant es redirigido aquí tras login.
 

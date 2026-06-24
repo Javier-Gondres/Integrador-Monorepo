@@ -219,8 +219,8 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | `companies`   | Pantalla legacy migrada (lista + CRUD básico)       |
 | `branches`    | Pantalla legacy migrada (lista + CRUD básico)       |
 | `auth`        | Scaffold (API hooks, sin UI de login aún)           |
-| `users`       | **Provisional** — CRUD en `/users`; ver nota §18.1   |
-| `platform`    | Admin SaaS — `/platform/*` (Super Admin)             |
+| `users`       | **Provisional** — CRUD en `/users`; ver nota §18.1  |
+| `platform`    | Admin SaaS — `/platform/*` (Super Admin)            |
 | `roles`       | Scaffold RBAC                                       |
 | `permissions` | Scaffold RBAC                                       |
 
@@ -968,12 +968,12 @@ Documentación API: `apps/api/docs/auth-and-utilities.md`. Revisión de riesgos:
 
 La pantalla `/users` y el módulo `modules/users/` son **provisionales**. Implementan un CRUD tenant genérico (`GET|POST|PATCH|DELETE /users`) pero **no** reflejan el diseño final de gestión de identidades.
 
-| Tema | Estado actual | Objetivo |
-| ---- | ------------- | -------- |
-| Super Admin vs Owner | Misma UI para cualquier rol con permiso | Pantallas y flujos separados (plataforma vs tenant) |
-| Alta de usuarios | Formulario «crear usuario» en tenant | Owner **invita** miembros a su empresa; Super Admin crea tenant + owner vía `/platform/*` |
-| Quitar acceso | Botón «Eliminar» → `DELETE /users/:id` | Owner **expulsa** (solo membresía `UserCompany`); **no** elimina la cuenta global |
-| Eliminar cuenta | Expuesto si `can('users.delete')` | Reservado a **plataforma** (Super Admin) |
+| Tema                 | Estado actual                           | Objetivo                                                                                  |
+| -------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Super Admin vs Owner | Misma UI para cualquier rol con permiso | Pantallas y flujos separados (plataforma vs tenant)                                       |
+| Alta de usuarios     | Formulario «crear usuario» en tenant    | Owner **invita** miembros a su empresa; Super Admin crea tenant + owner vía `/platform/*` |
+| Quitar acceso        | Botón «Eliminar» → `DELETE /users/:id`  | Owner **expulsa** (solo membresía `UserCompany`); **no** elimina la cuenta global         |
+| Eliminar cuenta      | Expuesto si `can('users.delete')`       | Reservado a **plataforma** (Super Admin)                                                  |
 
 **Reglas de diseño acordadas (pendientes de implementar):**
 
@@ -988,18 +988,18 @@ Revisión de seguridad y backlog: [`docs/security-rbac-critical-review.md`](../.
 
 Separado del RBAC tenant. Usa `isSuperAdmin` del JWT, **no** `can()` ni `<Can>`.
 
-| Componente | Uso |
-| ---------- | --- |
-| `PlatformGuard` | Protege layout `(platform)` — solo Super Admin |
-| `CanPlatformAdmin` | Equivalente UI de `@RequirePlatformAdmin()` |
-| `PlatformSidebar` | Nav: panel + empresas (+ enlace ERP si tiene tenant) |
-| `getPostLoginRoute()` | Super Admin sin `companyId` → `/platform/dashboard` |
+| Componente            | Uso                                                  |
+| --------------------- | ---------------------------------------------------- |
+| `PlatformGuard`       | Protege layout `(platform)` — solo Super Admin       |
+| `CanPlatformAdmin`    | Equivalente UI de `@RequirePlatformAdmin()`          |
+| `PlatformSidebar`     | Nav: panel + empresas (+ enlace ERP si tiene tenant) |
+| `getPostLoginRoute()` | Super Admin sin `companyId` → `/platform/dashboard`  |
 
 Rutas web:
 
-| URL | Pantalla |
-| --- | -------- |
-| `/platform/dashboard` | Métricas de tenants |
+| URL                   | Pantalla                                    |
+| --------------------- | ------------------------------------------- |
+| `/platform/dashboard` | Métricas de tenants                         |
 | `/platform/companies` | Alta/suspensión de empresas + owner inicial |
 
 API: `GET|POST /platform/companies`, `GET /platform/overview` — ver `docs/platform-admin-roadmap.md`.

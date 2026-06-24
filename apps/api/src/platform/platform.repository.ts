@@ -27,7 +27,12 @@ export type CreatePlatformCompanyData = {
 };
 
 export type CreatePlatformCompanyResult =
-  | { status: 'ok'; company: Prisma.CompanyGetPayload<{ select: typeof companyWithBranchesSelect }> }
+  | {
+      status: 'ok';
+      company: Prisma.CompanyGetPayload<{
+        select: typeof companyWithBranchesSelect;
+      }>;
+    }
   | { status: 'duplicate_company' }
   | { status: 'duplicate_email' }
   | { status: 'role_not_found' };
@@ -165,7 +170,14 @@ export class PlatformRepository {
           { name: { contains: search, mode: 'insensitive' } },
           { slug: { contains: search, mode: 'insensitive' } },
           ...(search.trim()
-            ? [{ rnc: { contains: search.trim(), mode: 'insensitive' as const } }]
+            ? [
+                {
+                  rnc: {
+                    contains: search.trim(),
+                    mode: 'insensitive' as const,
+                  },
+                },
+              ]
             : []),
         ],
       }),

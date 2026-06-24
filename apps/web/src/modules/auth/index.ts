@@ -5,5 +5,5 @@ export { PermissionGuard } from "./components/permission-guard";
 export { PlatformGuard } from "./components/platform-guard";
 export { useAuth } from "./hooks/use-auth";
 export { usePermissions } from "./hooks/use-permissions";
-export { Permission, TenantRole, type PermissionCode } from "@repo/shared";
 export { canManageCompanyAccess } from "./hooks/use-permissions";
+export { Permission, type PermissionCode, TenantRole } from "@repo/shared";

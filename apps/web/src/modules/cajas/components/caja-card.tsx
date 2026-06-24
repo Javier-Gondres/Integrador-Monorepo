@@ -76,22 +76,22 @@ export function CajaCard({ caja, onAbrir, onCerrar }: Props) {
             <Link
               href={`/cajas/${caja.id}`}
               title="Ver historial"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 26,
-                  height: 26,
-                  borderRadius: 6,
-                  background: C.pageBg,
-                  color: C.mutedText,
-                  border: `1px solid ${C.cardBorder}`,
-                  flexShrink: 0,
-                }}
-                className="hover:border-blue-400 hover:text-blue-500 transition-colors"
-              >
-                <History size={13} />
-              </Link>
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 26,
+                height: 26,
+                borderRadius: 6,
+                background: C.pageBg,
+                color: C.mutedText,
+                border: `1px solid ${C.cardBorder}`,
+                flexShrink: 0,
+              }}
+              className="hover:border-blue-400 hover:text-blue-500 transition-colors"
+            >
+              <History size={13} />
+            </Link>
           </div>
           {caja.descripcion && (
             <p style={{ fontSize: 12, color: C.mutedText, margin: 0 }}>

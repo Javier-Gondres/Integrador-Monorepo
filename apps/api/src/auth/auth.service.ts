@@ -7,6 +7,7 @@ import type { PermissionCode } from '@repo/shared';
 import * as bcrypt from 'bcrypt';
 import { AuthException } from 'src/common/errors';
 
+import { stripTenantMembershipForSuperAdmin } from '../common/platform';
 import { AuthRepository } from './auth.repository';
 import {
   AccessTokenPayload,
@@ -17,7 +18,6 @@ import {
   UserAuthContext,
 } from './auth.types';
 import { REFRESH_TOKEN_MAX_AGE_MS } from './refresh-token.cookie';
-import { stripTenantMembershipForSuperAdmin } from '../common/platform';
 
 const ACCESS_TOKEN_DURATION = '15m' as const;
 const REFRESH_TOKEN_DURATION = '7d' as const;
@@ -165,8 +165,7 @@ export class AuthService {
     userContext: UserAuthContext | null,
   ): AccessTokenPayload {
     const isSuperAdmin = userContext?.isSuperAdmin ?? false;
-    const membership =
-      isSuperAdmin ? null : (userContext?.membership ?? null);
+    const membership = isSuperAdmin ? null : (userContext?.membership ?? null);
 
     return {
       sub: userId,

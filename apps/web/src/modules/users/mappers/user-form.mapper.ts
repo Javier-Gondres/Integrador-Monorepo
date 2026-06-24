@@ -1,12 +1,12 @@
 import type {
+  UserFormSchema,
+  UserUpdateFormSchema,
+} from "../schemas/user.schema";
+import type {
   CreateUserPayload,
   UpdateUserPayload,
   User,
 } from "../types/user.types";
-import type {
-  UserFormSchema,
-  UserUpdateFormSchema,
-} from "../schemas/user.schema";
 
 export function mapUserToCreateFormValues(): UserFormSchema {
   return {

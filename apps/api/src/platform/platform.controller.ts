@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { RequirePlatformAdmin } from 'src/common/platform';
 
 import { CreatePlatformCompanyDto } from './dto/create-platform-company.dto';

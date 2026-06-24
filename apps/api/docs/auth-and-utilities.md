@@ -173,26 +173,26 @@ Todos los endpoints usan `@RequirePermissions(...)`. Jerarquía de roles en `src
 
 > **Estado provisional:** este módulo API y la pantalla web `/users` no implementan aún el diseño objetivo de **invitar** (Owner) vs **eliminar cuenta global** (Super Admin) vs **expulsar** (revocar solo `UserCompany`). Hoy `DELETE /users/:id` hace soft delete de membresía **y** usuario global; cualquier rol con `users.delete` puede invocarlo. Ver `docs/user-management-roadmap.md`.
 
-| Método   | Ruta                    | Permiso(s)         | Descripción                 |
-| -------- | ----------------------- | ------------------ | --------------------------- |
-| `GET`    | `/users`                | `users.read`       | Listado paginado del equipo |
-| `GET`    | `/users/roles`          | `users.read`       | Roles asignables por actor  |
-| `GET`    | `/users/:id`            | `users.read`       | Detalle de otro usuario     |
-| `POST`   | `/users`                | `users.create`     | Crear usuario en la empresa |
-| `PATCH`  | `/users/:id`            | `users.update`     | Actualizar otro usuario     |
-| `PATCH`  | `/users/:id/activate`   | `users.activate`   | Activar                     |
-| `PATCH`  | `/users/:id/deactivate` | `users.deactivate` | Desactivar                  |
-| `PATCH`  | `/users/:id/restore`    | `users.update`     | Restaurar soft delete       |
+| Método   | Ruta                    | Permiso(s)         | Descripción                                                                 |
+| -------- | ----------------------- | ------------------ | --------------------------------------------------------------------------- |
+| `GET`    | `/users`                | `users.read`       | Listado paginado del equipo                                                 |
+| `GET`    | `/users/roles`          | `users.read`       | Roles asignables por actor                                                  |
+| `GET`    | `/users/:id`            | `users.read`       | Detalle de otro usuario                                                     |
+| `POST`   | `/users`                | `users.create`     | Crear usuario en la empresa                                                 |
+| `PATCH`  | `/users/:id`            | `users.update`     | Actualizar otro usuario                                                     |
+| `PATCH`  | `/users/:id/activate`   | `users.activate`   | Activar                                                                     |
+| `PATCH`  | `/users/:id/deactivate` | `users.deactivate` | Desactivar                                                                  |
+| `PATCH`  | `/users/:id/restore`    | `users.update`     | Restaurar soft delete                                                       |
 | `DELETE` | `/users/:id`            | `users.delete`     | Soft delete (global; **debe restringirse a plataforma** en diseño objetivo) |
 
 #### Semántica objetivo (pendiente)
 
-| Operación | Actor | Efecto |
-| --------- | ----- | ------ |
-| Invitar / crear en empresa | Owner (y roles delegados) | `User` + `UserCompany` en el tenant |
-| Expulsar de la empresa | Owner | Soft delete **solo** `UserCompany`; `User` persiste |
-| Eliminar cuenta | Super Admin (plataforma) | Soft delete `User` + membresías |
-| Desactivar login | Owner / Admin | `User.isActive = false` |
+| Operación                  | Actor                     | Efecto                                              |
+| -------------------------- | ------------------------- | --------------------------------------------------- |
+| Invitar / crear en empresa | Owner (y roles delegados) | `User` + `UserCompany` en el tenant                 |
+| Expulsar de la empresa     | Owner                     | Soft delete **solo** `UserCompany`; `User` persiste |
+| Eliminar cuenta            | Super Admin (plataforma)  | Soft delete `User` + membresías                     |
+| Desactivar login           | Owner / Admin             | `User.isActive = false`                             |
 
 ---
 
@@ -280,14 +280,14 @@ findAll(@CompanyId() companyId: string) { ... }
 
 Todos los endpoints usan `@RequirePlatformAdmin()` a nivel de controller.
 
-| Método   | Ruta                                 | Descripción                       |
-| -------- | ------------------------------------ | --------------------------------- |
-| `GET`    | `/platform/overview`                 | Totales de empresas activas/inactivas |
-| `GET`    | `/platform/companies`                | Listado paginado cross-tenant     |
-| `GET`    | `/platform/companies/:id`            | Detalle                           |
-| `POST`   | `/platform/companies`                | Company + branch + owner          |
-| `PATCH`  | `/platform/companies/:id/activate`   | Reactivar tenant                  |
-| `PATCH`  | `/platform/companies/:id/deactivate` | Suspender tenant                  |
+| Método  | Ruta                                 | Descripción                           |
+| ------- | ------------------------------------ | ------------------------------------- |
+| `GET`   | `/platform/overview`                 | Totales de empresas activas/inactivas |
+| `GET`   | `/platform/companies`                | Listado paginado cross-tenant         |
+| `GET`   | `/platform/companies/:id`            | Detalle                               |
+| `POST`  | `/platform/companies`                | Company + branch + owner              |
+| `PATCH` | `/platform/companies/:id/activate`   | Reactivar tenant                      |
+| `PATCH` | `/platform/companies/:id/deactivate` | Suspender tenant                      |
 
 Ver también: `docs/platform-admin-roadmap.md`.
 

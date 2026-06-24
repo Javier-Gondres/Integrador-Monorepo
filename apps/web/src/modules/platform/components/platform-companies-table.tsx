@@ -22,7 +22,9 @@ export function getPlatformCompaniesTableColumns(
       cell: (row) => (
         <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
           <span style={{ fontWeight: 600 }}>{row.name}</span>
-          <span style={{ fontSize: "12px", color: C.mutedText }}>{row.slug}</span>
+          <span style={{ fontSize: "12px", color: C.mutedText }}>
+            {row.slug}
+          </span>
         </div>
       ),
     },

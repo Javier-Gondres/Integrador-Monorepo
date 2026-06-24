@@ -9,4 +9,6 @@ export const platformCompanyFormSchema = z.object({
   ownerLastName: z.string().min(1, "El apellido del owner es requerido"),
 });
 
-export type PlatformCompanyFormSchema = z.infer<typeof platformCompanyFormSchema>;
+export type PlatformCompanyFormSchema = z.infer<
+  typeof platformCompanyFormSchema
+>;

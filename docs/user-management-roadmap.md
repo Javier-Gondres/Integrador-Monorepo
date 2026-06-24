@@ -18,22 +18,22 @@ Documentación relacionada:
 
 ### Web (`apps/web`)
 
-| Aspecto | Situación hoy |
-| ------- | ------------- |
-| Ruta | `/users` con tabla CRUD completa |
-| Permisos UI | `<Can permission="users.*">` según JWT tenant |
-| Diferenciación Super Admin vs Owner | **No implementada** — misma pantalla para cualquier rol con permiso |
-| Invitaciones / enlaces mágicos | **No existen** |
-| Expulsar vs eliminar | **No diferenciado** — la UI expone eliminar (`DELETE /users/:id`) si el rol tiene `users.delete` |
+| Aspecto                             | Situación hoy                                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Ruta                                | `/users` con tabla CRUD completa                                                                 |
+| Permisos UI                         | `<Can permission="users.*">` según JWT tenant                                                    |
+| Diferenciación Super Admin vs Owner | **No implementada** — misma pantalla para cualquier rol con permiso                              |
+| Invitaciones / enlaces mágicos      | **No existen**                                                                                   |
+| Expulsar vs eliminar                | **No diferenciado** — la UI expone eliminar (`DELETE /users/:id`) si el rol tiene `users.delete` |
 
 ### API (`apps/api`)
 
-| Aspecto | Situación hoy |
-| ------- | ------------- |
-| `POST /users` | Crea `User` + `UserCompany` en la empresa del JWT |
-| `DELETE /users/:id` | Soft delete de **membresía y usuario global** (`UserCompany` + `User`) |
-| Quién puede eliminar | Cualquier actor con permiso `users.delete` y jerarquía válida (p. ej. Owner si la matriz RBAC lo permite) |
-| Super Admin en rutas tenant | **No bypass** en `PermissionGuard`; opera como cualquier usuario con membership si entra al tenant |
+| Aspecto                     | Situación hoy                                                                                             |
+| --------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `POST /users`               | Crea `User` + `UserCompany` en la empresa del JWT                                                         |
+| `DELETE /users/:id`         | Soft delete de **membresía y usuario global** (`UserCompany` + `User`)                                    |
+| Quién puede eliminar        | Cualquier actor con permiso `users.delete` y jerarquía válida (p. ej. Owner si la matriz RBAC lo permite) |
+| Super Admin en rutas tenant | **No bypass** en `PermissionGuard`; opera como cualquier usuario con membership si entra al tenant        |
 
 ### Problemas conocidos del enfoque provisional
 
@@ -48,10 +48,10 @@ Documentación relacionada:
 
 ### Dos actores, dos responsabilidades
 
-| Actor | Alcance | Crear usuarios | Quitar acceso a la empresa | Eliminar cuenta global |
-| ----- | ------- | -------------- | -------------------------- | ---------------------- |
-| **Super Admin** (plataforma) | Cross-tenant | Sí — crea empresas, owner inicial y cuentas de plataforma | No es su rol habitual en tenant | Sí — operación de plataforma / cumplimiento |
-| **Owner** (tenant) | Una `Company` | Sí — **invita** o crea miembros en **su** empresa | Sí — **expulsar** (revocar membresía) | **No** |
+| Actor                        | Alcance       | Crear usuarios                                            | Quitar acceso a la empresa            | Eliminar cuenta global                      |
+| ---------------------------- | ------------- | --------------------------------------------------------- | ------------------------------------- | ------------------------------------------- |
+| **Super Admin** (plataforma) | Cross-tenant  | Sí — crea empresas, owner inicial y cuentas de plataforma | No es su rol habitual en tenant       | Sí — operación de plataforma / cumplimiento |
+| **Owner** (tenant)           | Una `Company` | Sí — **invita** o crea miembros en **su** empresa         | Sí — **expulsar** (revocar membresía) | **No**                                      |
 
 ```text
 SUPER_ADMIN  →  crea Company + primer OWNER; gestiona cuentas a nivel SaaS
@@ -74,13 +74,13 @@ Flujo de referencia: `docs/platform-admin-roadmap.md` (§ «Flujo futuro de onbo
 
 El Owner **no administra el SaaS**; administra **miembros de su equipo**:
 
-| Acción objetivo | Comportamiento esperado |
-| --------------- | ----------------------- |
-| **Invitar / crear** | Alta de `User` (nuevo) o vincular email existente + `UserCompany` con rol asignable (`assert-assignable-role`) |
-| **Editar rol / datos** | `PATCH /users/:id` dentro de la jerarquía |
-| **Desactivar** | `isActive = false` — pierde login pero sigue existiendo la cuenta |
-| **Expulsar** | Soft delete **solo** de `UserCompany` en esa empresa; revoca acceso al tenant; **no** soft delete de `User` |
-| **Eliminar** | **Prohibido** para Owner — reservado a plataforma |
+| Acción objetivo        | Comportamiento esperado                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Invitar / crear**    | Alta de `User` (nuevo) o vincular email existente + `UserCompany` con rol asignable (`assert-assignable-role`) |
+| **Editar rol / datos** | `PATCH /users/:id` dentro de la jerarquía                                                                      |
+| **Desactivar**         | `isActive = false` — pierde login pero sigue existiendo la cuenta                                              |
+| **Expulsar**           | Soft delete **solo** de `UserCompany` en esa empresa; revoca acceso al tenant; **no** soft delete de `User`    |
+| **Eliminar**           | **Prohibido** para Owner — reservado a plataforma                                                              |
 
 ```text
 Expulsar (Owner)                Eliminar (Super Admin / plataforma)
@@ -94,11 +94,11 @@ User persiste                   Cuenta global retirada del sistema
 
 #### Expulsar vs desactivar
 
-| Operación | Alcance | Reversible por Owner | Uso típico |
-| --------- | ------- | -------------------- | ---------- |
-| **Desactivar** | Usuario global (`User.isActive`) | Sí (`activate`) | Suspender login temporalmente |
-| **Expulsar** | Membresía (`UserCompany`) | Re-invitar / restaurar membresía | Persona ya no pertenece a la empresa |
-| **Eliminar** | Usuario + membresía (soft delete profundo) | Solo plataforma / restore admin | Baja definitiva de cuenta |
+| Operación      | Alcance                                    | Reversible por Owner             | Uso típico                           |
+| -------------- | ------------------------------------------ | -------------------------------- | ------------------------------------ |
+| **Desactivar** | Usuario global (`User.isActive`)           | Sí (`activate`)                  | Suspender login temporalmente        |
+| **Expulsar**   | Membresía (`UserCompany`)                  | Re-invitar / restaurar membresía | Persona ya no pertenece a la empresa |
+| **Eliminar**   | Usuario + membresía (soft delete profundo) | Solo plataforma / restore admin  | Baja definitiva de cuenta            |
 
 ### Empleados (`POST /employees`)
 

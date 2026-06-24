@@ -1,10 +1,10 @@
+import type { PlatformCompanyFormSchema } from "../schemas/platform-company.schema";
 import type {
   CreatePlatformCompanyPayload,
+  PlatformCompaniesApiPage,
   PlatformCompany,
   PlatformCompanyDto,
-  PlatformCompaniesApiPage,
 } from "../types/platform.types";
-import type { PlatformCompanyFormSchema } from "../schemas/platform-company.schema";
 
 export function mapPlatformCompanyDtoToUi(
   dto: PlatformCompanyDto,
@@ -25,7 +25,9 @@ export function mapPlatformCompanyDtoToUi(
   };
 }
 
-export function mapPlatformCompaniesPageToUi(response: PlatformCompaniesApiPage) {
+export function mapPlatformCompaniesPageToUi(
+  response: PlatformCompaniesApiPage,
+) {
   return {
     items: response.items.map(mapPlatformCompanyDtoToUi),
     meta: response.meta,

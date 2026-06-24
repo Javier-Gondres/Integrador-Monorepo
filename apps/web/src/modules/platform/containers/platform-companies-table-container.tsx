@@ -8,6 +8,7 @@ import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { Select } from "@/shared/ui";
 
 import { getPlatformCompaniesTableColumns } from "../components/platform-companies-table";
+import { PlatformCompanyForm } from "../components/platform-company-form";
 import { useCreatePlatformCompany } from "../hooks/use-create-platform-company";
 import { usePlatformCompanies } from "../hooks/use-platform-companies";
 import { useTogglePlatformCompanyStatus } from "../hooks/use-toggle-platform-company-status";
@@ -16,7 +17,6 @@ import {
   mapPlatformCompanyFormToPayload,
 } from "../mappers/platform-company.mapper";
 import type { PlatformCompanyFormSchema } from "../schemas/platform-company.schema";
-import { PlatformCompanyForm } from "../components/platform-company-form";
 
 type StatusFilter = "Todos" | "Activas" | "Inactivas";
 
@@ -36,7 +36,8 @@ export function PlatformCompaniesTableContainer() {
     ...(statusFilter === "Inactivas" && { isActive: false }),
   };
 
-  const { data, isLoading, isFetching, refetch } = usePlatformCompanies(filters);
+  const { data, isLoading, isFetching, refetch } =
+    usePlatformCompanies(filters);
   const createMutation = useCreatePlatformCompany();
   const toggleStatusMutation = useTogglePlatformCompanyStatus();
 

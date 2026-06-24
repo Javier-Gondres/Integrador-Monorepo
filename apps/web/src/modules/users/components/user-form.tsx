@@ -176,9 +176,7 @@ function UserCreateForm({
           roles={roles}
           rolesLoading={rolesLoading}
           value={selectedRole}
-          onChange={(role) =>
-            setValue("role", role, { shouldValidate: true })
-          }
+          onChange={(role) => setValue("role", role, { shouldValidate: true })}
           error={errors.role?.message}
         />
 
@@ -267,9 +265,7 @@ function UserEditForm({
           roles={roles}
           rolesLoading={rolesLoading}
           value={selectedRole}
-          onChange={(role) =>
-            setValue("role", role, { shouldValidate: true })
-          }
+          onChange={(role) => setValue("role", role, { shouldValidate: true })}
           error={errors.role?.message}
         />
 

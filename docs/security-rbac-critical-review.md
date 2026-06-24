@@ -6,13 +6,13 @@ Documento de referencia sobre el **análisis de seguridad y diseño** realizado 
 
 **Documentación relacionada:**
 
-| Archivo | Contenido |
-| ------- | --------- |
-| `docs/platform-admin-roadmap.md` | Plataforma vs tenant, dos flujos de onboarding |
-| `docs/user-management-roadmap.md` | Usuarios provisional, invitar/expulsar vs eliminar |
-| `apps/api/docs/auth-and-utilities.md` | Guards, endpoints, semántica HTTP |
-| `apps/api/docs/tenant-access.md` | CompanyGuard, BranchAccess, empleado ↔ sucursal |
-| `apps/web/ARCHITECTURE.md` | §18 RBAC, §18.1 usuarios, §18.2 plataforma |
+| Archivo                               | Contenido                                          |
+| ------------------------------------- | -------------------------------------------------- |
+| `docs/platform-admin-roadmap.md`      | Plataforma vs tenant, dos flujos de onboarding     |
+| `docs/user-management-roadmap.md`     | Usuarios provisional, invitar/expulsar vs eliminar |
+| `apps/api/docs/auth-and-utilities.md` | Guards, endpoints, semántica HTTP                  |
+| `apps/api/docs/tenant-access.md`      | CompanyGuard, BranchAccess, empleado ↔ sucursal    |
+| `apps/web/ARCHITECTURE.md`            | §18 RBAC, §18.1 usuarios, §18.2 plataforma         |
 
 **Última actualización:** refleja fix **Opción A** (Super Admin sin `UserCompany`) y aclaración de **self-service** `POST /companies` como diseño intencional.
 
@@ -54,10 +54,10 @@ Rutas /platform/*        Rutas de negocio + CompanyGuard
 
 ### Dos flujos de alta de tenant
 
-| Flujo | Endpoint | Actor | Resultado |
-| ----- | -------- | ----- | --------- |
-| **Self-service** | `POST /companies` | Usuario autenticado **sin** `UserCompany` | Company + branch; el mismo usuario queda **OWNER** |
-| **Provisión plataforma** | `POST /platform/companies` | Super Admin | Company + branch + **otro** usuario OWNER |
+| Flujo                    | Endpoint                   | Actor                                     | Resultado                                          |
+| ------------------------ | -------------------------- | ----------------------------------------- | -------------------------------------------------- |
+| **Self-service**         | `POST /companies`          | Usuario autenticado **sin** `UserCompany` | Company + branch; el mismo usuario queda **OWNER** |
+| **Provisión plataforma** | `POST /platform/companies` | Super Admin                               | Company + branch + **otro** usuario OWNER          |
 
 El self-service **no** se considera vulnerabilidad: es el onboarding previsto para que usuarios creen su propia empresa.
 
@@ -74,11 +74,11 @@ Detalle: `docs/platform-admin-roadmap.md` (§ «Dos flujos de alta de tenant»).
 
 ### C1 — Self-service `POST /companies`
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ✅ **Diseño intencional** — no remediar |
-| **Severidad original** | Crítico (revisión inicial) |
-| **Reclasificación** | Feature de producto |
+| Campo                  | Valor                                   |
+| ---------------------- | --------------------------------------- |
+| **Estado**             | ✅ **Diseño intencional** — no remediar |
+| **Severidad original** | Crítico (revisión inicial)              |
+| **Reclasificación**    | Feature de producto                     |
 
 **Descripción:** Cualquier usuario autenticado sin tenant puede crear su empresa vía `POST /companies` (`@JwtAuth()` + `createOnboarding`).
 
@@ -92,24 +92,24 @@ Detalle: `docs/platform-admin-roadmap.md` (§ «Dos flujos de alta de tenant»).
 
 ### C2 — Super Admin dual-role (platform + tenant)
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ✅ **Resuelto** (Opción A) |
-| **Severidad** | Crítico |
+| Campo         | Valor                      |
+| ------------- | -------------------------- |
+| **Estado**    | ✅ **Resuelto** (Opción A) |
+| **Severidad** | Crítico                    |
 
-**Problema:** Un usuario con `isSuperAdmin = true` podía obtener `UserCompany` OWNER (p. ej. vía `POST /companies`) y operar **plataforma + tenant** simultáneamente. Viola: *«un actor, un dominio de autoridad»*.
+**Problema:** Un usuario con `isSuperAdmin = true` podía obtener `UserCompany` OWNER (p. ej. vía `POST /companies`) y operar **plataforma + tenant** simultáneamente. Viola: _«un actor, un dominio de autoridad»_.
 
 **Riesgos:** privilege chaining, auditoría ambigua, JWT con permisos OWNER + flag plataforma.
 
 **Fix implementado:**
 
-| Capa | Mecanismo |
-| ---- | --------- |
-| Política | `apps/api/src/common/platform/policies/super-admin-tenant.policy.ts` |
-| Service | `assertSuperAdminCannotJoinTenant(auth)` en `createOnboarding` |
-| Repository | `assertUserEligibleForTenantMembership` en transacción `createWithOnboarding` |
-| Auth | `stripTenantMembershipForSuperAdmin` en `findAuthContext` |
-| JWT | `buildAccessTokenClaims` — si `isSuperAdmin`, `companyId`/`role`/`permissions` en null/[] |
+| Capa       | Mecanismo                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| Política   | `apps/api/src/common/platform/policies/super-admin-tenant.policy.ts`                      |
+| Service    | `assertSuperAdminCannotJoinTenant(auth)` en `createOnboarding`                            |
+| Repository | `assertUserEligibleForTenantMembership` en transacción `createWithOnboarding`             |
+| Auth       | `stripTenantMembershipForSuperAdmin` en `findAuthContext`                                 |
+| JWT        | `buildAccessTokenClaims` — si `isSuperAdmin`, `companyId`/`role`/`permissions` en null/[] |
 
 **Export:** `apps/api/src/common/platform/index.ts`.
 
@@ -117,10 +117,10 @@ Detalle: `docs/platform-admin-roadmap.md` (§ «Dos flujos de alta de tenant»).
 
 ### C3 — `DELETE /users/:id` y empleados huérfanos
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ❌ **Pendiente** |
-| **Severidad** | Crítico |
+| Campo         | Valor            |
+| ------------- | ---------------- |
+| **Estado**    | ❌ **Pendiente** |
+| **Severidad** | Crítico          |
 
 **Problema:** `removeUser` hace soft delete de `User` + `UserCompany` y **no** toca `Employee`. El empleado queda activo con `userId` apuntando a usuario eliminado/inactivo.
 
@@ -144,9 +144,9 @@ Ver: `docs/user-management-roadmap.md`.
 
 ### C4 — JWT: `isSuperAdmin` y permisos no revalidados en BD
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ❌ **Pendiente** |
+| Campo         | Valor                                  |
+| ------------- | -------------------------------------- |
+| **Estado**    | ❌ **Pendiente**                       |
 | **Severidad** | Crítico (ventana ~15 min access token) |
 
 **Problema:** `JwtStrategy.validate()` solo revalida `user.isActive`. `isSuperAdmin` y `permissions[]` vienen del payload JWT hasta expiración o refresh.
@@ -167,10 +167,10 @@ Ver: `docs/user-management-roadmap.md`.
 
 ### A1 — OWNER/ADMIN con `users.delete` vs diseño «expulsar»
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ❌ Pendiente |
-| **Severidad** | Alto |
+| Campo         | Valor        |
+| ------------- | ------------ |
+| **Estado**    | ❌ Pendiente |
+| **Severidad** | Alto         |
 
 **Problema:** Matriz en `@repo/shared`: OWNER = todos los permisos; ADMIN incluye `users.delete`. La documentación objetivo dice: Owner **expulsa** (solo membresía), no elimina cuenta global.
 
@@ -182,10 +182,10 @@ Ver: `docs/user-management-roadmap.md`.
 
 ### A2 — Dos caminos de alta de tenant (confusión operativa)
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ✅ **Aclarado en documentación** |
-| **Severidad original** | Alto |
+| Campo                  | Valor                            |
+| ---------------------- | -------------------------------- |
+| **Estado**             | ✅ **Aclarado en documentación** |
+| **Severidad original** | Alto                             |
 
 No es vulnerabilidad si se entiende el modelo. Riesgo restante: **UX confusa** (`/companies` legacy vs `/platform/companies`).
 
@@ -195,9 +195,9 @@ No es vulnerabilidad si se entiende el modelo. Riesgo restante: **UX confusa** (
 
 ### A3 — `PermissionGuard` web: rutas sin regla → permitidas
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ❌ Pendiente |
+| Campo         | Valor                   |
+| ------------- | ----------------------- |
+| **Estado**    | ❌ Pendiente            |
 | **Severidad** | Alto (defense in depth) |
 
 **Problema:** En `route-access.ts`, si no hay regla para un pathname, `canAccessRoute` devuelve `true` (solo exige tenant).
@@ -210,10 +210,10 @@ No es vulnerabilidad si se entiende el modelo. Riesgo restante: **UX confusa** (
 
 ### A4 — Protección web `/platform/*` solo en cliente
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ⚠️ Aceptable con API como autoridad |
-| **Severidad** | Alto (UX) |
+| Campo         | Valor                               |
+| ------------- | ----------------------------------- |
+| **Estado**    | ⚠️ Aceptable con API como autoridad |
+| **Severidad** | Alto (UX)                           |
 
 `PlatformGuard` usa `isSuperAdmin` del store. API responde 401/403. Mejora opcional: middleware Next.js server-side.
 
@@ -221,9 +221,9 @@ No es vulnerabilidad si se entiende el modelo. Riesgo restante: **UX confusa** (
 
 ### A5 — Super Admin ve ítems `role: OWNER` en sidebar tenant
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ✅ Mitigado por C2 |
+| Campo         | Valor                               |
+| ------------- | ----------------------------------- |
+| **Estado**    | ✅ Mitigado por C2                  |
 | **Severidad** | Alto (era dependiente de dual-role) |
 
 Con Opción A, Super Admin sin membership no opera tenant. Si tuviera membership inconsistente en BD, JWT la ignora.
@@ -232,10 +232,10 @@ Con Opción A, Super Admin sin membership no opera tenant. Si tuviera membership
 
 ### A6 — `DELETE /companies/:id` disponible para OWNER
 
-| Campo | Valor |
-| ----- | ----- |
-| **Estado** | ❌ Pendiente (decisión de producto) |
-| **Severidad** | Alto |
+| Campo         | Valor                               |
+| ------------- | ----------------------------------- |
+| **Estado**    | ❌ Pendiente (decisión de producto) |
+| **Severidad** | Alto                                |
 
 Owner puede soft-delete toda la empresa desde API/UI legacy.
 
@@ -286,14 +286,14 @@ Owner puede soft-delete toda la empresa desde API/UI legacy.
 
 ## Bajo / pendiente funcional
 
-| ID | Item | Estado |
-| -- | ---- | ------ |
-| B1 | Selector `switchBranch` en UI | Pendiente |
-| B2 | Toast global ante 403 API | Pendiente |
-| B3 | Módulos web: inventario, ventas, compras, reportes | Pendiente |
-| B4 | Flujo invitar/expulsar usuarios (doc hecho, código no) | Pendiente |
-| B5 | Credenciales seed en repo (`Password123`) | Solo dev — rotar en prod |
-| B6 | `console.warn` en `JwtStrategy` | Menor — usar logger |
+| ID  | Item                                                   | Estado                   |
+| --- | ------------------------------------------------------ | ------------------------ |
+| B1  | Selector `switchBranch` en UI                          | Pendiente                |
+| B2  | Toast global ante 403 API                              | Pendiente                |
+| B3  | Módulos web: inventario, ventas, compras, reportes     | Pendiente                |
+| B4  | Flujo invitar/expulsar usuarios (doc hecho, código no) | Pendiente                |
+| B5  | Credenciales seed en repo (`Password123`)              | Solo dev — rotar en prod |
+| B6  | `console.warn` en `JwtStrategy`                        | Menor — usar logger      |
 
 ---
 
@@ -312,17 +312,17 @@ Owner puede soft-delete toda la empresa desde API/UI legacy.
 
 ## Backlog priorizado
 
-| Prioridad | ID | Acción |
-| --------- | -- | ------ |
-| **P0** | C3 | Coordinar delete/expulsar usuario con `Employee` |
-| **P0** | C4 | Revalidar `isSuperAdmin` (y opcional permisos) en BD por request |
-| **P1** | A1 | Expulsar vs delete; quitar `users.delete` de OWNER |
-| **P1** | A3 | Default deny en `canAccessRoute` |
-| **P1** | A6 | Política de borrado de tenant (Owner vs plataforma) |
-| **P2** | M1, M2 | Revocación de sesiones al cambiar rol/desactivar |
-| **P2** | M3 | Null-safe en mapper empleados |
-| **P2** | M5 | Auditoría plataforma |
-| **P3** | B1–B4 | UX y módulos futuros |
+| Prioridad | ID     | Acción                                                           |
+| --------- | ------ | ---------------------------------------------------------------- |
+| **P0**    | C3     | Coordinar delete/expulsar usuario con `Employee`                 |
+| **P0**    | C4     | Revalidar `isSuperAdmin` (y opcional permisos) en BD por request |
+| **P1**    | A1     | Expulsar vs delete; quitar `users.delete` de OWNER               |
+| **P1**    | A3     | Default deny en `canAccessRoute`                                 |
+| **P1**    | A6     | Política de borrado de tenant (Owner vs plataforma)              |
+| **P2**    | M1, M2 | Revocación de sesiones al cambiar rol/desactivar                 |
+| **P2**    | M3     | Null-safe en mapper empleados                                    |
+| **P2**    | M5     | Auditoría plataforma                                             |
+| **P3**    | B1–B4  | UX y módulos futuros                                             |
 
 ---
 
@@ -330,12 +330,12 @@ Owner puede soft-delete toda la empresa desde API/UI legacy.
 
 Checklist por rol (seed `packages/database/prisma/seed.ts`):
 
-| Actor | Email seed | Debe poder | No debe poder |
-| ----- | ---------- | ---------- | ------------- |
-| Super Admin | `superadmin@ejemplo.com` | `/platform/*`, listar/suspender tenants | `POST /companies`, ERP tenant, `can('products.*')` sin membership |
-| Owner | `prueba@ejemplo.com` | ERP completo, `POST /companies` solo si sin tenant previo | `/platform/*` |
-| Admin | `admin@ejemplo.com` | Según matriz ADMIN | Gestionar OWNER, `/platform/*` |
-| Cajero | `cajero@ejemplo.com` | Caja, ventas (futuro), lectura catálogo | Crear productos, `/users`, `/platform/*` |
+| Actor       | Email seed               | Debe poder                                                | No debe poder                                                     |
+| ----------- | ------------------------ | --------------------------------------------------------- | ----------------------------------------------------------------- |
+| Super Admin | `superadmin@ejemplo.com` | `/platform/*`, listar/suspender tenants                   | `POST /companies`, ERP tenant, `can('products.*')` sin membership |
+| Owner       | `prueba@ejemplo.com`     | ERP completo, `POST /companies` solo si sin tenant previo | `/platform/*`                                                     |
+| Admin       | `admin@ejemplo.com`      | Según matriz ADMIN                                        | Gestionar OWNER, `/platform/*`                                    |
+| Cajero      | `cajero@ejemplo.com`     | Caja, ventas (futuro), lectura catálogo                   | Crear productos, `/users`, `/platform/*`                          |
 
 Password dev común: `Password123`.
 
@@ -343,11 +343,11 @@ Password dev común: `Password123`.
 
 ## Historial de cambios en este documento
 
-| Fecha | Cambio |
-| ----- | ------ |
+| Fecha   | Cambio                                                     |
+| ------- | ---------------------------------------------------------- |
 | 2026-06 | Análisis inicial post-implementación RBAC + plataforma web |
-| 2026-06 | C1 reclasificado como diseño intencional (self-service) |
-| 2026-06 | C2 marcado resuelto (`super-admin-tenant.policy.ts`) |
+| 2026-06 | C1 reclasificado como diseño intencional (self-service)    |
+| 2026-06 | C2 marcado resuelto (`super-admin-tenant.policy.ts`)       |
 
 ---
 
