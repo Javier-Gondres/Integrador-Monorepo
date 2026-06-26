@@ -166,7 +166,9 @@ export function RegisterReturnForm({
               />
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "6px" }}
+            >
               <label
                 htmlFor="return-reason"
                 style={{ fontSize: "13px", fontWeight: 600, color: C.bodyText }}
@@ -271,7 +273,9 @@ export function RegisterReturnForm({
                       step="any"
                       disabled={disabled}
                       placeholder="0"
-                      error={errors.lineItems?.[index]?.quantityToReturn?.message}
+                      error={
+                        errors.lineItems?.[index]?.quantityToReturn?.message
+                      }
                       {...register(`lineItems.${index}.quantityToReturn`, {
                         valueAsNumber: true,
                       })}

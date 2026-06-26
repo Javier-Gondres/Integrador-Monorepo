@@ -54,7 +54,10 @@ export class ReturnsService {
   }
 
   async findById(id: string, companyId: string) {
-    const record = await this.returnsRepository.findByIdInCompany(id, companyId);
+    const record = await this.returnsRepository.findByIdInCompany(
+      id,
+      companyId,
+    );
 
     if (!record) {
       throw BusinessException.notFound(
@@ -75,11 +78,7 @@ export class ReturnsService {
     return this.buildSaleLookup(sale);
   }
 
-  async create(
-    dto: CreateReturnDto,
-    company: CompanyContext,
-    userId: string,
-  ) {
+  async create(dto: CreateReturnDto, company: CompanyContext, userId: string) {
     const sale = await this.returnsRepository.findSaleByIdInCompany(
       company.companyId,
       dto.saleId,
