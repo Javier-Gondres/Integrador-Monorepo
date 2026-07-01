@@ -18,6 +18,8 @@ import { ERP_COLORS as C } from "@/constants/theme";
 import { apiFetch } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { getErrorMessage } from "@/lib/api/errors";
+import { Permission, usePermissions } from "@/modules/auth";
+import { Can } from "@/shared/ui/can";
 
 import type { BranchListItem, MyCompanyListItem } from "../types/branch.types";
 
@@ -26,6 +28,11 @@ type StatusFilter = "active" | "inactive" | "all";
 export function BranchesScreen() {
   const params = useParams<{ slug: string }>();
   const companySlug = params.slug;
+  const { can } = usePermissions();
+  const canCreateBranch = can(Permission.BRANCHES_CREATE);
+  const canUpdateBranch = can(Permission.BRANCHES_UPDATE);
+  const canDeleteBranch = can(Permission.BRANCHES_DELETE);
+  const showActionsColumn = canUpdateBranch || canDeleteBranch;
 
   const [branches, setBranches] = useState<BranchListItem[]>([]);
   const [companyName, setCompanyName] = useState<string | null>(null);
@@ -197,6 +204,13 @@ export function BranchesScreen() {
     [filtered, startIdx, endIdx],
   );
 
+  const tableHeaders = showActionsColumn
+    ? (["Nombre", "Dirección", "Estado", "Acciones"] as const)
+    : (["Nombre", "Dirección", "Estado"] as const);
+  const tableColSpan = tableHeaders.length;
+  const showModal =
+    isModalOpen && (editingBranch ? canUpdateBranch : canCreateBranch);
+
   return (
     <main
       style={{
@@ -319,26 +333,28 @@ export function BranchesScreen() {
                 className={loading ? "animate-spin" : ""}
               />
             </button>
-            <button
-              onClick={openCreateModal}
-              style={{
-                height: "40px",
-                padding: "0 20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                backgroundColor: C.primary,
-                border: "none",
-                borderRadius: "8px",
-                color: "#fff",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              <Plus style={{ width: "16px", height: "16px" }} />
-              Nueva Sucursal
-            </button>
+            <Can permission={Permission.BRANCHES_CREATE}>
+              <button
+                onClick={openCreateModal}
+                style={{
+                  height: "40px",
+                  padding: "0 20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  backgroundColor: C.primary,
+                  border: "none",
+                  borderRadius: "8px",
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                <Plus style={{ width: "16px", height: "16px" }} />
+                Nueva Sucursal
+              </button>
+            </Can>
           </div>
         </div>
 
@@ -382,7 +398,7 @@ export function BranchesScreen() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ backgroundColor: C.tableHead }}>
-                  {["Nombre", "Dirección", "Estado", "Acciones"].map((h) => (
+                  {tableHeaders.map((h) => (
                     <th
                       key={h}
                       style={{
@@ -405,7 +421,7 @@ export function BranchesScreen() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={tableColSpan}
                       style={{
                         textAlign: "center",
                         padding: "48px",
@@ -419,7 +435,7 @@ export function BranchesScreen() {
                 ) : rows.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={tableColSpan}
                       style={{
                         textAlign: "center",
                         padding: "48px",
@@ -525,55 +541,67 @@ export function BranchesScreen() {
                         </span>
                       </td>
                       {/* Acciones */}
-                      <td style={{ padding: "14px 20px", textAlign: "center" }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "4px",
-                          }}
+                      {showActionsColumn ? (
+                        <td
+                          style={{ padding: "14px 20px", textAlign: "center" }}
                         >
-                          <button
-                            onClick={() => openEditModal(branch)}
-                            title="Editar"
+                          <div
                             style={{
-                              width: "34px",
-                              height: "34px",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              borderRadius: "7px",
-                              border: `1px solid ${C.cardBorder}`,
-                              backgroundColor: C.cardBg,
-                              color: C.headText,
-                              cursor: "pointer",
+                              gap: "4px",
                             }}
-                            className="hover:border-blue-400 hover:text-blue-600 transition-colors"
                           >
-                            <Pencil style={{ width: "14px", height: "14px" }} />
-                          </button>
-                          <button
-                            onClick={() => borradoLogico(branch.id)}
-                            title="Eliminar"
-                            style={{
-                              width: "34px",
-                              height: "34px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              borderRadius: "7px",
-                              border: `1px solid ${C.cardBorder}`,
-                              backgroundColor: C.cardBg,
-                              color: C.headText,
-                              cursor: "pointer",
-                            }}
-                            className="hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                          >
-                            <Trash2 style={{ width: "14px", height: "14px" }} />
-                          </button>
-                        </div>
-                      </td>
+                            <Can permission={Permission.BRANCHES_UPDATE}>
+                              <button
+                                onClick={() => openEditModal(branch)}
+                                title="Editar"
+                                style={{
+                                  width: "34px",
+                                  height: "34px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  borderRadius: "7px",
+                                  border: `1px solid ${C.cardBorder}`,
+                                  backgroundColor: C.cardBg,
+                                  color: C.headText,
+                                  cursor: "pointer",
+                                }}
+                                className="hover:border-blue-400 hover:text-blue-600 transition-colors"
+                              >
+                                <Pencil
+                                  style={{ width: "14px", height: "14px" }}
+                                />
+                              </button>
+                            </Can>
+                            <Can permission={Permission.BRANCHES_DELETE}>
+                              <button
+                                onClick={() => borradoLogico(branch.id)}
+                                title="Eliminar"
+                                style={{
+                                  width: "34px",
+                                  height: "34px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  borderRadius: "7px",
+                                  border: `1px solid ${C.cardBorder}`,
+                                  backgroundColor: C.cardBg,
+                                  color: C.headText,
+                                  cursor: "pointer",
+                                }}
+                                className="hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              >
+                                <Trash2
+                                  style={{ width: "14px", height: "14px" }}
+                                />
+                              </button>
+                            </Can>
+                          </div>
+                        </td>
+                      ) : null}
                     </tr>
                   ))
                 )}
@@ -678,7 +706,7 @@ export function BranchesScreen() {
       </div>
 
       {/*Modal*/}
-      {isModalOpen && (
+      {showModal && (
         <div
           style={{
             position: "fixed",

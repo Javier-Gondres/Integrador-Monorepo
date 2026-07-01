@@ -30,6 +30,7 @@ export interface Product {
 
 export interface ProductFilters extends BaseListFilters {
   categoryId?: string;
+  excludeSupplierId?: string;
 }
 
 export interface ProductFormValues {

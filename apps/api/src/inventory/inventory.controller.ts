@@ -8,6 +8,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { Permission } from '@repo/shared';
+import { AuthContext } from 'src/auth/auth.types';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Company, type CompanyContext, CompanyId } from 'src/common/company';
 import { RequirePermissions } from 'src/common/permissions';
 
@@ -25,8 +27,13 @@ export class InventoryController {
   create(
     @Body() createInventoryDto: CreateInventoryDto,
     @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
   ) {
-    return this.inventoryService.create(createInventoryDto, companyId);
+    return this.inventoryService.create(
+      createInventoryDto,
+      companyId,
+      auth.userId,
+    );
   }
 
   @RequirePermissions(Permission.INVENTORY_READ)

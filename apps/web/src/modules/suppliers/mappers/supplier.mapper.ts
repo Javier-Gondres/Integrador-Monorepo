@@ -14,6 +14,7 @@ export function mapSupplierDtoToUi(dto: SupplierDto): Supplier {
     address: dto.address,
     notes: dto.notes,
     isActive: dto.isActive,
+    productsCount: dto.productsCount,
   };
 }
 

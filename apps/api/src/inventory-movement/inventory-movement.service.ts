@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { InventoryMovementType } from '@repo/db';
 import { BranchAccessService } from 'src/branch/branch-access.service';
 import type { CompanyContext } from 'src/common/company';
+import { InventoryException } from 'src/common/errors';
+import { normalizeAdjustmentReason } from 'src/common/inventory/normalize-adjustment-reason';
+import { EmployeesService } from 'src/employees/employees.service';
+import { ProductsRepository } from 'src/products/products.repository';
 
+import { CreateInventoryAdjustmentDto } from './dto/create-inventory-adjustment.dto';
 import {
   NormalizedQueryInventoryMovement,
   QueryInventoryMovementDto,
@@ -16,6 +22,8 @@ export class InventoryMovementService {
   constructor(
     private readonly inventoryMovementRepository: InventoryMovementRepository,
     private readonly branchAccessService: BranchAccessService,
+    private readonly productsRepository: ProductsRepository,
+    private readonly employeesService: EmployeesService,
   ) {}
 
   async findAllByBranch(
@@ -47,6 +55,44 @@ export class InventoryMovementService {
     };
   }
 
+  async createAdjustment(
+    company: CompanyContext,
+    userId: string,
+    dto: CreateInventoryAdjustmentDto,
+  ) {
+    await this.branchAccessService.assertBranchInCompany(
+      dto.branchId,
+      company.companyId,
+    );
+
+    const product = await this.productsRepository.findByIdInCompany(
+      dto.productId,
+      company.companyId,
+    );
+    if (!product) {
+      throw InventoryException.productNotFound(dto.productId);
+    }
+
+    const employee = await this.employeesService.findIdByUserId(
+      userId,
+      company.companyId,
+    );
+
+    const adjustmentReason = normalizeAdjustmentReason(
+      InventoryMovementType.ADJUSTMENT,
+      dto.adjustmentReason,
+    );
+
+    return this.inventoryMovementRepository.createAdjustment({
+      branchId: dto.branchId,
+      productId: dto.productId,
+      quantity: dto.quantity,
+      adjustmentReason: adjustmentReason!,
+      notes: dto.notes?.trim() || null,
+      performedByEmployeeId: employee.id,
+    });
+  }
+
   private normalizeQuery(
     query: QueryInventoryMovementDto,
   ): NormalizedQueryInventoryMovement {
@@ -55,6 +101,9 @@ export class InventoryMovementService {
       take: query.take ?? DEFAULT_TAKE,
       ...(query.search?.trim() && { search: query.search.trim() }),
       ...(query.type && { type: query.type }),
+      ...(query.adjustmentReason && {
+        adjustmentReason: query.adjustmentReason,
+      }),
       ...(query.dateFrom && {
         dateFrom: new Date(`${query.dateFrom}T00:00:00.000Z`),
       }),

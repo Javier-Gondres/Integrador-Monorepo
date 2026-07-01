@@ -7,6 +7,7 @@ import {
   ErrorCodes,
   InventoryException,
 } from 'src/common/errors';
+import { EmployeesService } from 'src/employees/employees.service';
 import { ProductsRepository } from 'src/products/products.repository';
 
 import { CreateInventoryDto } from './dto/create-inventory.dto';
@@ -26,6 +27,7 @@ export class InventoryService {
     private readonly inventoryRepository: InventoryRepository,
     private readonly branchAccessService: BranchAccessService,
     private readonly productRepository: ProductsRepository,
+    private readonly employeesService: EmployeesService,
   ) {}
 
   async findAllByBranch(company: CompanyContext, query: QueryInventoryDto) {
@@ -70,7 +72,11 @@ export class InventoryService {
     return inventory;
   }
 
-  async create(createInventoryDto: CreateInventoryDto, companyId: string) {
+  async create(
+    createInventoryDto: CreateInventoryDto,
+    companyId: string,
+    userId: string,
+  ) {
     await this.branchAccessService.assertBranchInCompany(
       createInventoryDto.branchId,
       companyId,
@@ -84,11 +90,19 @@ export class InventoryService {
       throw InventoryException.productNotFound(createInventoryDto.productId);
     }
 
+    const employee = await this.employeesService.findIdByUserId(
+      userId,
+      companyId,
+    );
+
     return await this.inventoryRepository.create({
       branchId: createInventoryDto.branchId,
       productId: product.id,
-      quantity: createInventoryDto.quantity,
-      minimumQuantity: createInventoryDto.minimumQuantity,
+      quantity: createInventoryDto.quantity ?? 0,
+      ...(createInventoryDto.minimumQuantity !== undefined && {
+        minimumQuantity: createInventoryDto.minimumQuantity,
+      }),
+      performedByEmployeeId: employee.id,
     });
   }
 

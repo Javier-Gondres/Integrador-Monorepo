@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InventoryMovementType, prisma, TransferStatus } from '@repo/db';
+import {
+  InventoryAdjustmentReason,
+  InventoryMovementType,
+  prisma,
+  TransferStatus,
+} from '@repo/db';
 import { BranchAccessService } from 'src/branch/branch-access.service';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
 import { ProductsRepository } from 'src/products/products.repository';
@@ -61,29 +66,70 @@ export class TransfersService {
   }
 
   async dispatch(id: string, companyId: string) {
-    const transfer = await this.requireTransferInCompany(id, companyId);
+    await this.requireTransferInCompany(id, companyId);
 
-    if (transfer.status !== TransferStatus.PENDING) {
-      throw new BusinessException(
-        ErrorCodes.VALIDATION_ERROR,
-        'Solo se pueden despachar transferencias en estado pendiente',
-      );
-    }
+    await prisma.$transaction(async (tx) => {
+      const transfer = await tx.transfer.findFirst({
+        where: {
+          id,
+          status: TransferStatus.PENDING,
+          fromBranch: { companyId },
+          toBranch: { companyId },
+        },
+        select: {
+          id: true,
+          fromBranchId: true,
+          items: {
+            select: {
+              quantity: true,
+              product: { select: { id: true, name: true } },
+            },
+          },
+        },
+      });
 
-    for (const item of transfer.items) {
-      const stock = await this.transfersRepository.getStockForProduct(
-        transfer.fromBranchId,
-        item.product.id,
-      );
-      if (stock < Number(item.quantity)) {
+      if (!transfer) {
         throw new BusinessException(
-          ErrorCodes.INSUFFICIENT_STOCK,
-          `Stock insuficiente para el producto ${item.product.name}`,
+          ErrorCodes.VALIDATION_ERROR,
+          'Solo se pueden despachar transferencias en estado pendiente',
         );
       }
-    }
 
-    return this.transfersRepository.updateStatus(id, TransferStatus.IN_TRANSIT);
+      for (const item of transfer.items) {
+        const decrementResult = await tx.inventory.updateMany({
+          where: {
+            branchId: transfer.fromBranchId,
+            productId: item.product.id,
+            quantity: { gte: item.quantity },
+          },
+          data: { quantity: { decrement: item.quantity } },
+        });
+
+        if (decrementResult.count === 0) {
+          throw new BusinessException(
+            ErrorCodes.INSUFFICIENT_STOCK,
+            `Stock insuficiente para el producto ${item.product.name}`,
+          );
+        }
+
+        await tx.inventoryMovement.create({
+          data: {
+            branchId: transfer.fromBranchId,
+            productId: item.product.id,
+            type: InventoryMovementType.TRANSFER_OUT,
+            quantity: item.quantity,
+            transferId: transfer.id,
+          },
+        });
+      }
+
+      await tx.transfer.update({
+        where: { id },
+        data: { status: TransferStatus.IN_TRANSIT },
+      });
+    });
+
+    return this.transfersRepository.findByIdInCompany(id, companyId);
   }
 
   async complete(id: string, companyId: string) {
@@ -116,31 +162,6 @@ export class TransfersService {
 
       for (const item of transfer.items) {
         const qty = item.quantity;
-        const decrementResult = await tx.inventory.updateMany({
-          where: {
-            branchId: transfer.fromBranchId,
-            productId: item.product.id,
-            quantity: { gte: qty },
-          },
-          data: { quantity: { decrement: qty } },
-        });
-
-        if (decrementResult.count === 0) {
-          throw new BusinessException(
-            ErrorCodes.INSUFFICIENT_STOCK,
-            `Stock insuficiente para el producto ${item.product.name}`,
-          );
-        }
-
-        await tx.inventoryMovement.create({
-          data: {
-            branchId: transfer.fromBranchId,
-            productId: item.product.id,
-            type: InventoryMovementType.TRANSFER_OUT,
-            quantity: qty,
-            transferId: transfer.id,
-          },
-        });
 
         await tx.inventory.upsert({
           where: {
@@ -188,6 +209,59 @@ export class TransfersService {
         ErrorCodes.VALIDATION_ERROR,
         `No se puede cancelar una transferencia en estado ${transfer.status}`,
       );
+    }
+
+    if (transfer.status === TransferStatus.IN_TRANSIT) {
+      await prisma.$transaction(async (tx) => {
+        const current = await tx.transfer.findFirst({
+          where: {
+            id,
+            status: TransferStatus.IN_TRANSIT,
+            fromBranch: { companyId },
+            toBranch: { companyId },
+          },
+          select: { id: true, fromBranchId: true },
+        });
+
+        if (!current) {
+          throw new BusinessException(
+            ErrorCodes.RECORD_NOT_FOUND,
+            'Transferencia no encontrada',
+          );
+        }
+
+        for (const item of transfer.items) {
+          await tx.inventory.update({
+            where: {
+              branchId_productId: {
+                branchId: transfer.fromBranchId,
+                productId: item.product.id,
+              },
+            },
+            data: { quantity: { increment: item.quantity } },
+          });
+
+          await tx.inventoryMovement.create({
+            data: {
+              branchId: transfer.fromBranchId,
+              productId: item.product.id,
+              type: InventoryMovementType.ADJUSTMENT,
+              quantity: item.quantity,
+              adjustmentReason: InventoryAdjustmentReason.OTHER,
+              transferId: transfer.id,
+              notes:
+                'Stock restaurado por cancelación de transferencia en tránsito',
+            },
+          });
+        }
+
+        await tx.transfer.update({
+          where: { id },
+          data: { status: TransferStatus.CANCELLED },
+        });
+      });
+
+      return this.transfersRepository.findByIdInCompany(id, companyId);
     }
 
     return this.transfersRepository.updateStatus(id, TransferStatus.CANCELLED);

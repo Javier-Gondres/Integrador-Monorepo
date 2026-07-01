@@ -52,6 +52,11 @@ export const ROLE_PERMISSION_MATRIX: Record<
     Permission.INVENTORY_READ,
     Permission.INVENTORY_ADJUST,
     Permission.INVENTORY_TRANSFER,
+    Permission.SALES_READ,
+    Permission.SALES_CREATE,
+    Permission.SALES_CANCEL,
+    Permission.PURCHASES_READ,
+    Permission.PURCHASES_CREATE,
     Permission.REPORTS_READ,
   ],
 

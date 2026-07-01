@@ -42,6 +42,15 @@ export const ENDPOINTS = {
   suppliers: {
     root: "/suppliers",
     byId: (id: string) => `/suppliers/${id}`,
+    products: {
+      root: (supplierId: string) => `/suppliers/${supplierId}/products`,
+      byId: (supplierId: string, productId: string) =>
+        `/suppliers/${supplierId}/products/${productId}`,
+      activate: (supplierId: string, productId: string) =>
+        `/suppliers/${supplierId}/products/${productId}/activate`,
+      deactivate: (supplierId: string, productId: string) =>
+        `/suppliers/${supplierId}/products/${productId}/deactivate`,
+    },
   },
   employees: {
     root: "/employees",
@@ -69,6 +78,15 @@ export const ENDPOINTS = {
     activateCompany: (id: string) => `/platform/companies/${id}/activate`,
     deactivateCompany: (id: string) => `/platform/companies/${id}/deactivate`,
   },
+  purchases: {
+    root: "/purchases",
+    byId: (id: string) => `/purchases/${id}`,
+  },
+  returns: {
+    root: "/returns",
+    byId: (id: string) => `/returns/${id}`,
+    saleLookup: "/returns/sale-lookup",
+  },
   cashRegisters: {
     root: "/cash-registers",
     byId: (id: string) => `/cash-registers/${id}`,
@@ -85,6 +103,7 @@ export const ENDPOINTS = {
   },
   inventoryMovements: {
     root: "/inventory-movements",
+    adjustments: "/inventory-movements/adjustments",
   },
   transfers: {
     root: "/transfers",

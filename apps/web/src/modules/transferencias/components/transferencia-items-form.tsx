@@ -43,8 +43,12 @@ export function TransferenciaItemsForm({
   }, [origenId, selectedProductId, fetchStock]);
 
   const selectedProduct = productos.find((p) => p.id === selectedProductId);
-  const cantidadNum = parseInt(cantidadInput);
-  const isCantidadValid = !isNaN(cantidadNum) && cantidadNum > 0;
+  const cantidadNum = parseFloat(cantidadInput);
+  const isCantidadValid =
+    !isNaN(cantidadNum) &&
+    cantidadNum > 0 &&
+    Number.isFinite(cantidadNum) &&
+    Math.round(cantidadNum * 1000) / 1000 === cantidadNum;
   const isStockSufficient =
     stockDisponible !== null && cantidadNum <= stockDisponible;
 
@@ -141,7 +145,8 @@ export function TransferenciaItemsForm({
         >
           <input
             type="number"
-            min={1}
+            min={0.001}
+            step={0.001}
             max={stockDisponible ?? undefined}
             placeholder="0"
             value={cantidadInput}

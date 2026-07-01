@@ -2,8 +2,8 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
-  IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Min,
@@ -15,8 +15,12 @@ export class CreateTransferItemDto {
   @IsNotEmpty({ message: 'El producto es requerido' })
   productId!: string;
 
-  @IsInt({ message: 'La cantidad debe ser un número entero' })
-  @Min(1, { message: 'La cantidad debe ser al menos 1' })
+  @Type(() => Number)
+  @IsNumber(
+    { maxDecimalPlaces: 3 },
+    { message: 'La cantidad debe ser un número' },
+  )
+  @Min(0.001, { message: 'La cantidad debe ser mayor a cero' })
   quantity!: number;
 }
 

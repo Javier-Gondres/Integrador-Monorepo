@@ -15,7 +15,10 @@ import { InventoryModule } from './inventory/inventory.module';
 import { InventoryMovementModule } from './inventory-movement/inventory-movement.module';
 import { MeModule } from './me/me.module';
 import { PlatformModule } from './platform/platform.module';
+import { ProductSupplierModule } from './product-supplier/product-supplier.module';
 import { ProductsModule } from './products/products.module';
+import { PurchasesModule } from './purchases/purchases.module';
+import { ReturnsModule } from './returns/returns.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { TransfersModule } from './transfers/transfers.module';
 import { UsersModule } from './users/users.module';
@@ -45,6 +48,9 @@ const envFilePath =
     InventoryModule,
     InventoryMovementModule,
     TransfersModule,
+    ProductSupplierModule,
+    PurchasesModule,
+    ReturnsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

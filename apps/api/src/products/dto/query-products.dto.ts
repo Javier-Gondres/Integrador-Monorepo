@@ -44,6 +44,10 @@ export class QueryProductsDto {
   categoryId?: string;
 
   @IsOptional()
+  @IsString({ message: 'excludeSupplierId debe ser texto' })
+  excludeSupplierId?: string;
+
+  @IsOptional()
   @Transform(({ value }) => parseOptionalBoolean(value))
   @IsBoolean({ message: 'isActive debe ser un booleano' })
   isActive?: boolean;
@@ -54,5 +58,6 @@ export type NormalizedQueryProducts = {
   take: number;
   search?: string;
   categoryId?: string;
+  excludeSupplierId?: string;
   isActive?: boolean;
 };

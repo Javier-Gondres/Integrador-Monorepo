@@ -183,6 +183,36 @@ export class EmployeesService {
     return employee;
   }
 
+  async findIdByUserId(userId: string, companyId: string) {
+    const employee = await this.employeesRepository.findIdByUserId(
+      userId,
+      companyId,
+    );
+
+    if (!employee) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario actual no tiene un empleado asociado',
+      );
+    }
+
+    return employee;
+  }
+
+  private async assertBranchInCompany(branchId: string, companyId: string) {
+    const branch = await this.employeesRepository.findBranchInCompany(
+      branchId,
+      companyId,
+    );
+
+    if (!branch) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'La sucursal no existe en esta empresa',
+      );
+    }
+  }
+
   private toDecimalOrNull(value: number | undefined): Prisma.Decimal | null {
     if (value === undefined) {
       return null;
