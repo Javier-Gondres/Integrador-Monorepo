@@ -17,6 +17,7 @@ export function useCreatePurchase() {
       void queryClient.invalidateQueries({ queryKey: ["inventories"] });
       void queryClient.invalidateQueries({ queryKey: ["inventory-movements"] });
       void queryClient.invalidateQueries({ queryKey: ["supplier-catalog"] });
+      void queryClient.invalidateQueries({ queryKey: ["sales", "products"] });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "No se pudo registrar la compra"));

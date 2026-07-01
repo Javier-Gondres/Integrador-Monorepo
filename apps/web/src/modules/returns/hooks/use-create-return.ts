@@ -13,6 +13,9 @@ export function useCreateReturn() {
     mutationFn: createReturn,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: returnKeys.all });
+      // La devolución repone inventario: refrescar la disponibilidad en ventas.
+      void queryClient.invalidateQueries({ queryKey: ["inventories"] });
+      void queryClient.invalidateQueries({ queryKey: ["sales", "products"] });
       toast.success("Devolución registrada correctamente");
     },
     onError: (error) => {

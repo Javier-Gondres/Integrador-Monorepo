@@ -13,6 +13,9 @@ export function useCreateAdjustment() {
     mutationFn: createAdjustment,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adjustmentKeys.all });
+      // El ajuste cambia el stock físico: refrescar la disponibilidad en ventas.
+      void queryClient.invalidateQueries({ queryKey: ["inventories"] });
+      void queryClient.invalidateQueries({ queryKey: ["sales", "products"] });
       toast.success("Ajuste de inventario registrado");
     },
     onError: (error) => {
