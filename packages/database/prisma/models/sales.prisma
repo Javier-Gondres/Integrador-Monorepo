@@ -35,11 +35,12 @@ model Sale {
   ncfSequence NcfSequence? @relation(fields: [ncfSequenceId], references: [id])
   reservation Reservation? @relation(fields: [reservationId], references: [id])
 
-  items              SaleItem[]
-  payments           Payment[]
-  inventoryMovements InventoryMovement[]
-  accountReceivable  AccountReceivable?
-  returns            Return[]
+  items               SaleItem[]
+  payments            Payment[]
+  inventoryMovements  InventoryMovement[]
+  accountReceivable   AccountReceivable?
+  returns             Return[]
+  redeemedCreditNotes CreditNote[]        @relation("CreditNoteRedemption")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
