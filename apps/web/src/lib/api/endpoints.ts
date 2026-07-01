@@ -59,6 +59,18 @@ export const ENDPOINTS = {
     byId: (id: string) => `/returns/${id}`,
     saleLookup: "/returns/sale-lookup",
   },
+  sales: {
+    root: "/sales",
+    byId: (id: string) => `/sales/${id}`,
+    products: "/sales/products",
+    currentShift: "/sales/current-shift",
+    creditNotes: "/sales/credit-notes",
+  },
+  reservations: {
+    root: "/reservations",
+    byId: (id: string) => `/reservations/${id}`,
+    cancel: (id: string) => `/reservations/${id}/cancel`,
+  },
   cashRegisters: {
     root: "/cash-registers",
     byId: (id: string) => `/cash-registers/${id}`,
