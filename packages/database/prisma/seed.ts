@@ -58,6 +58,7 @@ const SEED_IDS = {
   transferCompleted: "seed-transfer-completed",
   returnFromSale: "seed-return-from-sale",
   creditNoteFromReturn: "seed-credit-note-from-return",
+  creditNoteJuanActive: "seed-credit-note-juan-active",
   accountReceivable: "seed-account-receivable",
   receivablePayment: "seed-receivable-payment",
   accountPayable: "seed-account-payable",
@@ -1888,6 +1889,27 @@ async function ensureDemoReturn(ctx: SeedContext) {
     update: {
       amount: returnSubtotal,
       isActive: true,
+    },
+  });
+
+  // Nota de crédito de demostración asociada a un cliente (Juan Pérez), activa y
+  // sin redimir. Permite probar la redención de notas de crédito en la página de
+  // facturación. Sin NCF para no chocar con la secuencia B04.
+  await prisma.creditNote.upsert({
+    where: { id: SEED_IDS.creditNoteJuanActive },
+    create: {
+      id: SEED_IDS.creditNoteJuanActive,
+      returnId: SEED_IDS.returnFromSale,
+      customerId: SEED_IDS.customerJuan,
+      amount: 200,
+      isActive: true,
+    },
+    update: {
+      customerId: SEED_IDS.customerJuan,
+      amount: 200,
+      isActive: true,
+      redeemedAt: null,
+      redeemedInSaleId: null,
     },
   });
 
