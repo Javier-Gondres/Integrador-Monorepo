@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { Plus, ShoppingCart, Trash2 } from "lucide-react";
 
 import type { SaleLine } from "../hooks/use-sale";
 import type { CreditNoteDto } from "../types/sale.types";
@@ -14,6 +14,7 @@ interface SaleDetailProps {
   onSetQuantity: (productId: string, quantity: number) => void;
   onRemove: (productId: string) => void;
   onClear: () => void;
+  onAddProduct: () => void;
 
   subtotal: number;
   itbis: number;
@@ -45,6 +46,7 @@ export function SaleDetail({
   onSetQuantity,
   onRemove,
   onClear,
+  onAddProduct,
   subtotal,
   itbis,
   total,
@@ -78,12 +80,20 @@ export function SaleDetail({
           <button
             type="button"
             onClick={onClear}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-danger transition-colors hover:opacity-80"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border px-3 text-sm font-semibold text-danger transition-colors hover:bg-danger/5"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Limpiar todo
           </button>
         )}
+        <button
+          type="button"
+          onClick={onAddProduct}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border px-3 text-sm font-semibold text-head transition-colors hover:text-primary"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Agregar Producto
+        </button>
       </div>
 
       {empty ? (
