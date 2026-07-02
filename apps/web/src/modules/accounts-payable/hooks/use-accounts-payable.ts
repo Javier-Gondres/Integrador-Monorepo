@@ -1,7 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchAccountsPayable, updateAccountsPayable, createPayablePayment, fetchAccountPayable } from '../api/accounts-payable-api';
-import { accountsPayableKeys } from '../query-keys';
-import { AccountsPayableQuery } from '../types/accounts-payable';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchAccountsPayable,
+  updateAccountsPayable,
+  createPayablePayment,
+  fetchAccountPayable,
+} from "../api/accounts-payable-api";
+import { accountsPayableKeys } from "../query-keys";
+import { AccountsPayableQuery } from "../types/accounts-payable";
 
 export function useAccountsPayable(query: AccountsPayableQuery) {
   return useQuery({

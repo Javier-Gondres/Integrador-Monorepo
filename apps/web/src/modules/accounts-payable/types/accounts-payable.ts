@@ -1,4 +1,4 @@
-export type PayableStatus = 'OPEN' | 'PARTIAL' | 'PAID' | 'OVERDUE';
+export type PayableStatus = "OPEN" | "PARTIAL" | "PAID" | "OVERDUE";
 
 export interface PayableSupplier {
   id: string;

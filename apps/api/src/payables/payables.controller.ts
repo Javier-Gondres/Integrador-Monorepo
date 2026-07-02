@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   Company,
   type CompanyContext,
@@ -21,7 +29,11 @@ export class PayablesController {
     @Param('id') id: string,
     @Body() createPaymentDto: CreatePaymentDto,
   ) {
-    return this.payablesService.addPayment(id, company.companyId, createPaymentDto);
+    return this.payablesService.addPayment(
+      id,
+      company.companyId,
+      createPaymentDto,
+    );
   }
 
   @RequireCompany()
@@ -35,10 +47,7 @@ export class PayablesController {
 
   @RequireCompany()
   @Get(':id')
-  findById(
-    @Company() company: CompanyContext,
-    @Param('id') id: string,
-  ) {
+  findById(@Company() company: CompanyContext, @Param('id') id: string) {
     return this.payablesService.findById(id, company.companyId);
   }
 

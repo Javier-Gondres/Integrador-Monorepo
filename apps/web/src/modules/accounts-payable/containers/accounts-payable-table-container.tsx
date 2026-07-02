@@ -7,11 +7,14 @@ import { useSuppliers } from "@/modules/suppliers/hooks/use-suppliers";
 import { DataTable } from "@/shared/data-table";
 
 import { getAccountsPayableColumns } from "../components/accounts-payable-table";
-import { useAccountsPayable, useUpdateAccountPayable, useCreatePayablePayment } from "../hooks/use-accounts-payable";
+import {
+  useAccountsPayable,
+  useUpdateAccountPayable,
+  useCreatePayablePayment,
+} from "../hooks/use-accounts-payable";
 import type { AccountPayable, PayableStatus } from "../types/accounts-payable";
 import { RegisterPaymentModal } from "../components/register-payment-modal";
 import { PaymentHistoryModal } from "../components/payment-history-modal";
-
 
 const ALL_BRANCHES = "todas";
 const ALL_SUPPLIERS = "todos";
@@ -27,11 +30,15 @@ export function AccountsPayableTableContainer() {
   const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_PAGE_SIZE);
   const [detail, setDetail] = useState<AccountPayable | null>(null);
 
-  const [editingDueDate, setEditingDueDate] = useState<AccountPayable | null>(null);
+  const [editingDueDate, setEditingDueDate] = useState<AccountPayable | null>(
+    null,
+  );
   const [newDueDate, setNewDueDate] = useState("");
   const updateMutation = useUpdateAccountPayable();
 
-  const [payingAccount, setPayingAccount] = useState<AccountPayable | null>(null);
+  const [payingAccount, setPayingAccount] = useState<AccountPayable | null>(
+    null,
+  );
   const paymentMutation = useCreatePayablePayment();
 
   useEffect(() => {
@@ -58,7 +65,9 @@ export function AccountsPayableTableContainer() {
     take: rowsPerPage,
     ...(branchFilter !== ALL_BRANCHES && { branchId: branchFilter }),
     ...(supplierFilter !== ALL_SUPPLIERS && { supplierId: supplierFilter }),
-    ...(statusFilter !== ALL_STATUSES && { status: statusFilter as PayableStatus }),
+    ...(statusFilter !== ALL_STATUSES && {
+      status: statusFilter as PayableStatus,
+    }),
     ...(dateFrom && { dateFrom }),
     ...(dateTo && { dateTo }),
   };
@@ -137,7 +146,9 @@ export function AccountsPayableTableContainer() {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-semibold text-head">Vencimiento Desde</span>
+          <span className="text-[13px] font-semibold text-head">
+            Vencimiento Desde
+          </span>
           <input
             type="date"
             value={dateFrom}
@@ -153,7 +164,9 @@ export function AccountsPayableTableContainer() {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-semibold text-head">Vencimiento Hasta</span>
+          <span className="text-[13px] font-semibold text-head">
+            Vencimiento Hasta
+          </span>
           <input
             type="date"
             value={dateTo}
@@ -271,7 +284,9 @@ export function AccountsPayableTableContainer() {
         <RegisterPaymentModal
           payable={payingAccount}
           onClose={() => setPayingAccount(null)}
-          onSubmit={(data) => paymentMutation.mutate({ id: payingAccount.id, data })}
+          onSubmit={(data) =>
+            paymentMutation.mutate({ id: payingAccount.id, data })
+          }
           isSubmitting={paymentMutation.isPending}
         />
       )}

@@ -1,10 +1,15 @@
-import { apiFetch } from '@/lib/api/client';
-import { AccountsPayableQuery, AccountsPayableResponse, AccountPayable, AccountPayableDetail } from '../types/accounts-payable';
+import { apiFetch } from "@/lib/api/client";
+import {
+  AccountsPayableQuery,
+  AccountsPayableResponse,
+  AccountPayable,
+  AccountPayableDetail,
+} from "../types/accounts-payable";
 
 export async function fetchAccountsPayable(
   query: AccountsPayableQuery,
 ): Promise<AccountsPayableResponse> {
-  return apiFetch<AccountsPayableResponse>('/payables', {
+  return apiFetch<AccountsPayableResponse>("/payables", {
     params: query as Record<string, string | number | boolean | undefined>,
   });
 }
@@ -20,7 +25,7 @@ export async function updateAccountsPayable(
   data: { dueDate?: string },
 ): Promise<AccountPayable> {
   return apiFetch<AccountPayable>(`/payables/${id}`, {
-    method: 'PATCH',
+    method: "PATCH",
     body: JSON.stringify(data),
   });
 }
@@ -30,7 +35,7 @@ export async function createPayablePayment(
   data: { amount: number; method: string; notes?: string },
 ): Promise<AccountPayable> {
   return apiFetch<AccountPayable>(`/payables/${id}/payments`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(data),
   });
 }

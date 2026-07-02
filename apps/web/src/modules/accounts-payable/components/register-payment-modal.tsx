@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { AccountPayable } from '../types/accounts-payable';
-import { formatCurrency } from '../utils/formatters';
+import { useState } from "react";
+import { AccountPayable } from "../types/accounts-payable";
+import { formatCurrency } from "../utils/formatters";
 
 interface RegisterPaymentModalProps {
   payable: AccountPayable;
@@ -15,9 +15,9 @@ export function RegisterPaymentModal({
   onSubmit,
   isSubmitting,
 }: RegisterPaymentModalProps) {
-  const [amount, setAmount] = useState<string>('');
-  const [method, setMethod] = useState<string>('CASH');
-  const [notes, setNotes] = useState<string>('');
+  const [amount, setAmount] = useState<string>("");
+  const [method, setMethod] = useState<string>("CASH");
+  const [notes, setNotes] = useState<string>("");
 
   const numAmount = Number(amount);
   const isValidAmount = numAmount > 0 && numAmount <= payable.balance;
@@ -34,14 +34,24 @@ export function RegisterPaymentModal({
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <h3 className="mb-2 text-lg font-bold text-head">Registrar Abono</h3>
         <p className="mb-6 text-sm text-body">
-          Abonar a compra <strong>{payable.purchase.invoiceNumber || `C-${payable.purchase.id.slice(-6).toUpperCase()}`}</strong> de {payable.supplier.name}.
+          Abonar a compra{" "}
+          <strong>
+            {payable.purchase.invoiceNumber ||
+              `C-${payable.purchase.id.slice(-6).toUpperCase()}`}
+          </strong>{" "}
+          de {payable.supplier.name}.
           <br />
-          Pendiente: <span className="font-semibold text-primary">{formatCurrency(payable.balance)}</span>
+          Pendiente:{" "}
+          <span className="font-semibold text-primary">
+            {formatCurrency(payable.balance)}
+          </span>
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-semibold text-head">Monto a abonar</span>
+            <span className="text-[13px] font-semibold text-head">
+              Monto a abonar
+            </span>
             <input
               type="number"
               step="0.01"
@@ -55,13 +65,16 @@ export function RegisterPaymentModal({
             />
             {amount && !isValidAmount && (
               <span className="text-xs text-error">
-                El monto debe ser mayor a 0 y menor o igual al balance ({formatCurrency(payable.balance)}).
+                El monto debe ser mayor a 0 y menor o igual al balance (
+                {formatCurrency(payable.balance)}).
               </span>
             )}
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-semibold text-head">Método de pago</span>
+            <span className="text-[13px] font-semibold text-head">
+              Método de pago
+            </span>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value)}
@@ -74,7 +87,9 @@ export function RegisterPaymentModal({
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-semibold text-head">Notas (opcional)</span>
+            <span className="text-[13px] font-semibold text-head">
+              Notas (opcional)
+            </span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

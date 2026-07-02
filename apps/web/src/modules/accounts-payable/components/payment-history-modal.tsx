@@ -6,7 +6,10 @@ interface PaymentHistoryModalProps {
   onClose: () => void;
 }
 
-export function PaymentHistoryModal({ payableId, onClose }: PaymentHistoryModalProps) {
+export function PaymentHistoryModal({
+  payableId,
+  onClose,
+}: PaymentHistoryModalProps) {
   const { data: detail, isLoading, error } = useAccountPayable(payableId);
 
   return (
@@ -20,7 +23,20 @@ export function PaymentHistoryModal({ payableId, onClose }: PaymentHistoryModalP
             onClick={onClose}
             className="text-body/50 hover:text-primary transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
           </button>
         </div>
 
@@ -29,7 +45,9 @@ export function PaymentHistoryModal({ payableId, onClose }: PaymentHistoryModalP
         )}
 
         {error && (
-          <div className="py-8 text-center text-red-500">Error al cargar los detalles.</div>
+          <div className="py-8 text-center text-red-500">
+            Error al cargar los detalles.
+          </div>
         )}
 
         {detail && (
@@ -40,25 +58,40 @@ export function PaymentHistoryModal({ payableId, onClose }: PaymentHistoryModalP
                 <p className="text-sm text-body">{detail.supplier.name}</p>
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-head">Factura / Compra</p>
+                <p className="text-[13px] font-semibold text-head">
+                  Factura / Compra
+                </p>
                 <p className="text-sm text-body">
-                  {detail.purchase.invoiceNumber || `C-${detail.purchase.id.slice(-6).toUpperCase()}`}
+                  {detail.purchase.invoiceNumber ||
+                    `C-${detail.purchase.id.slice(-6).toUpperCase()}`}
                 </p>
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-head">Monto Original</p>
-                <p className="text-sm text-body font-semibold">{formatCurrency(detail.originalAmount)}</p>
+                <p className="text-[13px] font-semibold text-head">
+                  Monto Original
+                </p>
+                <p className="text-sm text-body font-semibold">
+                  {formatCurrency(detail.originalAmount)}
+                </p>
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-head">Balance Actual</p>
-                <p className="text-sm text-primary font-semibold">{formatCurrency(detail.balance)}</p>
+                <p className="text-[13px] font-semibold text-head">
+                  Balance Actual
+                </p>
+                <p className="text-sm text-primary font-semibold">
+                  {formatCurrency(detail.balance)}
+                </p>
               </div>
             </div>
 
             <div>
-              <h4 className="text-lg font-bold text-head mb-3">Historial de Abonos</h4>
+              <h4 className="text-lg font-bold text-head mb-3">
+                Historial de Abonos
+              </h4>
               {detail.payments.length === 0 ? (
-                <p className="text-sm text-body italic">No se han registrado abonos para esta cuenta.</p>
+                <p className="text-sm text-body italic">
+                  No se han registrado abonos para esta cuenta.
+                </p>
               ) : (
                 <div className="border border-card-border rounded-lg overflow-hidden">
                   <table className="w-full text-left text-sm">
@@ -72,12 +105,24 @@ export function PaymentHistoryModal({ payableId, onClose }: PaymentHistoryModalP
                     </thead>
                     <tbody className="divide-y divide-card-border">
                       {detail.payments.map((payment) => (
-                        <tr key={payment.id} className="hover:bg-body/5 transition-colors">
-                          <td className="px-4 py-3 text-body">{formatDate(payment.createdAt)}</td>
-                          <td className="px-4 py-3 font-semibold text-body">{formatCurrency(payment.amount)}</td>
-                          <td className="px-4 py-3 text-body">{payment.method}</td>
-                          <td className="px-4 py-3 text-body truncate max-w-[200px]" title={payment.notes || ''}>
-                            {payment.notes || '-'}
+                        <tr
+                          key={payment.id}
+                          className="hover:bg-body/5 transition-colors"
+                        >
+                          <td className="px-4 py-3 text-body">
+                            {formatDate(payment.createdAt)}
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-body">
+                            {formatCurrency(payment.amount)}
+                          </td>
+                          <td className="px-4 py-3 text-body">
+                            {payment.method}
+                          </td>
+                          <td
+                            className="px-4 py-3 text-body truncate max-w-[200px]"
+                            title={payment.notes || ""}
+                          >
+                            {payment.notes || "-"}
                           </td>
                         </tr>
                       ))}

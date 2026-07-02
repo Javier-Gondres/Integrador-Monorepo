@@ -11,9 +11,7 @@ export function AccountsPayableScreen() {
             <p className="mb-1 text-[13px] text-muted">
               Panel / <span className="text-primary">Finanzas</span>
             </p>
-            <h1 className="text-2xl font-bold text-body">
-              Cuentas por pagar
-            </h1>
+            <h1 className="text-2xl font-bold text-body">Cuentas por pagar</h1>
             <p className="mt-1 text-sm text-head">
               Consulta y administra el estado de tus cuentas con proveedores.
             </p>
