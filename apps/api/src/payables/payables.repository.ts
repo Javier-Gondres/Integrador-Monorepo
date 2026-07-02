@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, prisma } from '@repo/db';
+import { Prisma, PayableStatus, PaymentMethod, prisma } from '@repo/db';
 import { PaginatedResult } from 'src/common/types/repository.types';
 
 import { NormalizedQueryPayables } from './dto/query-payables.dto';
@@ -79,9 +79,9 @@ export class PayablesRepository {
 
   async addPayment(
     id: string,
-    data: { amount: Prisma.Decimal; method: any; notes?: string },
+    data: { amount: Prisma.Decimal; method: PaymentMethod; notes?: string },
     newBalance: Prisma.Decimal,
-    newStatus: any,
+    newStatus: PayableStatus,
   ): Promise<PayableDetailRecord> {
     return prisma.$transaction(async (tx) => {
       await tx.payablePayment.create({
