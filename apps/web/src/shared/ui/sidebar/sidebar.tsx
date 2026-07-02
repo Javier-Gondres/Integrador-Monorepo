@@ -41,6 +41,8 @@ const navItems = [
     href: "/inventory-adjustments",
   },
   { label: "Compras", icon: ReceiptText, href: "/purchase-history" },
+  { section: "Finanzas" },
+  { label: "Cuentas por pagar", icon: ReceiptText, href: "/accounts-payable" },
   { section: "Recursos" },
   { label: "Empleados", icon: Users, href: "/employees" },
   { label: "Proveedores", icon: Truck, href: "/suppliers" },
