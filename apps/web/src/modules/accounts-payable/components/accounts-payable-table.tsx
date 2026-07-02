@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
-import { Badge } from "@/shared/ui/badge";
 import type { DataTableColumn } from "@/shared/data-table/types";
+import { Badge } from "@/shared/ui/badge";
+
 import { AccountPayable, PayableStatus } from "../types/accounts-payable";
 import { formatCurrency, formatDate } from "../utils/formatters";
 

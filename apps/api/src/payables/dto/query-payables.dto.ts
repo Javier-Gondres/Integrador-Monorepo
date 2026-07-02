@@ -1,3 +1,4 @@
+import { PayableStatus } from '@repo/db';
 import { Type } from 'class-transformer';
 import {
   IsDateString,
@@ -8,7 +9,6 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { PayableStatus } from '@repo/db';
 
 export class QueryPayablesDto {
   @IsOptional()

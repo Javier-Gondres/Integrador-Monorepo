@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Prisma, PayableStatus } from '@repo/db';
+import { PayableStatus,Prisma } from '@repo/db';
 import type { CompanyContext } from 'src/common/company';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
-import { CreatePaymentDto } from './dto/create-payment.dto';
 
+import { CreatePaymentDto } from './dto/create-payment.dto';
 import {
   NormalizedQueryPayables,
   QueryPayablesDto,

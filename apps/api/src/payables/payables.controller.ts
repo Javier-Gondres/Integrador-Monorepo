@@ -13,9 +13,9 @@ import {
   RequireCompany,
 } from 'src/common/company';
 
+import { CreatePaymentDto } from './dto/create-payment.dto';
 import { QueryPayablesDto } from './dto/query-payables.dto';
 import { UpdatePayableDto } from './dto/update-payable.dto';
-import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PayablesService } from './payables.service';
 
 @Controller('payables')

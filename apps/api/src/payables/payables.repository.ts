@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, PayableStatus, PaymentMethod, prisma } from '@repo/db';
+import { PayableStatus, PaymentMethod, Prisma, prisma } from '@repo/db';
 import { PaginatedResult } from 'src/common/types/repository.types';
 
 import { NormalizedQueryPayables } from './dto/query-payables.dto';

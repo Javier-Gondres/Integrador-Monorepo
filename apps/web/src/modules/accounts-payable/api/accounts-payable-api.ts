@@ -1,9 +1,10 @@
 import { apiFetch } from "@/lib/api/client";
+
 import {
-  AccountsPayableQuery,
-  AccountsPayableResponse,
   AccountPayable,
   AccountPayableDetail,
+  AccountsPayableQuery,
+  AccountsPayableResponse,
 } from "../types/accounts-payable";
 
 export async function fetchAccountsPayable(
