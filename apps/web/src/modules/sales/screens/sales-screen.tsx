@@ -42,7 +42,9 @@ export function SalesScreen() {
             </p>
           </div>
           <div className="flex items-center gap-2.5">
-            <span className="text-[13px] font-semibold text-head">Sucursal</span>
+            <span className="text-[13px] font-semibold text-head">
+              Sucursal
+            </span>
             <BranchSelect
               branches={branches ?? []}
               value={selectedBranchId}

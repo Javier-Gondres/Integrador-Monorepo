@@ -15,7 +15,9 @@ export function computeLineSubtotal(
   product: Pick<SaleProductDto, "price" | "discountPercentage">,
   quantity: number,
 ): number {
-  const perUnitDiscount = round2((product.price * product.discountPercentage) / 100);
+  const perUnitDiscount = round2(
+    (product.price * product.discountPercentage) / 100,
+  );
   const gross = round2(product.price * quantity);
   const lineDiscount = round2(perUnitDiscount * quantity);
   return round2(gross - lineDiscount);

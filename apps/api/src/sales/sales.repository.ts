@@ -146,7 +146,10 @@ export class SalesRepository {
         data.payments.reduce((sum, payment) => sum + payment.amount, 0),
       );
       if (paymentsTotal !== amountPayable) {
-        throw SalesException.paymentsTotalMismatch(amountPayable, paymentsTotal);
+        throw SalesException.paymentsTotalMismatch(
+          amountPayable,
+          paymentsTotal,
+        );
       }
 
       const creditPortion = round2(

@@ -56,7 +56,11 @@ export class SalesService {
     return mapSaleDetail(record);
   }
 
-  async getCurrentShift(company: CompanyContext, userId: string, branchId?: string) {
+  async getCurrentShift(
+    company: CompanyContext,
+    userId: string,
+    branchId?: string,
+  ) {
     const resolvedBranchId = this.resolveBranchId(company, branchId);
     const employee = await this.employeesService.findIdByUserId(
       userId,
@@ -175,7 +179,9 @@ export class SalesService {
       });
     }
 
-    const subtotal = round2(lines.reduce((sum, line) => sum + line.subtotal, 0));
+    const subtotal = round2(
+      lines.reduce((sum, line) => sum + line.subtotal, 0),
+    );
     const taxAmount = round2(subtotal * ITBIS_RATE);
     const total = round2(subtotal + taxAmount);
 
@@ -206,10 +212,7 @@ export class SalesService {
     return mapSaleDetail(record);
   }
 
-  private resolveBranchId(
-    company: CompanyContext,
-    branchId?: string,
-  ): string {
+  private resolveBranchId(company: CompanyContext, branchId?: string): string {
     const resolved = branchId?.trim() || company.branchId;
     if (!resolved) {
       throw BusinessException.notFound(

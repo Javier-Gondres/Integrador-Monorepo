@@ -13,7 +13,10 @@ export class SalesException extends BusinessException {
     );
   }
 
-  static paymentsTotalMismatch(expected: number, received: number): SalesException {
+  static paymentsTotalMismatch(
+    expected: number,
+    received: number,
+  ): SalesException {
     return new SalesException(
       ErrorCodes.PAYMENTS_TOTAL_MISMATCH,
       `La suma de los pagos (RD$ ${received.toFixed(2)}) no coincide con el monto a pagar (RD$ ${expected.toFixed(2)})`,

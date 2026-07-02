@@ -1,13 +1,6 @@
 import { ReservationStatus } from '@repo/db';
 import { Type } from 'class-transformer';
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class QueryReservationsDto {
   @IsOptional()
@@ -32,7 +25,9 @@ export class QueryReservationsDto {
   customerId?: string;
 
   @IsOptional()
-  @IsEnum(ReservationStatus, { message: 'El estado de la reserva no es válido' })
+  @IsEnum(ReservationStatus, {
+    message: 'El estado de la reserva no es válido',
+  })
   status?: ReservationStatus;
 }
 

@@ -71,7 +71,9 @@ export function ProductPicker({
         ) : products.length === 0 ? (
           <div className="grid h-full place-items-center py-12 text-center">
             <div>
-              <p className="text-sm font-semibold text-body">Sin coincidencias</p>
+              <p className="text-sm font-semibold text-body">
+                Sin coincidencias
+              </p>
               <p className="mt-1 text-xs text-muted">
                 Ajusta la búsqueda o la categoría.
               </p>

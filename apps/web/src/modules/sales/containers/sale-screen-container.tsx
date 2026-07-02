@@ -143,9 +143,7 @@ export function SaleScreenContainer({
 
     const method = PAYMENT_METHOD_MAP[order.paymentOption];
     const payments =
-      amountPayable > 0 && method
-        ? [{ method, amount: amountPayable }]
-        : [];
+      amountPayable > 0 && method ? [{ method, amount: amountPayable }] : [];
 
     try {
       const sale = await createSale.mutateAsync({

@@ -12,7 +12,8 @@ import {
   reservationListSelect,
 } from './reservations.selects';
 
-export type PaginatedReservationsResult = PaginatedResult<ReservationListRecord>;
+export type PaginatedReservationsResult =
+  PaginatedResult<ReservationListRecord>;
 
 export type CreateReservationItemData = {
   productId: string;
