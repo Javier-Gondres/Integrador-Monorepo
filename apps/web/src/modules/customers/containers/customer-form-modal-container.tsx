@@ -3,6 +3,7 @@
 import { CustomerForm } from "../components/customer-form";
 import { useCreateCustomer } from "../hooks/use-create-customer";
 import { useUpdateCustomer } from "../hooks/use-update-customer";
+import { mapCustomerDtoToUi } from "../mappers/customer.mapper";
 import {
   mapCustomerToFormValues,
   mapFormValuesToDto,
@@ -13,11 +14,14 @@ import type { Customer } from "../types/customer.types";
 interface CustomerFormModalContainerProps {
   customer: Customer | null;
   onClose: () => void;
+  /** Se invoca con el cliente recién creado (solo en modo creación). */
+  onCreated?: (customer: Customer) => void;
 }
 
 export function CustomerFormModalContainer({
   customer,
   onClose,
+  onCreated,
 }: CustomerFormModalContainerProps) {
   const isEditing = Boolean(customer);
   const createMutation = useCreateCustomer();
@@ -31,7 +35,8 @@ export function CustomerFormModalContainer({
     if (isEditing && customer) {
       await updateMutation.mutateAsync({ id: customer.id, data: dto });
     } else {
-      await createMutation.mutateAsync(dto);
+      const created = await createMutation.mutateAsync(dto);
+      onCreated?.(mapCustomerDtoToUi(created));
     }
 
     onClose();
