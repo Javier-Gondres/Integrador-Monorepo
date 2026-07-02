@@ -7,6 +7,10 @@ import {
   ErrorCodes,
   InventoryException,
 } from 'src/common/errors';
+import {
+  availabilityPrisma,
+  getAvailabilityMap,
+} from 'src/common/inventory/availability.helper';
 import { ProductsRepository } from 'src/products/products.repository';
 
 import { CreateInventoryDto } from './dto/create-inventory.dto';
@@ -45,8 +49,24 @@ export class InventoryService {
         normalized,
       );
 
+    const availability = await getAvailabilityMap(
+      availabilityPrisma,
+      branchId,
+      items.map((item) => item.productId),
+    );
+
+    const enriched = items.map((item) => {
+      const stock = availability.get(item.productId);
+      const reserved = stock?.reserved ?? 0;
+      return {
+        ...item,
+        reserved,
+        available: stock?.available ?? Number(item.quantity),
+      };
+    });
+
     return {
-      items,
+      items: enriched,
       meta: {
         page: normalized.page,
         take: normalized.take,
