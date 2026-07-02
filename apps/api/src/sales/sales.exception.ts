@@ -21,6 +21,14 @@ export class SalesException extends BusinessException {
     );
   }
 
+  static customerRequired(): SalesException {
+    return new SalesException(
+      ErrorCodes.CUSTOMER_REQUIRED,
+      'Toda venta debe estar vinculada a un cliente registrado',
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+
   static customerRequiredForCredit(): SalesException {
     return new SalesException(
       ErrorCodes.CUSTOMER_REQUIRED_FOR_CREDIT,
