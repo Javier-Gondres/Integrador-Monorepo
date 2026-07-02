@@ -4,9 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/api/errors";
+import { CustomerFormModalContainer } from "@/modules/customers/containers/customer-form-modal-container";
 import { useCustomers } from "@/modules/customers/hooks/use-customers";
 import type { Customer } from "@/modules/customers/types/customer.types";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
+import { Modal } from "@/shared/ui/modal";
 
 import { ClientCard } from "../components/client-card";
 import { ProductPicker } from "../components/product-picker";
@@ -40,6 +42,8 @@ export function SaleScreenContainer({
   const [productSearch, setProductSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORIES);
   const [customerSearch, setCustomerSearch] = useState("");
+  const [showProductPicker, setShowProductPicker] = useState(false);
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
 
   const debouncedProductSearch = useDebouncedValue(productSearch);
   const debouncedCustomerSearch = useDebouncedValue(customerSearch);
@@ -71,6 +75,8 @@ export function SaleScreenContainer({
     setProductSearch("");
     setActiveCategory(ALL_CATEGORIES);
     setCustomerSearch("");
+    setShowProductPicker(false);
+    setShowCustomerForm(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branchId]);
 
@@ -111,14 +117,14 @@ export function SaleScreenContainer({
   const amountPayable = Math.max(0, round2(order.total - creditApplied));
 
   const lineList = Object.values(order.lines);
-  const requiresCustomer = order.paymentOption === "credito" && !order.customer;
+  const missingCustomer = !order.customer;
   const disabledHint = !hasOpenShift
     ? "No hay un turno de caja abierto en esta sucursal"
-    : requiresCustomer
-      ? "Selecciona un cliente para una venta a crédito"
+    : missingCustomer
+      ? "Selecciona o crea un cliente para generar la factura"
       : null;
   const submitDisabled =
-    !hasOpenShift || lineList.length === 0 || requiresCustomer;
+    !hasOpenShift || lineList.length === 0 || missingCustomer;
 
   function handlePickCustomer(customer: Customer) {
     order.setCustomer({
@@ -176,30 +182,19 @@ export function SaleScreenContainer({
         customers={customersData?.items ?? []}
         loadingCustomers={customersLoading}
         onPickCustomer={handlePickCustomer}
-        onClearCustomer={order.clearCustomer}
+        onNewCustomer={() => setShowCustomerForm(true)}
         paymentOption={order.paymentOption}
         onPaymentChange={order.setPaymentOption}
       />
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[410px_1fr]">
-        <ProductPicker
-          products={visibleProducts}
-          search={productSearch}
-          onSearchChange={setProductSearch}
-          categories={categories}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-          cartQty={cartQty}
-          onAdd={order.add}
-          loading={productsLoading}
-        />
-
+      <div className="flex min-h-0 flex-1 flex-col">
         <SaleDetail
           lines={lineList}
           qtyTotal={order.qtyTotal}
           onSetQuantity={order.setQuantity}
           onRemove={order.remove}
           onClear={order.clearCart}
+          onAddProduct={() => setShowProductPicker(true)}
           subtotal={order.subtotal}
           itbis={order.itbis}
           total={order.total}
@@ -217,6 +212,35 @@ export function SaleScreenContainer({
           creditNotesLoading={creditNotesLoading}
         />
       </div>
+
+      {showProductPicker && (
+        <Modal
+          title="Agregar Productos"
+          description="Busca por código o nombre y añade artículos a la factura."
+          onClose={() => setShowProductPicker(false)}
+          maxWidth="640px"
+        >
+          <ProductPicker
+            products={visibleProducts}
+            search={productSearch}
+            onSearchChange={setProductSearch}
+            categories={categories}
+            activeCategory={activeCategory}
+            onCategoryChange={setActiveCategory}
+            cartQty={cartQty}
+            onAdd={order.add}
+            loading={productsLoading}
+          />
+        </Modal>
+      )}
+
+      {showCustomerForm && (
+        <CustomerFormModalContainer
+          customer={null}
+          onClose={() => setShowCustomerForm(false)}
+          onCreated={handlePickCustomer}
+        />
+      )}
     </div>
   );
 }
