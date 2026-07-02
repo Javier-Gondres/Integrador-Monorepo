@@ -53,6 +53,7 @@ model Branch {
   returns              Return[]
   auditLogs            AuditLog[]
   defaultUserCompanies UserCompany[]
+  accountPayables      AccountPayable[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
