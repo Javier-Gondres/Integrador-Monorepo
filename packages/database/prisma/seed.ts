@@ -1194,6 +1194,7 @@ async function ensureDemoPurchases(
     create: {
       id: SEED_IDS.accountPayable,
       supplierId: distribuidora.id,
+      branchId: centro.id,
       purchaseId: SEED_IDS.purchaseCredit,
       originalAmount: 2800,
       balance: 1800,
