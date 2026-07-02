@@ -53,6 +53,41 @@ export function getInventoriesTableColumns(
       },
     },
     {
+      id: "reserved",
+      header: "Reservado",
+      cell: (inv) => (
+        <span
+          style={{
+            fontWeight: inv.reserved > 0 ? 600 : 400,
+            fontVariantNumeric: "tabular-nums",
+            color: inv.reserved > 0 ? C.bodyText : C.mutedText,
+          }}
+          title="Unidades bloqueadas por reservas activas"
+        >
+          {inv.reserved}
+        </span>
+      ),
+    },
+    {
+      id: "available",
+      header: "Disponible",
+      cell: (inv) => {
+        const low = inv.available <= inv.minimumQuantity;
+        return (
+          <span
+            style={{
+              fontWeight: 600,
+              fontVariantNumeric: "tabular-nums",
+              color: low ? C.danger : C.bodyText,
+            }}
+            title="Cantidad realmente vendible (cantidad − reservado)"
+          >
+            {inv.available}
+          </span>
+        );
+      },
+    },
+    {
       id: "minimumQuantity",
       header: "Mínimo",
       cell: (inv) => (
