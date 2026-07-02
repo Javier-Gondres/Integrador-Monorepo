@@ -41,9 +41,9 @@ export class CreateSaleDto {
   @IsString({ message: 'El id de la sucursal debe ser texto' })
   branchId?: string;
 
-  @IsOptional()
+  @IsNotEmpty({ message: 'El cliente es obligatorio' })
   @IsString({ message: 'El id del cliente debe ser texto' })
-  customerId?: string;
+  customerId!: string;
 
   @IsOptional()
   @IsString({ message: 'El id de la reserva debe ser texto' })

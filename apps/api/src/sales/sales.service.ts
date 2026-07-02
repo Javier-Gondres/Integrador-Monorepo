@@ -131,6 +131,9 @@ export class SalesService {
   async create(dto: CreateSaleDto, company: CompanyContext, userId: string) {
     const branchId = this.resolveBranchId(company, dto.branchId);
     const customerId = dto.customerId?.trim() || null;
+    if (!customerId) {
+      throw SalesException.customerRequired();
+    }
     const creditNoteIds = dto.creditNoteIds ?? [];
     const payments = dto.payments ?? [];
 
