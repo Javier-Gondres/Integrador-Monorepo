@@ -10,6 +10,8 @@ export function mapInventoryDtoToUi(dto: InventoryDto): Inventory {
     code: dto.product.code,
     name: dto.product.name,
     quantity: Number(dto.quantity),
+    reserved: Number(dto.reserved),
+    available: Number(dto.available),
     minimumQuantity: Number(dto.minimumQuantity),
     price: Number(dto.product.price),
     isActive: dto.isActive,
