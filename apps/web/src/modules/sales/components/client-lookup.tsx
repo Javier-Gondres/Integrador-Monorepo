@@ -58,8 +58,7 @@ export function ClientLookup({
             <div className="px-3 py-3 text-sm text-muted">Buscando…</div>
           ) : customers.length === 0 ? (
             <div className="px-3 py-3 text-sm text-muted">
-              Sin clientes que coincidan. Déjalo vacío para vender a consumidor
-              final.
+              Sin clientes que coincidan. Usa «Nuevo» para registrar uno.
             </div>
           ) : (
             customers.map((customer) => (
