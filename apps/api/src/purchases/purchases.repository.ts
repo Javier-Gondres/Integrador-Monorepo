@@ -139,8 +139,23 @@ export class PurchasesRepository {
         });
       }
 
+      const defaultDueDate = new Date();
+      defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+
+      await tx.accountPayable.create({
+        data: {
+          purchaseId: purchase.id,
+          supplierId: data.supplierId,
+          branchId: data.branchId,
+          originalAmount: new Prisma.Decimal(data.total),
+          balance: new Prisma.Decimal(data.total),
+          dueDate: defaultDueDate,
+        },
+      });
+
       return tx.purchase.findUniqueOrThrow({
         where: { id: purchase.id },
+
         select: purchaseDetailSelect,
       });
     });
