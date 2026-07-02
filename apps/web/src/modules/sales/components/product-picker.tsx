@@ -17,6 +17,11 @@ interface ProductPickerProps {
   loading?: boolean;
 }
 
+/**
+ * Selector de productos pensado para vivir dentro de un modal (el `Modal`
+ * aporta el encabezado "Agregar Productos" y el botón de cerrar). Renderiza la
+ * barra de búsqueda + filtros de categoría y la lista desplazable de productos.
+ */
 export function ProductPicker({
   products,
   search,
@@ -29,12 +34,8 @@ export function ProductPicker({
   loading = false,
 }: ProductPickerProps) {
   return (
-    <section className="flex min-h-0 flex-col rounded-xl border border-card-border bg-card shadow-sm">
+    <div className="flex min-h-0 flex-col">
       <div className="flex flex-col gap-3 border-b border-card-border p-4">
-        <span className="flex items-center gap-2 text-sm font-semibold text-body">
-          <Box className="h-4 w-4 text-primary" />
-          Agregar Productos
-        </span>
         <div className="flex h-10 items-center gap-2 rounded-lg border border-input-border bg-white px-3">
           <Search className="h-4 w-4 text-muted" />
           <input
@@ -62,7 +63,7 @@ export function ProductPicker({
         </div>
       </div>
 
-      <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-3 max-[1024px]:max-h-[55vh]">
+      <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-3 max-h-[55vh]">
         {loading ? (
           <div className="grid h-full place-items-center py-12 text-sm text-muted">
             Cargando productos…
@@ -145,6 +146,6 @@ export function ProductPicker({
           </ul>
         )}
       </div>
-    </section>
+    </div>
   );
 }
