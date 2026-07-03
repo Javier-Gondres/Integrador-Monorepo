@@ -121,8 +121,7 @@ export function getSalesHistoryColumns(
             {money(sale.total)}
           </div>
           <div className="text-xs text-muted">
-            {sale.itemsCount}{" "}
-            {sale.itemsCount === 1 ? "producto" : "productos"}
+            {sale.itemsCount} {sale.itemsCount === 1 ? "producto" : "productos"}
           </div>
         </div>
       ),

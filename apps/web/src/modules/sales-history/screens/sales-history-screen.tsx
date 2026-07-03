@@ -14,7 +14,9 @@ export function SalesHistoryScreen() {
             <p className="mb-1 text-[13px] text-muted">
               Panel / <span className="text-primary">Ventas</span>
             </p>
-            <h1 className="text-2xl font-bold text-body">Historial de ventas</h1>
+            <h1 className="text-2xl font-bold text-body">
+              Historial de ventas
+            </h1>
             <p className="mt-1 text-sm text-head">
               Consulta las ventas registradas por sucursal, cajero, caja y
               cliente.

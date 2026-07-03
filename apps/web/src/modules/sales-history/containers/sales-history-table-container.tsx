@@ -64,12 +64,18 @@ export function SalesHistoryTableContainer() {
 
   const customerOptions: EntityOption[] = useMemo(
     () =>
-      (customersPage?.items ?? []).map((c) => ({ id: c.id, label: c.fullName })),
+      (customersPage?.items ?? []).map((c) => ({
+        id: c.id,
+        label: c.fullName,
+      })),
     [customersPage],
   );
   const cashierOptions: EntityOption[] = useMemo(
     () =>
-      (employeesPage?.items ?? []).map((e) => ({ id: e.id, label: e.fullName })),
+      (employeesPage?.items ?? []).map((e) => ({
+        id: e.id,
+        label: e.fullName,
+      })),
     [employeesPage],
   );
 
