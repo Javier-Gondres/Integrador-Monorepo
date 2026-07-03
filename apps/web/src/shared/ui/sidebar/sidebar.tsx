@@ -27,6 +27,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { section: "Operación" },
   { label: "Facturación", icon: ShoppingCart, href: "/sales" },
+  { label: "Historial de ventas", icon: ReceiptText, href: "/sales-history" },
   { label: "Cajas", icon: LayoutDashboard, href: "/cajas" },
   { label: "Devoluciones", icon: RotateCcw, href: "/returns" },
   { section: "Catálogo" },
