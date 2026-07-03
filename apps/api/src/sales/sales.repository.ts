@@ -405,6 +405,11 @@ export class SalesRepository {
     return {
       branch: { companyId },
       ...(query.branchId && { branchId: query.branchId }),
+      ...(query.customerId && { customerId: query.customerId }),
+      ...(query.cashierId && { cashierId: query.cashierId }),
+      ...(query.cashRegisterId && {
+        cashShift: { cashRegisterId: query.cashRegisterId },
+      }),
       ...(query.status && { status: query.status }),
       ...((query.dateFrom || query.dateTo) && {
         createdAt: {
