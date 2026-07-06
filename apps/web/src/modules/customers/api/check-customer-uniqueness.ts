@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api/client";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 
 export interface CheckCustomerUniquenessParams {
   [key: string]: string | undefined;
@@ -16,7 +17,7 @@ export async function checkCustomerUniqueness(
   params: CheckCustomerUniquenessParams,
 ) {
   return apiFetch<CheckCustomerUniquenessResponse>(
-    "/customers/check-uniqueness",
+    ENDPOINTS.customers.checkUniqueness,
     {
       params,
     },

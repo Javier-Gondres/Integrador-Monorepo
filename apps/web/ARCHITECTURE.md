@@ -210,19 +210,22 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 
 ### Módulos implementados
 
-| Módulo        | Estado                                              |
-| ------------- | --------------------------------------------------- |
-| `categories`  | Completo (CRUD + tabla)                             |
-| `products`    | Completo (CRUD + tabla + combobox categorías)       |
-| `employees`   | Completo (CRUD transaccional User+Employee + tabla) |
-| `suppliers`   | Completo (CRUD + tabla)                             |
-| `companies`   | Pantalla legacy migrada (lista + CRUD básico)       |
-| `branches`    | Pantalla legacy migrada (lista + CRUD básico)       |
-| `auth`        | Scaffold (API hooks, sin UI de login aún)           |
-| `users`       | **Provisional** — CRUD en `/users`; ver nota §18.1  |
-| `platform`    | Admin SaaS — `/platform/*` (Super Admin)            |
-| `roles`       | Scaffold RBAC                                       |
-| `permissions` | Scaffold RBAC                                       |
+| Módulo           | Estado                                                                |
+| ---------------- | --------------------------------------------------------------------- |
+| `categories`     | Completo (CRUD + tabla)                                               |
+| `products`       | Completo (CRUD + tabla + combobox categorías)                         |
+| `employees`      | Completo (CRUD transaccional User+Employee + tabla + jerarquía roles) |
+| `inventories`    | Completo (CRUD + movimientos + ajustes)                               |
+| `mermas`         | Registro de mermas (inventario por sucursal)                          |
+| `transferencias` | Transferencias entre sucursales                                       |
+| `suppliers`      | Completo (CRUD + tabla)                                               |
+| `companies`      | Pantalla legacy migrada (lista + CRUD básico)                         |
+| `branches`       | Pantalla legacy migrada (lista + CRUD básico)                         |
+| `auth`           | Scaffold (API hooks, sin UI de login aún)                             |
+| `users`          | **Provisional** — CRUD en `/users`; ver nota §18.1                    |
+| `platform`       | Admin SaaS — `/platform/*` (Super Admin)                              |
+| `roles`          | Scaffold RBAC                                                         |
+| `permissions`    | Scaffold RBAC                                                         |
 
 ### Convención obligatoria de carpeta
 
@@ -455,9 +458,17 @@ export function useCreateCategory() {
 | Mutaciones CRUD                 | Metadata que no cambia en sesión            |
 | Infinite scroll (combobox)      | `getDashboardMetrics()` en Server Component |
 
-### 9.5 Infinite query (ejemplo: combobox de categorías en productos)
+### 9.5 Infinite query (combobox containers)
 
-`CategoryComboboxContainer` usa `useInfiniteQuery` para scroll infinito al seleccionar categorías en el formulario de producto.
+Patrón estándar: **container** con `useInfiniteQuery` + componente visual reutilizable (`ProductCombobox`, etc.). El formulario **no** importa hooks de datos.
+
+| Container                    | Fuente de datos              | Uso                                     |
+| ---------------------------- | ---------------------------- | --------------------------------------- |
+| `ProductComboboxContainer`   | `GET /products` (catálogo)   | Alta inventario, ajustes de stock       |
+| `InventoryComboboxContainer` | `GET /inventories?branchId=` | Mermas (producto con stock en sucursal) |
+| `CategoryComboboxContainer`  | `GET /categories`            | Formulario de producto                  |
+
+Ejemplo de referencia: `CategoryComboboxContainer` en productos.
 
 ---
 
@@ -965,6 +976,15 @@ if (isSuperAdmin) { ... }             // plataforma — NO bypass en can()
 - El backend (`PermissionGuard`) es la autoridad real; la UI solo oculta controles.
 
 Documentación API: `apps/api/docs/auth-and-utilities.md`. Revisión de riesgos: `docs/security-rbac-critical-review.md`.
+
+### Jerarquía de roles (UI)
+
+Además de permisos RBAC, usuarios y empleados aplican `canManageTargetRole` (`shared/auth/role-hierarchy.ts`):
+
+- **Usuarios:** `users-table-container` + `assertCanManageUser` (API).
+- **Empleados:** `employee-access.ts` + `employee-management.policy.ts` (API).
+
+Ver `docs/permissions-guide.md` y `docs/employee-user-registration-flow.md` §8.2.
 
 ### 18.1 Gestión de usuarios en web (provisional)
 

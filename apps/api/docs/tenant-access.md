@@ -76,6 +76,8 @@ Constante en código: `TENANT_CATALOG_MODULES` en `src/common/tenant-access/`.
 
 **Futuro:** ventas, compras e inventario por sucursal deben usar capa 2 desde el diseño inicial.
 
+**Implementado (branch-scoped):** inventarios, movimientos de inventario, mermas, transferencias, empleados (filtro/alta por `branchId`), caja.
+
 ---
 
 ## Política empleado ↔ sucursal
@@ -91,6 +93,14 @@ Archivo: `src/employees/policies/employee-branch.policy.ts`.
    - `employee.branchId === branchId` operativo.
 4. `switchBranch` actualiza la sucursal por defecto del JWT; **no** reasigna al empleado. Para operar en caja, la sucursal operativa debe coincidir con la del empleado.
 5. Reasignar empleado a otra sucursal: `PATCH /employees/:id` (HR); sucursal destino debe estar activa (`BranchAccessService`).
+
+### Gestión HR por jerarquía de roles
+
+Archivo: `src/employees/policies/employee-management.policy.ts`.
+
+- Editar/eliminar/restaurar exige rol actor **estrictamente superior** al del empleado objetivo (paridad con usuarios).
+- Excepción: cualquier empleado puede **editar su propio** registro laboral.
+- Owner y Admin **no pueden eliminar** su propio registro de empleado.
 
 ### Apertura de turno (`openShift`)
 

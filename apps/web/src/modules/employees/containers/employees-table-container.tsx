@@ -3,7 +3,8 @@
 import { useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
-import { Permission } from "@/modules/auth";
+import { Permission, usePermissions } from "@/modules/auth";
+import { useAuthStore } from "@/modules/auth/store/auth-store";
 import { DataTable, DataTableToolbar } from "@/shared/data-table";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 
@@ -11,6 +12,7 @@ import { getEmployeesTableColumns } from "../components/employees-table";
 import { useDeleteEmployee } from "../hooks/use-delete-employee";
 import { useEmployees } from "../hooks/use-employees";
 import type { Employee } from "../types/employee.types";
+import { canDeleteEmployee, canEditEmployee } from "../utils/employee-access";
 
 interface EmployeesTableContainerProps {
   onEdit: (employee: Employee) => void;
@@ -21,6 +23,8 @@ export function EmployeesTableContainer({
   onEdit,
   onCreate,
 }: EmployeesTableContainerProps) {
+  const { roleName } = usePermissions();
+  const actorUserId = useAuthStore((state) => state.user?.id);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedValue(searchTerm);
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,6 +64,10 @@ export function EmployeesTableContainer({
       <DataTable
         title="Lista de Empleados"
         columns={getEmployeesTableColumns({
+          canEdit: (employee) =>
+            canEditEmployee(actorUserId, roleName, employee),
+          canDelete: (employee) =>
+            canDeleteEmployee(actorUserId, roleName, employee),
           onEdit,
           onDelete: (id) => void deleteMutation.mutateAsync(id),
         })}

@@ -1,10 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  InventoryAdjustmentReason,
-  InventoryMovementType,
-  prisma,
-  TransferStatus,
-} from '@repo/db';
+import { InventoryMovementType, prisma, TransferStatus } from '@repo/db';
 import { BranchAccessService } from 'src/branch/branch-access.service';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
 import { ProductsRepository } from 'src/products/products.repository';
@@ -150,7 +145,16 @@ export class TransfersService {
           fromBranch: { companyId },
           toBranch: { companyId },
         },
-        select: { id: true },
+        select: {
+          id: true,
+          toBranchId: true,
+          items: {
+            select: {
+              quantity: true,
+              product: { select: { id: true } },
+            },
+          },
+        },
       });
 
       if (!current) {
@@ -160,19 +164,19 @@ export class TransfersService {
         );
       }
 
-      for (const item of transfer.items) {
+      for (const item of current.items) {
         const qty = item.quantity;
 
         await tx.inventory.upsert({
           where: {
             branchId_productId: {
-              branchId: transfer.toBranchId,
+              branchId: current.toBranchId,
               productId: item.product.id,
             },
           },
           update: { quantity: { increment: qty } },
           create: {
-            branchId: transfer.toBranchId,
+            branchId: current.toBranchId,
             productId: item.product.id,
             quantity: qty,
           },
@@ -180,11 +184,11 @@ export class TransfersService {
 
         await tx.inventoryMovement.create({
           data: {
-            branchId: transfer.toBranchId,
+            branchId: current.toBranchId,
             productId: item.product.id,
             type: InventoryMovementType.TRANSFER_IN,
             quantity: qty,
-            transferId: transfer.id,
+            transferId: current.id,
           },
         });
       }
@@ -220,7 +224,16 @@ export class TransfersService {
             fromBranch: { companyId },
             toBranch: { companyId },
           },
-          select: { id: true, fromBranchId: true },
+          select: {
+            id: true,
+            fromBranchId: true,
+            items: {
+              select: {
+                quantity: true,
+                product: { select: { id: true } },
+              },
+            },
+          },
         });
 
         if (!current) {
@@ -230,27 +243,31 @@ export class TransfersService {
           );
         }
 
-        for (const item of transfer.items) {
-          await tx.inventory.update({
+        for (const item of current.items) {
+          await tx.inventory.upsert({
             where: {
               branchId_productId: {
-                branchId: transfer.fromBranchId,
+                branchId: current.fromBranchId,
                 productId: item.product.id,
               },
             },
-            data: { quantity: { increment: item.quantity } },
+            update: { quantity: { increment: item.quantity } },
+            create: {
+              branchId: current.fromBranchId,
+              productId: item.product.id,
+              quantity: item.quantity,
+            },
           });
 
           await tx.inventoryMovement.create({
             data: {
-              branchId: transfer.fromBranchId,
+              branchId: current.fromBranchId,
               productId: item.product.id,
-              type: InventoryMovementType.ADJUSTMENT,
+              type: InventoryMovementType.TRANSFER_IN,
               quantity: item.quantity,
-              adjustmentReason: InventoryAdjustmentReason.OTHER,
-              transferId: transfer.id,
+              transferId: current.id,
               notes:
-                'Stock restaurado por cancelación de transferencia en tránsito',
+                'Reversión de salida por cancelación de transferencia en tránsito',
             },
           });
         }

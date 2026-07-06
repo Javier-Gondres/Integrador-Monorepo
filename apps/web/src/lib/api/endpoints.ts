@@ -104,6 +104,7 @@ export const ENDPOINTS = {
   inventoryMovements: {
     root: "/inventory-movements",
     adjustments: "/inventory-movements/adjustments",
+    waste: "/inventory-movements/waste",
   },
   transfers: {
     root: "/transfers",
@@ -111,5 +112,12 @@ export const ENDPOINTS = {
     dispatch: (id: string) => `/transfers/${id}/dispatch`,
     complete: (id: string) => `/transfers/${id}/complete`,
     cancel: (id: string) => `/transfers/${id}/cancel`,
+  },
+  customers: {
+    root: "/customers",
+    byId: (id: string) => `/customers/${id}`,
+    activate: (id: string) => `/customers/${id}/activate`,
+    deactivate: (id: string) => `/customers/${id}/deactivate`,
+    checkUniqueness: "/customers/check-uniqueness",
   },
 } as const;

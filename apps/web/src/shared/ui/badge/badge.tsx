@@ -2,7 +2,7 @@ import { ERP_COLORS as C } from "@/constants/theme";
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: "default" | "primary" | "success" | "muted";
+  variant?: "default" | "primary" | "success" | "muted" | "error" | "warning";
 }
 
 const variants = {
@@ -10,6 +10,8 @@ const variants = {
   primary: { bg: "#EEF2FF", color: C.primary, border: "#C7D2FE" },
   success: { bg: C.greenBg, color: C.greenText, border: C.greenBorder },
   muted: { bg: C.tableHead, color: C.mutedText, border: C.divider },
+  error: { bg: C.dangerBg, color: C.danger, border: "#FECACA" },
+  warning: { bg: "#FFFBEB", color: "#D97706", border: "#FDE68A" },
 };
 
 export function Badge({ children, variant = "default" }: BadgeProps) {

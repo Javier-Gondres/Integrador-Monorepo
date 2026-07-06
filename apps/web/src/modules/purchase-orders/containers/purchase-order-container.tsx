@@ -157,7 +157,6 @@ export function PurchaseOrderContainer({
         totalUnits={order.totalUnits}
         supplierName={selectedSupplier?.name ?? null}
         onSetQuantity={order.setQuantity}
-        onSetUnitCost={order.setUnitCost}
         onRemove={order.remove}
         onClear={order.reset}
         onConfirm={handleConfirm}

@@ -16,7 +16,6 @@ interface OrderPanelProps {
   totalUnits: number;
   supplierName: string | null;
   onSetQuantity: (productId: string, quantity: number) => void;
-  onSetUnitCost: (productId: string, unitCost: number) => void;
   onRemove: (productId: string) => void;
   onClear: () => void;
   onConfirm: () => void;
@@ -32,7 +31,6 @@ export function OrderPanel({
   totalUnits,
   supplierName,
   onSetQuantity,
-  onSetUnitCost,
   onRemove,
   onClear,
   onConfirm,
@@ -109,25 +107,14 @@ export function OrderPanel({
                   </div>
 
                   <div className="mt-3 flex items-end justify-between gap-2">
-                    <label className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1">
                       <span className="text-[11px] font-semibold text-head uppercase">
                         Costo unit.
                       </span>
-                      <input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        value={line.unitCost}
-                        onChange={(e) => {
-                          const parsed = parseFloat(e.target.value);
-                          onSetUnitCost(
-                            id,
-                            Number.isFinite(parsed) ? parsed : 0,
-                          );
-                        }}
-                        className="h-8 w-24 rounded-lg border border-input-border px-2 text-sm tabular-nums text-body outline-none focus:border-primary"
-                      />
-                    </label>
+                      <span className="text-sm tabular-nums text-body">
+                        {money(line.unitCost)}
+                      </span>
+                    </div>
                     <QuantityStepper
                       value={line.quantity}
                       onChange={(quantity) => onSetQuantity(id, quantity)}

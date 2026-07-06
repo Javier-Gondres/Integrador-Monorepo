@@ -476,9 +476,14 @@ if (can(Permission.BRANCHES_READ)) {
 
 Aunque ocultes el selector, la API también valida sucursal en endpoints branch-scoped.
 
-### Jerarquía de roles (usuarios)
+### Jerarquía de roles (usuarios y empleados)
 
-Además de `can()`, algunas pantallas limitan acciones según rol objetivo (`canManageTargetRole`). Ver `apps/web/src/modules/users/containers/users-table-container.tsx`.
+Además de `can()`, algunas pantallas limitan acciones según rol objetivo (`canManageTargetRole` en `shared/auth/role-hierarchy.ts`):
+
+| Pantalla  | Container                       | Política API                    |
+| --------- | ------------------------------- | ------------------------------- |
+| Usuarios  | `users-table-container.tsx`     | `assertCanManageUser`           |
+| Empleados | `employees-table-container.tsx` | `employee-management.policy.ts` |
 
 ### Manejo de 403 desde API
 

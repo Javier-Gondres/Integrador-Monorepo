@@ -6,6 +6,7 @@ import { Company, type CompanyContext } from 'src/common/company';
 import { RequirePermissions } from 'src/common/permissions';
 
 import { CreateInventoryAdjustmentDto } from './dto/create-inventory-adjustment.dto';
+import { CreateWasteDto } from './dto/create-waste.dto';
 import { QueryInventoryMovementDto } from './dto/query-inventory-movement.dto';
 import { InventoryMovementService } from './inventory-movement.service';
 
@@ -35,6 +36,20 @@ export class InventoryMovementController {
       company,
       auth.userId,
       dto,
+    );
+  }
+
+  @RequirePermissions(Permission.INVENTORY_ADJUST)
+  @Post('waste')
+  createWaste(
+    @Company() company: CompanyContext,
+    @Auth() auth: AuthContext,
+    @Body() createWasteDto: CreateWasteDto,
+  ) {
+    return this.inventoryMovementService.createWaste(
+      company,
+      auth.userId,
+      createWasteDto,
     );
   }
 }

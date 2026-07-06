@@ -2,13 +2,13 @@ import { Store } from "lucide-react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 
-interface Sucursal {
+export interface Sucursal {
   id: string;
   name: string;
   address?: string | null;
 }
 
-interface Props {
+export interface SucursalPanelProps {
   role: "origen" | "destino";
   sucursales: Sucursal[];
   selectedId: string;
@@ -22,7 +22,7 @@ export function SucursalPanel({
   selectedId,
   onSelect,
   disabledId,
-}: Props) {
+}: SucursalPanelProps) {
   const selected = sucursales.find((s) => s.id === selectedId);
   const isOrigen = role === "origen";
 

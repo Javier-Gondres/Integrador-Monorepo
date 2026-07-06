@@ -8,6 +8,7 @@ import { EmployeesService } from 'src/employees/employees.service';
 import { ProductsRepository } from 'src/products/products.repository';
 
 import { CreateInventoryAdjustmentDto } from './dto/create-inventory-adjustment.dto';
+import { CreateWasteDto } from './dto/create-waste.dto';
 import {
   NormalizedQueryInventoryMovement,
   QueryInventoryMovementDto,
@@ -111,5 +112,48 @@ export class InventoryMovementService {
         dateTo: new Date(`${query.dateTo}T23:59:59.999Z`),
       }),
     };
+  }
+
+  async createWaste(
+    company: CompanyContext,
+    userId: string,
+    dto: CreateWasteDto,
+  ) {
+    await this.branchAccessService.assertBranchInCompany(
+      dto.branchId,
+      company.companyId,
+    );
+
+    const product = await this.productsRepository.findByIdInCompany(
+      dto.productId,
+      company.companyId,
+    );
+    if (!product) {
+      throw InventoryException.productNotFound(dto.productId);
+    }
+
+    const employee = await this.employeesService.findIdByUserId(
+      userId,
+      company.companyId,
+    );
+
+    const adjustmentReason = normalizeAdjustmentReason(
+      InventoryMovementType.WASTE,
+      dto.adjustmentReason,
+    );
+
+    return this.inventoryMovementRepository.createWasteTransaction({
+      branchId: dto.branchId,
+      productId: dto.productId,
+      quantity: dto.quantity,
+      adjustmentReason: adjustmentReason!,
+      performedByEmployeeId: employee.id,
+      notes: dto.notes?.trim() || null,
+      referenceNumber: dto.referenceNumber?.trim() || null,
+      audit: {
+        companyId: company.companyId,
+        userId,
+      },
+    });
   }
 }

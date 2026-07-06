@@ -64,6 +64,22 @@ export class EmployeesRepository {
     });
   }
 
+  findDeletedByIdInCompany(
+    id: string,
+    companyId: string,
+  ): Promise<EmployeeRecord | null> {
+    return runWithDeleted(() =>
+      prisma.employee.findFirst({
+        where: {
+          id,
+          companyId,
+          deletedAt: { not: null },
+        },
+        select: employeeSelect,
+      }),
+    );
+  }
+
   /** Contexto mínimo para validar operaciones branch-scoped (p. ej. apertura de turno). */
   findOperationalContextByUserId(userId: string) {
     return prisma.employee.findUnique({

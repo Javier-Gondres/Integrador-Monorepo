@@ -48,8 +48,12 @@ export class EmployeesController {
 
   @RequirePermissions(Permission.EMPLOYEES_UPDATE)
   @Patch(':id/restore')
-  restore(@Param('id') id: string, @CompanyId() companyId: string) {
-    return this.employeesService.restore(id, companyId);
+  restore(
+    @Param('id') id: string,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.employeesService.restore(id, companyId, auth);
   }
 
   @RequirePermissions(Permission.EMPLOYEES_UPDATE)
@@ -58,13 +62,18 @@ export class EmployeesController {
     @Param('id') id: string,
     @Body() dto: UpdateEmployeeDto,
     @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
   ) {
-    return this.employeesService.update(id, companyId, dto);
+    return this.employeesService.update(id, companyId, dto, auth);
   }
 
   @RequirePermissions(Permission.EMPLOYEES_DELETE)
   @Delete(':id')
-  remove(@Param('id') id: string, @CompanyId() companyId: string) {
-    return this.employeesService.remove(id, companyId);
+  remove(
+    @Param('id') id: string,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.employeesService.remove(id, companyId, auth);
   }
 }

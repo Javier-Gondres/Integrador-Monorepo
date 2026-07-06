@@ -26,6 +26,20 @@ export type CreateAdjustmentData = {
   performedByEmployeeId?: string;
 };
 
+export type CreateWasteData = {
+  branchId: string;
+  productId: string;
+  quantity: number;
+  adjustmentReason: InventoryAdjustmentReason;
+  performedByEmployeeId: string;
+  notes: string | null;
+  referenceNumber: string | null;
+  audit: {
+    companyId: string;
+    userId: string;
+  };
+};
+
 @Injectable()
 export class InventoryMovementRepository {
   async findPaginatedByBranch(
@@ -56,37 +70,50 @@ export class InventoryMovementRepository {
     const delta = new Prisma.Decimal(data.quantity);
 
     return prisma.$transaction(async (tx) => {
-      const inventory = await tx.inventory.findUnique({
-        where: {
-          branchId_productId: {
+      if (delta.isNegative()) {
+        const absDelta = delta.abs();
+        const decrementResult = await tx.inventory.updateMany({
+          where: {
             branchId: data.branchId,
             productId: data.productId,
+            quantity: { gte: absDelta },
           },
-        },
-        select: { quantity: true },
-      });
+          data: { quantity: { decrement: absDelta } },
+        });
 
-      const newQuantity = (inventory?.quantity ?? new Prisma.Decimal(0)).plus(
-        delta,
-      );
-      if (newQuantity.isNegative()) {
-        throw InventoryException.insufficientStock();
+        if (decrementResult.count === 0) {
+          const inventory = await tx.inventory.findUnique({
+            where: {
+              branchId_productId: {
+                branchId: data.branchId,
+                productId: data.productId,
+              },
+            },
+            select: { id: true },
+          });
+
+          if (!inventory) {
+            throw InventoryException.inventoryNotInBranch();
+          }
+
+          throw InventoryException.insufficientStock();
+        }
+      } else if (delta.isPositive()) {
+        await tx.inventory.upsert({
+          where: {
+            branchId_productId: {
+              branchId: data.branchId,
+              productId: data.productId,
+            },
+          },
+          update: { quantity: { increment: delta } },
+          create: {
+            branchId: data.branchId,
+            productId: data.productId,
+            quantity: delta,
+          },
+        });
       }
-
-      await tx.inventory.upsert({
-        where: {
-          branchId_productId: {
-            branchId: data.branchId,
-            productId: data.productId,
-          },
-        },
-        update: { quantity: newQuantity },
-        create: {
-          branchId: data.branchId,
-          productId: data.productId,
-          quantity: newQuantity,
-        },
-      });
 
       return tx.inventoryMovement.create({
         data: {
@@ -100,6 +127,74 @@ export class InventoryMovementRepository {
         },
         select: inventoryMovementSelect,
       });
+    });
+  }
+
+  async createWasteTransaction(
+    data: CreateWasteData,
+  ): Promise<InventoryMovementRecord> {
+    const wasteQty = new Prisma.Decimal(data.quantity);
+
+    return prisma.$transaction(async (tx) => {
+      const decrementResult = await tx.inventory.updateMany({
+        where: {
+          branchId: data.branchId,
+          productId: data.productId,
+          quantity: { gte: wasteQty },
+        },
+        data: { quantity: { decrement: wasteQty } },
+      });
+
+      if (decrementResult.count === 0) {
+        const inventory = await tx.inventory.findUnique({
+          where: {
+            branchId_productId: {
+              branchId: data.branchId,
+              productId: data.productId,
+            },
+          },
+          select: { id: true },
+        });
+
+        if (!inventory) {
+          throw InventoryException.inventoryNotInBranch();
+        }
+
+        throw InventoryException.insufficientStock();
+      }
+
+      const movement = await tx.inventoryMovement.create({
+        data: {
+          branchId: data.branchId,
+          productId: data.productId,
+          type: InventoryMovementType.WASTE,
+          quantity: wasteQty,
+          adjustmentReason: data.adjustmentReason,
+          notes: data.notes,
+          referenceNumber: data.referenceNumber,
+          performedByEmployeeId: data.performedByEmployeeId,
+        },
+        select: inventoryMovementSelect,
+      });
+
+      await tx.auditLog.create({
+        data: {
+          companyId: data.audit.companyId,
+          branchId: data.branchId,
+          userId: data.audit.userId,
+          action: 'CREATE_WASTE',
+          entity: 'InventoryMovement',
+          entityId: movement.id,
+          metadata: {
+            productId: data.productId,
+            quantity: wasteQty.toString(),
+            adjustmentReason: data.adjustmentReason,
+            referenceNumber: data.referenceNumber,
+          },
+        },
+      });
+
+      return movement;
     });
   }
 

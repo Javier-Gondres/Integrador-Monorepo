@@ -1,3 +1,5 @@
+import type { TenantRoleName } from "@repo/shared";
+
 import type { BaseListFilters } from "@/types/filters";
 
 export interface EmployeeUserDto {
@@ -6,6 +8,12 @@ export interface EmployeeUserDto {
   firstName: string;
   lastName: string;
   isActive: boolean;
+  memberships?: Array<{
+    companyId: string;
+    role: {
+      name: string;
+    };
+  }>;
 }
 
 export interface EmployeeBranchDto {
@@ -36,6 +44,7 @@ export interface Employee {
   companyId: string;
   branchId: string;
   userId: string;
+  roleName: TenantRoleName | null;
   firstName: string;
   lastName: string;
   fullName: string;

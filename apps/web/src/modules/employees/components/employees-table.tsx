@@ -12,6 +12,8 @@ import { Can } from "@/shared/ui/can";
 import type { Employee } from "../types/employee.types";
 
 interface EmployeeTableActions {
+  canEdit: (employee: Employee) => boolean;
+  canDelete: (employee: Employee) => boolean;
   onEdit: (employee: Employee) => void;
   onDelete: (id: string) => void;
 }
@@ -78,28 +80,32 @@ export function getEmployeesTableColumns(
             gap: "4px",
           }}
         >
-          <Can permission={Permission.EMPLOYEES_UPDATE}>
-            <Button
-              variant="icon"
-              onClick={() => actions.onEdit(row)}
-              title="Editar"
-              style={{ width: "34px", height: "34px", borderRadius: "7px" }}
-              className="hover:border-blue-400 hover:text-blue-600 transition-colors"
-            >
-              <Pencil style={{ width: "14px", height: "14px" }} />
-            </Button>
-          </Can>
-          <Can permission={Permission.EMPLOYEES_DELETE}>
-            <Button
-              variant="icon"
-              onClick={() => actions.onDelete(row.id)}
-              title="Eliminar"
-              style={{ width: "34px", height: "34px", borderRadius: "7px" }}
-              className="hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-            >
-              <Trash2 style={{ width: "14px", height: "14px" }} />
-            </Button>
-          </Can>
+          {actions.canEdit(row) && (
+            <Can permission={Permission.EMPLOYEES_UPDATE}>
+              <Button
+                variant="icon"
+                onClick={() => actions.onEdit(row)}
+                title="Editar"
+                style={{ width: "34px", height: "34px", borderRadius: "7px" }}
+                className="hover:border-blue-400 hover:text-blue-600 transition-colors"
+              >
+                <Pencil style={{ width: "14px", height: "14px" }} />
+              </Button>
+            </Can>
+          )}
+          {actions.canDelete(row) && (
+            <Can permission={Permission.EMPLOYEES_DELETE}>
+              <Button
+                variant="icon"
+                onClick={() => actions.onDelete(row.id)}
+                title="Eliminar"
+                style={{ width: "34px", height: "34px", borderRadius: "7px" }}
+                className="hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <Trash2 style={{ width: "14px", height: "14px" }} />
+              </Button>
+            </Can>
+          )}
         </div>
       ),
     },

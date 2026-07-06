@@ -55,14 +55,6 @@ export function usePurchaseOrder() {
     });
   }, []);
 
-  const setUnitCost = useCallback((productId: string, unitCost: number) => {
-    setLines((prev) =>
-      prev[productId]
-        ? { ...prev, [productId]: { ...prev[productId], unitCost } }
-        : prev,
-    );
-  }, []);
-
   const remove = useCallback((productId: string) => {
     setLines((prev) => {
       const next = { ...prev };
@@ -86,7 +78,6 @@ export function usePurchaseOrder() {
     productIds,
     add,
     setQuantity,
-    setUnitCost,
     remove,
     reset,
     subtotal,

@@ -1,6 +1,7 @@
 import type { PaginatedResponse } from "@/types/pagination";
 
 import type { Employee, EmployeeDto } from "../types/employee.types";
+import { resolveEmployeeRoleName } from "../utils/employee-access";
 
 function formatSalary(
   value: string | number | null | undefined,
@@ -28,11 +29,14 @@ function parseSalary(value: string | number | null | undefined): number | null {
 }
 
 export function mapEmployeeDtoToUi(dto: EmployeeDto): Employee {
+  const memberships = dto.user.memberships ?? [];
+
   return {
     id: dto.id,
     companyId: dto.companyId,
     branchId: dto.branchId,
     userId: dto.userId,
+    roleName: resolveEmployeeRoleName(dto.companyId, memberships),
     firstName: dto.user.firstName,
     lastName: dto.user.lastName,
     fullName: `${dto.user.firstName} ${dto.user.lastName}`.trim(),

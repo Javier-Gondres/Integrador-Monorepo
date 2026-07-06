@@ -5,10 +5,9 @@ import { useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import { Permission } from "@/modules/auth";
-import { PageHeader } from "@/shared/ui";
+import { PageHeader, SucursalPanel } from "@/shared/ui";
 import { Can } from "@/shared/ui/can";
 
-import { SucursalPanel } from "../components/sucursal-panel";
 import { TransferenciaArrow } from "../components/transferencia-arrow";
 import { TransferenciaItemsForm } from "../components/transferencia-items-form";
 import { TransferenciaResumen } from "../components/transferencia-resumen";

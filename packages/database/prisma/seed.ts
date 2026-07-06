@@ -288,6 +288,26 @@ type DemoEmployee = {
 
 const DEMO_EMPLOYEES: DemoEmployee[] = [
   {
+    firstName: "Usuario",
+    lastName: "Demo",
+    phone: "809-555-1000",
+    position: "Propietario",
+    salary: 80000,
+    branchName: "Sucursal Centro",
+    linkUserEmail: "prueba@ejemplo.com",
+    hireDate: new Date("2023-01-01"),
+  },
+  {
+    firstName: "Laura",
+    lastName: "Méndez",
+    phone: "809-555-1004",
+    position: "Administrador",
+    salary: 55000,
+    branchName: "Sucursal Centro",
+    linkUserEmail: "admin@ejemplo.com",
+    hireDate: new Date("2023-06-15"),
+  },
+  {
     firstName: "María",
     lastName: "García",
     phone: "809-555-1001",

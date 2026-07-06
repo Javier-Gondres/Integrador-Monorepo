@@ -21,6 +21,7 @@ import {
   Shield,
   ShoppingCart,
   Tag,
+  Trash2,
   Truck,
   UserCog,
   Users,
@@ -118,6 +119,12 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
     label: "Transferencias",
     icon: ArrowLeftRight,
     href: "/transferencias",
+    access: { type: "permission", permission: Permission.INVENTORY_READ },
+  },
+  {
+    label: "Mermas",
+    icon: Trash2,
+    href: "/mermas",
     access: { type: "permission", permission: Permission.INVENTORY_READ },
   },
   {
