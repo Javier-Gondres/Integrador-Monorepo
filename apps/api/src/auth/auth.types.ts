@@ -1,6 +1,15 @@
 import { RoleName } from '@repo/db';
+import type { PermissionCode } from '@repo/shared';
 
-export type AccessTokenPayload = { sub: string };
+export type AccessTokenPayload = {
+  sub: string;
+  email: string;
+  companyId: string | null;
+  branchId: string | null;
+  role: RoleName | null;
+  permissions: PermissionCode[];
+  isSuperAdmin: boolean;
+};
 
 export type RefreshTokenPayload = {
   sub: string;
@@ -14,21 +23,31 @@ export type AuthTokens = {
 
 export type AuthContext = {
   userId: string;
+  email: string;
   companyId: string | null;
   branchId: string | null;
-
   role: RoleName | null;
-  // TODO: cargar permisos dinámicos aquí (ej. permissions: string[])
+  permissions: PermissionCode[];
+  isSuperAdmin: boolean;
+};
+
+/** Perfil básico global: no requiere empresa activa. */
+export type BasicUserProfile = {
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
 };
 
 export type UserAuthContext = {
   id: string;
   email: string;
   isActive: boolean;
+  isSuperAdmin: boolean;
   membership: {
     companyId: string;
     defaultBranchId: string | null;
-    role: { name: RoleName };
+    role: { name: RoleName; permissions: PermissionCode[] };
   } | null;
 };
 

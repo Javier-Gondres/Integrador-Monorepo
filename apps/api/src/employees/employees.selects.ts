@@ -6,6 +6,16 @@ export const employeeUserSelect = {
   firstName: true,
   lastName: true,
   isActive: true,
+  memberships: {
+    select: {
+      companyId: true,
+      role: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  },
 } satisfies Prisma.UserSelect;
 
 export const employeeSelect = {

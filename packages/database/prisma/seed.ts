@@ -6,12 +6,16 @@
  * Uso:
  *   pnpm --filter @repo/db run db:seed:dev
  *
- * Credenciales:
- *   prueba@ejemplo.com / Password123  (OWNER)
- *   admin@ejemplo.com / Password123   (ADMIN)
- *   cajero@ejemplo.com / Password123    (CASHIER, vinculado a Employee)
+ * Credenciales (password: Password123):
+ *   superadmin@ejemplo.com  — SUPER_ADMIN, sin tenant
+ *   prueba@ejemplo.com      — OWNER
+ *   admin@ejemplo.com       — ADMIN
+ *   manager@ejemplo.com     — MANAGER
+ *   cajero@ejemplo.com      — CASHIER
+ *   inventario@ejemplo.com  — INVENTORY_ASSISTANT
  */
 import bcrypt from "bcrypt";
+import { ALL_PERMISSIONS, ROLE_PERMISSION_MATRIX } from "@repo/shared";
 
 import { type ExtendedPrismaClient, prisma } from "../src/client.js";
 import {
@@ -39,6 +43,7 @@ const SEED_IDS = {
   customerMaria: "seed-customer-maria-rodriguez",
   customerPedro: "seed-customer-pedro-gomez",
   ncfB02: "seed-ncf-sequence-b02",
+  ncfB04: "seed-ncf-sequence-b04",
   discountSummer: "seed-discount-verano",
   discountBebidas: "seed-discount-bebidas",
   discountExclusion: "seed-discount-exclusion-cola-2l",
@@ -56,6 +61,7 @@ const SEED_IDS = {
   saleFromReservation: "seed-sale-from-reservation-lays",
   transferCompleted: "seed-transfer-completed",
   returnFromSale: "seed-return-from-sale",
+  creditNoteFromReturn: "seed-credit-note-from-return",
   accountReceivable: "seed-account-receivable",
   receivablePayment: "seed-receivable-payment",
   accountPayable: "seed-account-payable",
@@ -81,6 +87,12 @@ type SeedUser = {
   defaultBranchName?: string;
 };
 
+const SUPER_ADMIN_USER = {
+  email: "superadmin@ejemplo.com",
+  firstName: "Super",
+  lastName: "Admin",
+} as const;
+
 const DEMO_USERS: SeedUser[] = [
   {
     email: "prueba@ejemplo.com",
@@ -97,11 +109,25 @@ const DEMO_USERS: SeedUser[] = [
     defaultBranchName: "Sucursal Centro",
   },
   {
+    email: "manager@ejemplo.com",
+    firstName: "María",
+    lastName: "García",
+    role: RoleName.MANAGER,
+    defaultBranchName: "Sucursal Centro",
+  },
+  {
     email: "cajero@ejemplo.com",
     firstName: "Carlos",
     lastName: "Ruiz",
     role: RoleName.CASHIER,
     defaultBranchName: "Sucursal Norte",
+  },
+  {
+    email: "inventario@ejemplo.com",
+    firstName: "Ana",
+    lastName: "López",
+    role: RoleName.INVENTORY_ASSISTANT,
+    defaultBranchName: "Sucursal Centro",
   },
 ];
 
@@ -262,12 +288,33 @@ type DemoEmployee = {
 
 const DEMO_EMPLOYEES: DemoEmployee[] = [
   {
+    firstName: "Usuario",
+    lastName: "Demo",
+    phone: "809-555-1000",
+    position: "Propietario",
+    salary: 80000,
+    branchName: "Sucursal Centro",
+    linkUserEmail: "prueba@ejemplo.com",
+    hireDate: new Date("2023-01-01"),
+  },
+  {
+    firstName: "Laura",
+    lastName: "Méndez",
+    phone: "809-555-1004",
+    position: "Administrador",
+    salary: 55000,
+    branchName: "Sucursal Centro",
+    linkUserEmail: "admin@ejemplo.com",
+    hireDate: new Date("2023-06-15"),
+  },
+  {
     firstName: "María",
     lastName: "García",
     phone: "809-555-1001",
     position: "Gerente de tienda",
     salary: 45000,
     branchName: "Sucursal Centro",
+    linkUserEmail: "manager@ejemplo.com",
     hireDate: new Date("2024-01-15"),
   },
   {
@@ -287,6 +334,7 @@ const DEMO_EMPLOYEES: DemoEmployee[] = [
     position: "Asistente de inventario",
     salary: 22000,
     branchName: "Sucursal Centro",
+    linkUserEmail: "inventario@ejemplo.com",
     hireDate: new Date("2025-02-10"),
   },
   {
@@ -326,6 +374,11 @@ function demoEmployeeSeedEmail(employee: DemoEmployee): string {
   if (employee.linkUserEmail) {
     return normalizeEmail(employee.linkUserEmail);
   }
+  return legacyEmployeeSeedEmail(employee);
+}
+
+/** Email autogenerado antes de existir `linkUserEmail` en el seed. */
+function legacyEmployeeSeedEmail(employee: DemoEmployee): string {
   const base = `${employee.firstName}.${employee.lastName}`
     .toLowerCase()
     .normalize("NFD")
@@ -431,6 +484,39 @@ async function ensureRoles(): Promise<void> {
   }
 }
 
+async function ensurePermissions(): Promise<void> {
+  for (const perm of ALL_PERMISSIONS) {
+    await prisma.permission.upsert({
+      where: { code: perm.code },
+      create: { code: perm.code, description: perm.description },
+      update: { description: perm.description },
+    });
+  }
+}
+
+async function ensureRolePermissions(): Promise<void> {
+  for (const roleName of Object.values(RoleName)) {
+    const permCodes = ROLE_PERMISSION_MATRIX[roleName];
+    const role = await prisma.role.findFirst({ where: { name: roleName } });
+    if (!role) continue;
+
+    for (const code of permCodes) {
+      const permission = await prisma.permission.findUnique({
+        where: { code },
+      });
+      if (!permission) continue;
+
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
+        create: { roleId: role.id, permissionId: permission.id },
+        update: {},
+      });
+    }
+  }
+}
+
 async function ensureDemoCompany() {
   const existing = await prisma.company.findFirst({
     where: { slug: DEMO_COMPANY_SLUG },
@@ -511,6 +597,41 @@ async function ensureUser(
   });
 }
 
+/** Operador de plataforma: sin membresía tenant (UserCompany). */
+async function ensureSuperAdminUser(
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+) {
+  const normalized = normalizeEmail(email);
+  const existing = await prisma.user.findFirst({
+    where: { email: normalized, deletedAt: null },
+    select: { id: true, email: true },
+  });
+
+  if (existing) {
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { isSuperAdmin: true, firstName, lastName },
+    });
+    return existing;
+  }
+
+  const passwordHash = await hashPassword(password);
+  return prisma.user.create({
+    data: {
+      email: normalized,
+      passwordHash,
+      firstName,
+      lastName,
+      isSuperAdmin: true,
+      lastLoginAt: new Date(),
+    },
+    select: { id: true, email: true },
+  });
+}
+
 async function linkUserToCompany(
   email: string,
   companyId: string,
@@ -552,6 +673,71 @@ async function linkUserToCompany(
       defaultBranchId,
     },
   });
+}
+
+/**
+ * Cuando un empleado pasa a usar `linkUserEmail` (p. ej. inventario@ejemplo.com),
+ * elimina el usuario legacy `@empleados.seed` que pudo quedar de seeds anteriores.
+ */
+async function mergeLegacyEmployeeUser(
+  legacyEmail: string,
+  linkedUserId: string,
+  companyId: string,
+  employeeData: {
+    companyId: string;
+    branchId: string;
+    userId: string;
+    phone: string | null;
+    position: string;
+    salary: number;
+    hireDate: Date;
+    isActive: boolean;
+    deletedAt: null;
+  },
+): Promise<void> {
+  const legacyUser = await prisma.user.findFirst({
+    where: { email: normalizeEmail(legacyEmail), deletedAt: null },
+    select: { id: true },
+  });
+
+  if (!legacyUser || legacyUser.id === linkedUserId) {
+    return;
+  }
+
+  await runWithSoftDeleteQueryMode("includeDeleted", async () => {
+    const legacyEmployee = await prisma.employee.findUnique({
+      where: { userId: legacyUser.id },
+      select: { id: true },
+    });
+    const linkedEmployee = await prisma.employee.findUnique({
+      where: { userId: linkedUserId },
+      select: { id: true },
+    });
+
+    if (legacyEmployee && !linkedEmployee) {
+      await prisma.employee.update({
+        where: { id: legacyEmployee.id },
+        data: employeeData,
+      });
+    } else if (legacyEmployee && linkedEmployee) {
+      await prisma.employee.update({
+        where: { id: legacyEmployee.id },
+        data: { deletedAt: new Date(), isActive: false },
+      });
+    }
+  });
+
+  const legacyMembership = await prisma.userCompany.findFirst({
+    where: { userId: legacyUser.id, companyId, deletedAt: null },
+    select: { id: true },
+  });
+
+  if (legacyMembership) {
+    await prisma.userCompany.update({
+      where: { id: legacyMembership.id },
+      data: { deletedAt: new Date() },
+    });
+  }
 }
 
 async function ensureDemoSuppliers(companyId: string) {
@@ -765,6 +951,15 @@ async function ensureDemoEmployees(
       deletedAt: null,
     };
 
+    if (employee.linkUserEmail) {
+      await mergeLegacyEmployeeUser(
+        legacyEmployeeSeedEmail(employee),
+        user.id,
+        companyId,
+        data,
+      );
+    }
+
     const record = await runWithSoftDeleteQueryMode(
       "includeDeleted",
       async () => {
@@ -854,6 +1049,26 @@ async function ensureDemoCustomers(companyId: string): Promise<CustomerRef[]> {
 }
 
 async function ensureDemoNcfSequence(companyId: string) {
+  // Secuencia de notas de crédito (B04). currentNumber = 1 porque el seed emite
+  // una nota de crédito (B0400000001) en ensureDemoReturn.
+  await prisma.ncfSequence.upsert({
+    where: { id: SEED_IDS.ncfB04 },
+    create: {
+      id: SEED_IDS.ncfB04,
+      companyId,
+      type: NcfType.NOTA_DE_CREDITO,
+      prefix: "B04",
+      currentNumber: 1,
+      maxNumber: 9_999_999,
+      expirationDate: daysFromNow(365),
+      isActive: true,
+    },
+    update: {
+      expirationDate: daysFromNow(365),
+      isActive: true,
+    },
+  });
+
   return prisma.ncfSequence.upsert({
     where: { id: SEED_IDS.ncfB02 },
     create: {
@@ -972,7 +1187,7 @@ async function ensureDemoCashRegisters(ctx: SeedContext) {
 async function ensureDemoCashShifts(ctx: SeedContext) {
   const centro = branchByName(ctx, "Sucursal Centro");
   const norte = branchByName(ctx, "Sucursal Norte");
-  const cashierCentro = employeeByEmail(ctx, "maria.garcia@empleados.seed");
+  const cashierCentro = employeeByEmail(ctx, "manager@ejemplo.com");
   const cashierNorte = employeeByEmail(ctx, "cajero@ejemplo.com");
 
   const closedShift = await prisma.cashShift.upsert({
@@ -1030,7 +1245,7 @@ async function ensureDemoPurchases(
   const lays = productByCode(ctx, "SNK-LAYS-40");
   const leche = productByCode(ctx, "LAC-LECHE-1L");
   const combo = productByCode(ctx, "COMBO-SNACK-BEB");
-  const receivedBy = employeeByEmail(ctx, "ana.lopez@empleados.seed");
+  const receivedBy = employeeByEmail(ctx, "inventario@ejemplo.com");
 
   const initialItems = [
     {
@@ -1200,7 +1415,7 @@ async function ensureDemoPurchases(
     },
   });
 
-  const inventoryAssistant = employeeByEmail(ctx, "ana.lopez@empleados.seed");
+  const inventoryAssistant = employeeByEmail(ctx, "inventario@ejemplo.com");
 
   await prisma.$transaction(async (tx) => {
     await recordMovementIfAbsent(
@@ -1758,7 +1973,7 @@ async function ensureDemoTransfer(ctx: SeedContext) {
   const centro = branchByName(ctx, "Sucursal Centro");
   const norte = branchByName(ctx, "Sucursal Norte");
   const cola355 = productByCode(ctx, "BEB-COLA-355");
-  const inventoryAssistant = employeeByEmail(ctx, "ana.lopez@empleados.seed");
+  const inventoryAssistant = employeeByEmail(ctx, "inventario@ejemplo.com");
   const transferQty = 20;
 
   await prisma.transfer.upsert({
@@ -1847,6 +2062,25 @@ async function ensureDemoReturn(ctx: SeedContext) {
       reason: ReturnReason.DEFECTIVE,
       subtotal: returnSubtotal,
       total: returnSubtotal,
+    },
+  });
+
+  // Nota de crédito fiscal emitida por la devolución (NCF tipo NOTA_DE_CREDITO).
+  // La venta de origen es al contado (consumidor final) → sin cliente asociado.
+  await prisma.creditNote.upsert({
+    where: { id: SEED_IDS.creditNoteFromReturn },
+    create: {
+      id: SEED_IDS.creditNoteFromReturn,
+      returnId: SEED_IDS.returnFromSale,
+      ncfSequenceId: SEED_IDS.ncfB04,
+      ncf: "B0400000001",
+      ncfType: NcfType.NOTA_DE_CREDITO,
+      amount: returnSubtotal,
+      isActive: true,
+    },
+    update: {
+      amount: returnSubtotal,
+      isActive: true,
     },
   });
 
@@ -2003,8 +2237,17 @@ async function main(): Promise<void> {
   const password = process.env.SEED_USER_PASSWORD ?? DEFAULT_SEED_PASSWORD;
 
   await ensureRoles();
+  await ensurePermissions();
+  await ensureRolePermissions();
   const company = await ensureDemoCompany();
   const branches = await ensureDemoBranches(company.id);
+
+  await ensureSuperAdminUser(
+    SUPER_ADMIN_USER.email,
+    password,
+    SUPER_ADMIN_USER.firstName,
+    SUPER_ADMIN_USER.lastName,
+  );
 
   const users: { email: string; id: string }[] = [];
   for (const seedUser of DEMO_USERS) {
@@ -2085,12 +2328,17 @@ async function main(): Promise<void> {
     prisma.payablePayment.count(),
     prisma.transfer.count(),
     prisma.return.count(),
+    prisma.creditNote.count(),
   ]);
 
   console.log("Seed completado:");
+  console.log(`  permisos: ${ALL_PERMISSIONS.length}`);
   console.log(`  empresa: ${company.name} (${company.slug})`);
   console.log(`  sucursales: ${branches.size}`);
-  console.log(`  usuarios: ${users.length} (password: ${password})`);
+  console.log(`  usuarios tenant: ${users.length} (password: ${password})`);
+  console.log(
+    `  super admin: ${SUPER_ADMIN_USER.email} (password: ${password}, sin empresa)`,
+  );
   console.log(`  proveedores: ${suppliers.size}`);
   console.log(`  categorías: ${categories.size}`);
   console.log(`  productos: ${products.length}`);
@@ -2107,6 +2355,7 @@ async function main(): Promise<void> {
   console.log(`  CxC: ${counts[13]} (abonos: ${counts[14]})`);
   console.log(`  CxP: ${counts[15]} (pagos: ${counts[16]})`);
   console.log(`  transferencias: ${counts[17]}, devoluciones: ${counts[18]}`);
+  console.log(`  notas de crédito: ${counts[19]}`);
   console.log(`  refresh tokens: ${refreshTokens}`);
   console.log(`  audit logs: ${auditLogs}`);
   console.log("Vuelve a hacer login para refrescar el contexto JWT.");

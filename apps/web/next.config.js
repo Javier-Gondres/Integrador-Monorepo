@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ["@repo/shared"],
   turbopack: {
     root: path.join(__dirname, "../.."),
   },

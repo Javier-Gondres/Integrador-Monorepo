@@ -1,4 +1,5 @@
 import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { RoleName } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
 import { AuthService } from '../auth/auth.service';
@@ -9,6 +10,12 @@ import { CreateUserDto } from './dto/createUser.dto';
 import { NormalizedQueryUsers, QueryUsersDto } from './dto/query-users.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
+import {
+  assertAssignableRole,
+  assertCanManageUser,
+  getAssignableRoles,
+} from './helpers/assert-assignable-role';
+import type { PublicUserWithMembership } from './users.repository';
 import { UsersRepository } from './users.repository';
 
 const DEFAULT_PAGE = 1;
@@ -54,8 +61,10 @@ export class UsersService {
     return user;
   }
 
-  listRoles() {
-    return this.usersRepository.findAllRoles();
+  async listRoles(actorRole: RoleName | null) {
+    const assignable = new Set(getAssignableRoles(actorRole));
+    const roles = await this.usersRepository.findAllRoles();
+    return roles.filter((role) => assignable.has(role.name));
   }
 
   async updateMe(userId: string, companyId: string, dto: UpdateMeDto) {
@@ -102,17 +111,20 @@ export class UsersService {
     return { message: 'Contraseña actualizada correctamente' };
   }
 
-  async restoreUser(id: string, companyId: string) {
-    const isDeleted = await this.usersRepository.isUserSoftDeletedInCompany(
+  async restoreUser(id: string, companyId: string, actorRole: RoleName | null) {
+    const target = await this.usersRepository.findSoftDeletedUserInCompany(
       id,
       companyId,
     );
-    if (!isDeleted) {
+
+    if (!target) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
         'El usuario no está eliminado o no pertenece a esta empresa',
       );
     }
+
+    this.assertCanManageTargetUser(actorRole, target);
 
     const result = await this.usersRepository.restoreInCompany(id, companyId);
 
@@ -126,7 +138,13 @@ export class UsersService {
     return this.findByIdInCompany(id, companyId);
   }
 
-  async create(companyId: string, createUserDto: CreateUserDto) {
+  async create(
+    companyId: string,
+    createUserDto: CreateUserDto,
+    actorRole: RoleName | null,
+  ) {
+    assertAssignableRole(actorRole, createUserDto.role);
+
     const email = createUserDto.email.trim().toLowerCase();
     const passwordHash = await bcrypt.hash(createUserDto.password, 10);
 
@@ -153,10 +171,16 @@ export class UsersService {
     id: string,
     updateUserDto: UpdateUserDto,
     companyIdFromUserAuth: string,
+    actorRole: RoleName | null,
   ) {
-    await this.findByIdInCompany(id, companyIdFromUserAuth);
+    const target = await this.findByIdInCompany(id, companyIdFromUserAuth);
+    this.assertCanManageTargetUser(actorRole, target);
 
     const { role, ...otherFields } = updateUserDto;
+
+    if (role !== undefined) {
+      assertAssignableRole(actorRole, role);
+    }
 
     const userData = getDefinedData<Omit<UpdateUserDto, 'role'>>(otherFields);
 
@@ -199,13 +223,23 @@ export class UsersService {
     return this.findByIdInCompany(id, companyIdFromUserAuth);
   }
 
-  async activateUser(id: string, companyId: string) {
-    await this.findByIdInCompany(id, companyId);
+  async activateUser(
+    id: string,
+    companyId: string,
+    actorRole: RoleName | null,
+  ) {
+    const target = await this.findByIdInCompany(id, companyId);
+    this.assertCanManageTargetUser(actorRole, target);
     await this.usersRepository.activateUser(id);
     return this.findByIdInCompany(id, companyId);
   }
 
-  async deactivateUser(id: string, companyId: string, requesterUserId: string) {
+  async deactivateUser(
+    id: string,
+    companyId: string,
+    requesterUserId: string,
+    actorRole: RoleName | null,
+  ) {
     if (id === requesterUserId) {
       throw new BusinessException(
         ErrorCodes.VALIDATION_ERROR,
@@ -214,12 +248,18 @@ export class UsersService {
       );
     }
 
-    await this.findByIdInCompany(id, companyId);
+    const target = await this.findByIdInCompany(id, companyId);
+    this.assertCanManageTargetUser(actorRole, target);
     await this.usersRepository.deactivateUser(id);
     return this.findByIdInCompany(id, companyId);
   }
 
-  async removeUser(id: string, companyId: string, requesterUserId: string) {
+  async removeUser(
+    id: string,
+    companyId: string,
+    requesterUserId: string,
+    actorRole: RoleName | null,
+  ) {
     if (id === requesterUserId) {
       throw new BusinessException(
         ErrorCodes.VALIDATION_ERROR,
@@ -228,7 +268,8 @@ export class UsersService {
       );
     }
 
-    await this.findByIdInCompany(id, companyId);
+    const target = await this.findByIdInCompany(id, companyId);
+    this.assertCanManageTargetUser(actorRole, target);
 
     const result = await this.usersRepository.softDeleteInCompany(
       id,
@@ -246,6 +287,22 @@ export class UsersService {
       message: 'Usuario eliminado correctamente',
       user: result.user,
     };
+  }
+
+  private assertCanManageTargetUser(
+    actorRole: RoleName | null,
+    target: PublicUserWithMembership,
+  ): void {
+    const targetRole = target.membership?.role.name;
+
+    if (!targetRole) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario no tiene rol en esta empresa',
+      );
+    }
+
+    assertCanManageUser(actorRole, targetRole);
   }
 
   private normalizeQuery(query: QueryUsersDto): NormalizedQueryUsers {

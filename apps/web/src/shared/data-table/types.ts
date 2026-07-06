@@ -1,3 +1,4 @@
+import type { PermissionCode } from "@repo/shared";
 import type { ReactNode } from "react";
 
 export type DataTableAlign = "left" | "center" | "right";
@@ -39,4 +40,6 @@ export interface DataTableToolbarProps {
   refreshing?: boolean;
   createLabel: string;
   onCreate: () => void;
+  /** Si se define, el botón crear solo se muestra con ese permiso tenant. */
+  createPermission?: PermissionCode;
 }

@@ -14,7 +14,9 @@ model User {
   firstName    String
   lastName     String
 
-  isActive  Boolean   @default(true)
+  isActive     Boolean @default(true)
+  isSuperAdmin Boolean @default(false)
+
   deletedAt DateTime?
 
   lastLoginAt DateTime?
@@ -39,12 +41,44 @@ model Role {
 
   deletedAt DateTime?
 
-  users UserCompany[]
+  users       UserCompany[]
+  permissions RolePermission[]
 
   @@unique([name, deletedAt])
   @@index([deletedAt])
 }
 
+model Permission {
+  id String @id @default(cuid())
+
+  code        String  @unique
+  description String?
+
+  roles RolePermission[]
+
+  createdAt DateTime @default(now())
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@index([roleId])
+}
+
+/// Decisión arquitectónica: un usuario solo puede tener UNA membresía activa a la vez.
+/// La unicidad @@unique([userId, deletedAt]) refleja esta restricción deliberada.
+///
+/// Si en el futuro surge el requisito de que un mismo usuario pertenezca a múltiples
+/// empresas simultáneamente, será necesario:
+///   1. Cambiar la unicidad a @@unique([userId, companyId, deletedAt]).
+///   2. Agregar un mecanismo explícito de "empresa activa" en el JWT
+///      (ej. campo activeCompanyId) y un endpoint para cambiar de empresa.
+///   3. Revisar cómo AuthService selecciona la membresía activa (actualmente memberships[0]).
 model UserCompany {
   id String @id @default(cuid())
 

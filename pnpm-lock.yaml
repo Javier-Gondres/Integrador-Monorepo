@@ -56,6 +56,9 @@ importers:
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/database
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
@@ -171,6 +174,9 @@ importers:
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/database
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -268,6 +274,9 @@ importers:
       '@prisma/client':
         specifier: ^7.8.0
         version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.2))(typescript@5.9.2)
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@types/pg':
         specifier: ^8.20.0
         version: 8.20.0
@@ -350,6 +359,18 @@ importers:
       typescript-eslint:
         specifier: ^8.50.0
         version: 8.50.0(eslint@9.39.1(jiti@2.7.0))(typescript@5.9.2)
+
+  packages/shared:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.1(jiti@2.7.0)
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
 
   packages/typescript-config: {}
 
@@ -8039,9 +8060,9 @@ snapshots:
     dependencies:
       acorn: 8.16.0
 
-  acorn-jsx@5.3.2(acorn@8.15.0):
+  acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
-      acorn: 8.15.0
+      acorn: 8.16.0
 
   acorn-walk@8.3.5:
     dependencies:
@@ -9012,8 +9033,8 @@ snapshots:
 
   espree@10.4.0:
     dependencies:
-      acorn: 8.15.0
-      acorn-jsx: 5.3.2(acorn@8.15.0)
+      acorn: 8.16.0
+      acorn-jsx: 5.3.2(acorn@8.16.0)
       eslint-visitor-keys: 4.2.1
 
   esprima@4.0.1: {}

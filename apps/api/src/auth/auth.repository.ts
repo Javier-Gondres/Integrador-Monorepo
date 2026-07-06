@@ -32,10 +32,30 @@ export class AuthRepository {
         id: true,
         email: true,
         isActive: true,
+        isSuperAdmin: true,
         memberships: {
           select: membershipRelationSelect,
           take: 1,
         },
+      },
+    });
+  }
+
+  async findActiveStatus(userId: string) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: { isActive: true },
+    });
+  }
+
+  async findBasicProfile(userId: string) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
       },
     });
   }

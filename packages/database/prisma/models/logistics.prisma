@@ -68,6 +68,7 @@ model Return {
 
   items              ReturnItem[]
   inventoryMovements InventoryMovement[]
+  creditNotes        CreditNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,4 +91,28 @@ model ReturnItem {
 
   @@index([returnId])
   @@index([productId])
+}
+
+model CreditNote {
+  id String @id @default(cuid())
+
+  returnId      String
+  customerId    String?
+  ncfSequenceId String?
+
+  ncf      String?
+  ncfType  NcfType?
+  amount   Decimal  @db.Decimal(10, 2)
+  isActive Boolean  @default(true)
+
+  return      Return       @relation(fields: [returnId], references: [id])
+  customer    Customer?    @relation(fields: [customerId], references: [id])
+  ncfSequence NcfSequence? @relation(fields: [ncfSequenceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([returnId])
+  @@index([customerId])
+  @@index([ncfSequenceId])
 }

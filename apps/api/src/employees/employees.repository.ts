@@ -64,6 +64,35 @@ export class EmployeesRepository {
     });
   }
 
+  findDeletedByIdInCompany(
+    id: string,
+    companyId: string,
+  ): Promise<EmployeeRecord | null> {
+    return runWithDeleted(() =>
+      prisma.employee.findFirst({
+        where: {
+          id,
+          companyId,
+          deletedAt: { not: null },
+        },
+        select: employeeSelect,
+      }),
+    );
+  }
+
+  /** Contexto mínimo para validar operaciones branch-scoped (p. ej. apertura de turno). */
+  findOperationalContextByUserId(userId: string) {
+    return prisma.employee.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        companyId: true,
+        branchId: true,
+        isActive: true,
+      },
+    });
+  }
+
   async create(data: CreateEmployeeData): Promise<CreateEmployeeResult> {
     return prisma.$transaction(async (tx) => {
       const role = await tx.role.findUnique({
@@ -155,6 +184,16 @@ export class EmployeesRepository {
   findBranchInCompany(branchId: string, companyId: string) {
     return prisma.branch.findFirst({
       where: { id: branchId, companyId },
+      select: { id: true },
+    });
+  }
+
+  findIdByUserId(
+    userId: string,
+    companyId: string,
+  ): Promise<{ id: string } | null> {
+    return prisma.employee.findFirst({
+      where: { userId, companyId },
       select: { id: true },
     });
   }

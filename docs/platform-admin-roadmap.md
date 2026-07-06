@@ -2,8 +2,9 @@
 
 Este documento describe la **evolución planificada** del ERP multiempresa hacia un modelo de autorización en dos niveles: **plataforma (SaaS)** y **empresa (tenant)**.
 
-> **Importante:** esto es documentación de arquitectura futura. **No implementar ahora.**  
-> La fase actual del proyecto está cubierta correctamente por `JWT` → `CompanyGuard` → `companyId` y por `User` / `UserCompany` / `Role` tenant-scoped.
+> **Importante:** la **administración de plataforma** (rutas `/platform/*`) está implementada en API y web básica.  
+> El **RBAC tenant**, guards, permisos granulares y flags `isSuperAdmin` **ya están implementados** en la API.  
+> Revisión de riesgos y checklist: [`docs/security-rbac-critical-review.md`](security-rbac-critical-review.md).
 
 ---
 
@@ -12,55 +13,64 @@ Este documento describe la **evolución planificada** del ERP multiempresa hacia
 ### Modelos relevantes
 
 ```text
-User
-Role
+User (+ isSuperAdmin)
+Role (+ Permission / RolePermission)
 UserCompany
-Company
-Branch
-Employee
+Company (+ isActive)
+Branch (+ isActive)
+Employee (+ branchId, isActive)
 Supplier
 ```
 
 ### Flujo de autorización en rutas de negocio
 
-Todas las rutas de empleados, proveedores, productos, categorías, etc. asumen:
-
 ```text
-Usuario autenticado (JWT)
+JwtAuthGuard
         ↓
-CompanyGuard  (@RequireCompany)
+CompanyGuard          → company.isActive en BD (403 si inactiva)
         ↓
-companyId  (membresía activa en UserCompany)
+PermissionGuard       → permisos en JWT (@RequirePermissions)
         ↓
-Operaciones scoped a esa empresa
+BranchAccessService   → branch.isActive (solo flujos branch-scoped)
+        ↓
+Servicio / assertEmployeeForBranchOperation (caja, etc.)
 ```
 
-Eso es **correcto y suficiente** para la fase actual: un usuario con membresía en una empresa opera dentro de ese tenant.
+**Catálogo company-wide** (`products`, `categories`, `customers`, `suppliers`, `discounts`): capa CompanyGuard + RBAC; **no** exige sucursal activa.
+
+Documentación: `apps/api/docs/tenant-access.md` y `apps/api/docs/auth-and-utilities.md`.
 
 ### Lo que el sistema asume hoy
 
 ```text
 Usuario autenticado
         ↓
-Tiene UserCompany (membresía)
+Tiene UserCompany (membresía única)
         ↓
-Tiene companyId + role (OWNER, ADMIN, MANAGER, …)
+JWT: companyId + branchId + role + permissions[] + isSuperAdmin
+        ↓
+Operaciones tenant scoped a companyId (y branchId donde aplique)
 ```
 
-### Lo que **no** existe aún
+### Lo que **existe** en infraestructura (sin UI de plataforma)
 
-No hay un actor de plataforma capaz de:
+- `User.isSuperAdmin` + `PlatformAdminGuard` + `@RequirePlatformAdmin()` (sin rutas HTTP aún).
+- `@RequireCompanyOwnerOrPlatformAdmin()` en gestión de `Company` (OWNER / SUPER_ADMIN).
+- Matriz RBAC en seed (`ALL_PERMISSIONS`, `ROLE_PERMISSIONS`).
+- Jerarquía de roles en usuarios (`assert-assignable-role.ts`).
+
+### Lo que **no** existe aún (fase plataforma)
+
+Rutas y pantallas dedicadas para operadores SaaS:
 
 ```text
-Crear empresas
-Suspender empresas
-Activar empresas
-Asignar owners iniciales
-Administrar el SaaS completo
-Ver métricas globales cross-tenant
+Dashboard cross-tenant
+Métricas globales
+Impersonación / soporte
+CRUD de tenants desde /platform/*
 ```
 
-Ese hueco se cubrirá en una fase posterior con **Platform Roles** (p. ej. `SUPER_ADMIN`, `SUPPORT`).
+Ese hueco se cubrirá con **Platform Roles** expuestos vía `@RequirePlatformAdmin()`.
 
 ### Qué **no** debe cambiarse en esta fase
 
@@ -190,6 +200,8 @@ Actor de **plataforma** (operador del SaaS), no empleado ni dueño de una tienda
 - Puede crear tenants (`Company`) y el primer `OWNER`.
 - No reemplaza al `OWNER` dentro de la empresa: el Owner configura sucursales, empleados, catálogo, etc.
 - No debe confundirse con `RoleName.OWNER`: el Owner es **tenant-scoped**; el Super Admin es **platform-scoped**.
+- **Creación de usuarios:** el Super Admin provisiona el tenant (empresa + owner inicial y, en el futuro, operadores de plataforma). **No** comparte el mismo flujo que el Owner, que solo **invita** usuarios a su empresa. Detalle: `docs/user-management-roadmap.md`.
+- **Regla enforceada (Opción A):** un Super Admin **no puede** tener `UserCompany`. `POST /companies` y `createWithOnboarding` lo rechazan; el JWT ignora membresía tenant si `isSuperAdmin` (`super-admin-tenant.policy.ts`).
 
 ```text
 SUPER_ADMIN     →  opera el producto (muchas empresas)
@@ -235,6 +247,8 @@ Configura sucursales (Branch)
       ↓
 Invita o crea más usuarios (futuro RBAC por rol)
 ```
+
+> **Gestión de usuarios (diseño objetivo):** el Owner **invita** miembros a su empresa y puede **expulsarlos** (revocar `UserCompany`), pero **no** debe poder **eliminar** la cuenta global (`User`). Esa operación corresponde al **Super Admin** a nivel plataforma. La UI tenant actual en `/users` es **provisional** y aún no distingue invitar / expulsar / eliminar. Ver `docs/user-management-roadmap.md`.
 
 ### Paso 4 — Owner registra empleados
 
@@ -406,26 +420,51 @@ erDiagram
 
 ## RBAC tenant: estado y siguiente paso
 
-| Capacidad                                  | Estado                                |
-| ------------------------------------------ | ------------------------------------- |
-| Membresía por empresa (`UserCompany`)      | Implementado                          |
-| `CompanyGuard` + `companyId`               | Implementado                          |
-| Enum `RoleName` en DB                      | Implementado                          |
-| `RolesGuard` / `@Roles()` en controladores | Pendiente (TODOs en código)           |
-| Platform admin / `SUPER_ADMIN`             | Documentado aquí; **no implementado** |
+| Capacidad                                         | Estado                                     |
+| ------------------------------------------------- | ------------------------------------------ |
+| Membresía por empresa (`UserCompany`)             | Implementado                               |
+| `CompanyGuard` + `company.isActive` en BD         | Implementado                               |
+| `BranchAccessService` + `branch.isActive`         | Implementado (flujos branch-scoped)        |
+| `@RequirePermissions` + `PermissionGuard`         | Implementado (controllers tenant)          |
+| Enum `RoleName` + seed `RolePermission`           | Implementado                               |
+| Jerarquía roles (`assert-assignable-role`)        | Implementado (users / employees.create)    |
+| Política empleado ↔ sucursal + `openShift`        | Implementado                               |
+| `User.isSuperAdmin` + guard plataforma            | Implementado; rutas `/platform/*` + UI web |
+| UI permisos (`usePermissions`, `<Can>`)           | Implementado en pantallas tenant           |
+| UI plataforma (`/platform/*`, `CanPlatformAdmin`) | Implementado (empresas + overview)         |
 
-Cuando se implemente RBAC completo en tenant, los permisos se derivarán de `UserCompany.role` dentro del `companyId` del JWT — no de roles de plataforma.
+Los permisos tenant se derivan de `UserCompany.role` al emitir JWT (login/refresh/switchBranch). **No** mezclar con `isSuperAdmin` en endpoints tenant.
+
+Documentación detallada: `apps/api/docs/tenant-access.md`.
+
+**Siguiente paso:** ampliar plataforma (usuarios globales, auditoría, impersonación). RBAC tenant y UI base ya adoptados.
+
+### Rutas de plataforma implementadas (API + web)
+
+| Método  | Ruta                                 | Descripción                       |
+| ------- | ------------------------------------ | --------------------------------- |
+| `GET`   | `/platform/overview`                 | Métricas de tenants               |
+| `GET`   | `/platform/companies`                | Listado paginado cross-tenant     |
+| `GET`   | `/platform/companies/:id`            | Detalle de empresa                |
+| `POST`  | `/platform/companies`                | Company + branch + owner (`User`) |
+| `PATCH` | `/platform/companies/:id/activate`   | Reactivar tenant                  |
+| `PATCH` | `/platform/companies/:id/deactivate` | Suspender tenant                  |
+
+Web: `/platform/dashboard`, `/platform/companies` — protegidas por `PlatformGuard` (`isSuperAdmin`). Super Admin **sin** tenant es redirigido aquí tras login.
 
 ---
 
 ## Documentos relacionados
 
-| Archivo                                   | Contenido                                                           |
-| ----------------------------------------- | ------------------------------------------------------------------- |
-| `docs/employee-user-registration-flow.md` | Employee siempre con User; `POST /employees` transaccional          |
-| `docs/platform-admin-roadmap.md`          | Este archivo — plataforma vs tenant, SUPER_ADMIN, onboarding futuro |
-| `packages/database/prisma/schema.prisma`  | Schema vigente                                                      |
-| `apps/api/docs/auth-and-utilities.md`     | Auth, guards, errores (si aplica)                                   |
+| Archivo                                   | Contenido                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------ |
+| `docs/employee-user-registration-flow.md` | Employee siempre con User; `POST /employees` transaccional         |
+| `docs/platform-admin-roadmap.md`          | Plataforma vs tenant, SUPER_ADMIN, onboarding futuro               |
+| `docs/security-rbac-critical-review.md`   | Revisión crítica RBAC/plataforma/web (severidad y checklist)       |
+| `docs/security-rbac-critical-review.md`   | Análisis crítico, hallazgos, backlog de remediación                |
+| `apps/api/docs/tenant-access.md`          | Capas CompanyGuard / BranchAccess / catálogo / empleado ↔ sucursal |
+| `apps/api/docs/auth-and-utilities.md`     | Auth, guards, RBAC, errores                                        |
+| `packages/database/prisma/seed.ts`        | Permisos y matriz por rol                                          |
 
 ---
 

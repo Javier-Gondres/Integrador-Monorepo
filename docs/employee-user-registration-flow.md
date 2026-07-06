@@ -203,12 +203,43 @@ Módulo: `src/modules/employees/`
 - Un solo flujo de alta: modal **Nuevo Empleado** con email, contraseña, rol y datos laborales.
 - Edición: solo datos laborales; el email se muestra en solo lectura.
 - Tabla: nombre, email, sucursal, puesto, estado.
+- Acciones en tabla: además de permisos RBAC (`EMPLOYEES_UPDATE` / `EMPLOYEES_DELETE`), se aplica **jerarquía de roles** (`canManageTargetRole` en web; `assertCanManageUser` en API). Ver §8.2.
+
+### 8.2 Gestión por jerarquía de roles
+
+Archivo API: `src/employees/policies/employee-management.policy.ts`  
+Archivo web: `src/modules/employees/utils/employee-access.ts` (usa `shared/auth/role-hierarchy.ts`).
+
+| Acción                     | Regla                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Editar** otro empleado   | Solo si el rol del actor es **estrictamente superior** al del objetivo (p. ej. Admin no edita Owner).   |
+| **Editar** propio registro | Permitido (datos laborales: teléfono, sucursal, puesto, etc.).                                          |
+| **Eliminar**               | Misma jerarquía que editar; además **Owner y Admin no pueden eliminar su propio** registro de empleado. |
+| **Restaurar**              | Mismas reglas que editar.                                                                               |
+
+Nota: en `/users`, la eliminación propia está bloqueada para **todos** los roles (`users.service`). En `/employees` el recurso es el registro HR; la restricción de auto-eliminación aplica solo a Owner/Admin según política de negocio.
+
+---
+
+## 8.1 Política empleado ↔ sucursal (operaciones)
+
+Documentación completa: `apps/api/docs/tenant-access.md` y `src/employees/policies/employee-branch.policy.ts`.
+
+| Regla              | Detalle                                                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Asignación         | Cada empleado tiene **una** sucursal (`employee.branchId`).                                                                   |
+| Alta               | `POST /employees` exige `branchId` activo (`BranchAccessService`).                                                            |
+| Reasignación       | `PATCH /employees/:id` con nuevo `branchId`; sucursal destino activa.                                                         |
+| Caja (`openShift`) | Turno = empleado del **usuario autenticado**, activo, en la **misma sucursal** que la caja. El cliente no envía `employeeId`. |
+| `switchBranch`     | Cambia sucursal por defecto del JWT; **no** mueve al empleado. Para caja, JWT y empleado deben coincidir en sucursal.         |
 
 ---
 
 ## 9. Roadmap futuro (no implementado)
 
 Administración de plataforma con `SUPER_ADMIN` para crear empresas y owners iniciales. Ver `docs/platform-admin-roadmap.md`.
+
+Gestión de usuarios tenant (invitar, expulsar, separación Owner / Super Admin): ver `docs/user-management-roadmap.md`.
 
 ---
 

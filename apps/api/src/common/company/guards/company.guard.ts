@@ -4,6 +4,7 @@ import { AuthException } from 'src/common/errors';
 
 import type { AuthContext } from '../../../auth/auth.types';
 import type { CompanyContext } from '../company-context.types';
+import { CompanyStatusRepository } from '../company-status.repository';
 import { assertHasCompanyMembership } from '../helpers/assert-company-access';
 
 function toCompanyContext(auth: AuthContext): CompanyContext {
@@ -16,12 +17,21 @@ function toCompanyContext(auth: AuthContext): CompanyContext {
 }
 
 /**
- * Requiere JWT previo (JwtAuthGuard) y membership con empresa.
- * Establece `request.company` para decoradores y servicios.
+ * Requiere JWT previo (JwtAuthGuard) y membership con empresa activa.
+ * Rechaza operaciones tenant si la empresa está inactiva (isActive = false).
+ *
+ * Capa 1 de acceso tenant. Ver `common/tenant-access/tenant-access.policy.ts`.
+ *
+ * No aplica a @RequireCompanyOwnerOrPlatformAdmin(): OWNER y SUPER_ADMIN
+ * pueden gestionar empresas inactivas (p. ej. reactivación).
  */
 @Injectable()
 export class CompanyGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  constructor(
+    private readonly companyStatusRepository: CompanyStatusRepository,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const auth = this.resolveAuth(request);
 
@@ -34,6 +44,16 @@ export class CompanyGuard implements CanActivate {
     if (!auth.role) {
       throw AuthException.unauthorizedCompanyAccess(
         'No tienes un rol asignado en esta empresa',
+      );
+    }
+
+    const isActive = await this.companyStatusRepository.isCompanyActive(
+      auth.companyId,
+    );
+
+    if (!isActive) {
+      throw AuthException.unauthorizedCompanyAccess(
+        'La empresa está inactiva. No puedes realizar operaciones en este momento.',
       );
     }
 

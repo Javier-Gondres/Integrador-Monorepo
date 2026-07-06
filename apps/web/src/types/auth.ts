@@ -1,3 +1,5 @@
+import type { PermissionCode } from "@repo/shared";
+
 export interface Permission {
   id: string;
   code: string;
@@ -9,17 +11,19 @@ export interface Role {
   id: string;
   name: string;
   description?: string | null;
-  permissions: Permission[];
 }
 
 export interface AuthUser {
   id: string;
   email: string;
-  firstName?: string | null;
-  lastName?: string | null;
+  firstName: string;
+  lastName: string;
+  isSuperAdmin: boolean;
   companyId?: string;
+  companySlug?: string;
   branchId?: string;
   role?: Role;
+  permissions: PermissionCode[];
 }
 
 export interface AuthSession {

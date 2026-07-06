@@ -1,43 +1,44 @@
 "use client";
 
-import {
-  Box,
-  Grid2x2,
-  LayoutDashboard,
-  LogOut,
-  Percent,
-  Tag,
-  Truck,
-  Users,
-} from "lucide-react";
+import { Grid2x2, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
-import { useAuth } from "@/modules/auth";
+import {
+  DASHBOARD_NAV_ITEMS,
+  filterNavItems,
+  isNavSection,
+  type NavLink,
+} from "@/config/nav";
+import { useAuth, usePermissions } from "@/modules/auth";
 
-const navItems = [
-  { section: "General" },
-  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { section: "Catálogo" },
-  { label: "Productos", icon: Box, href: "/products" },
-  { label: "Clientes", icon: Users, href: "/customers" },
-  { label: "Categorías", icon: Tag, href: "/categories" },
-  { label: "Descuentos", icon: Percent, href: "/discounts" },
-  { section: "Operación" },
-  { label: "Cajas", icon: LayoutDashboard, href: "/cajas" },
-  { section: "Recursos" },
-  { label: "Empleados", icon: Users, href: "/employees" },
-  { label: "Proveedores", icon: Truck, href: "/suppliers" },
-];
+import { isNavLinkActive } from "./is-nav-link-active";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
+  const { can, isSuperAdmin } = usePermissions();
+
+  const { navItems, navHrefs } = useMemo(() => {
+    const items = filterNavItems(DASHBOARD_NAV_ITEMS, {
+      can,
+      isSuperAdmin,
+      roleName: user?.role?.name,
+      hasTenant: Boolean(user?.companyId),
+      companySlug: user?.companySlug ?? null,
+    });
+    const hrefs = items
+      .filter((item): item is NavLink => !isNavSection(item))
+      .map((item) => item.href);
+
+    return { navItems: items, navHrefs: hrefs };
+  }, [can, isSuperAdmin, user?.role?.name, user?.companyId, user?.companySlug]);
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "Usuario";
+
   return (
     <aside className="sidebar">
-      {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">
           <Grid2x2 size={16} color="#fff" />
@@ -48,23 +49,26 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Nav */}
       <nav className="sidebar-nav">
         {navItems.map((item, i) => {
-          if ("section" in item) {
+          if (isNavSection(item)) {
             return (
-              <p key={i} className="sidebar-section">
+              <p
+                key={`section-${item.section}-${i}`}
+                className="sidebar-section"
+              >
                 {item.section}
               </p>
             );
           }
-          const Icon = item.icon!;
-          const active =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+          const Icon = item.icon;
+          const active = isNavLinkActive(pathname, item.href, navHrefs);
+
           return (
             <Link
               key={item.href}
-              href={item.href!}
+              href={item.href}
               className={`nav-item${active ? " active" : ""}`}
             >
               <Icon size={16} />
@@ -75,7 +79,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom */}
       <div className="sidebar-bottom">
         <div className="user-card">
           <div className="avatar">AD</div>

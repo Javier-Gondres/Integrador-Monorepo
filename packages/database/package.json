@@ -26,9 +26,9 @@
     "db:deploy:dev": "dotenv -e .env.development -- prisma migrate deploy",
     "db:deploy:staging": "dotenv -e .env.staging -- prisma migrate deploy",
     "db:deploy:production": "dotenv -e .env.production -- prisma migrate deploy",
-    "db:seed:dev": "dotenv -e .env.development -- tsx prisma/seed.ts",
-    "db:seed:staging": "dotenv -e .env.staging -- tsx prisma/seed.ts",
-    "db:seed:production": "dotenv -e .env.production -- tsx prisma/seed.ts"
+    "db:seed:dev": "pnpm --filter @repo/shared run build && dotenv -e .env.development -- tsx prisma/seed.ts",
+    "db:seed:staging": "pnpm --filter @repo/shared run build && dotenv -e .env.staging -- tsx prisma/seed.ts",
+    "db:seed:production": "pnpm --filter @repo/shared run build && dotenv -e .env.production -- tsx prisma/seed.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -45,6 +45,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@repo/shared": "workspace:*",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/pg": "^8.20.0",

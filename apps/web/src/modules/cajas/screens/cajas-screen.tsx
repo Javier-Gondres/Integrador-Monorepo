@@ -1,13 +1,14 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Clock3, DollarSign, LayoutGrid, Plus, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
-import { getBranchesForSelect } from "@/modules/employees/api/get-branches";
+import { Permission } from "@/modules/auth";
+import { useOperationalBranches } from "@/shared/hooks/use-operational-branches";
 import { PageHeader } from "@/shared/ui";
 import { Button } from "@/shared/ui/button";
+import { Can } from "@/shared/ui/can";
 
 import { AbrirTurnoModal } from "../components/abrir-turno-modal";
 import { CajaCard } from "../components/caja-card";
@@ -24,19 +25,17 @@ type ModalState =
   | null;
 
 export function CajasScreen() {
-  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-
-  const { data: branches = [] } = useQuery({
-    queryKey: ["branches-select"],
-    queryFn: getBranchesForSelect,
-  });
+  const { branches, canSelectBranch, defaultBranchId } =
+    useOperationalBranches();
+  const [selectedBranchId, setSelectedBranchId] = useState("");
 
   useEffect(() => {
-    const firstBranch = branches[0];
-    if (firstBranch && !selectedBranchId) {
-      setSelectedBranchId(firstBranch.id);
+    if (defaultBranchId && selectedBranchId !== defaultBranchId) {
+      if (!selectedBranchId || !canSelectBranch) {
+        setSelectedBranchId(defaultBranchId);
+      }
     }
-  }, [branches, selectedBranchId]);
+  }, [defaultBranchId, selectedBranchId, canSelectBranch]);
 
   const { cajas, loading, abrirTurno, cerrarTurno, crearCaja } =
     useCajas(selectedBranchId);
@@ -93,6 +92,12 @@ export function CajasScreen() {
           <select
             value={selectedBranchId}
             onChange={(e) => setSelectedBranchId(e.target.value)}
+            disabled={!canSelectBranch}
+            title={
+              canSelectBranch
+                ? "Seleccionar sucursal"
+                : "Sucursal asignada a tu usuario"
+            }
             style={{
               padding: "8px 12px",
               borderRadius: 8,
@@ -234,10 +239,12 @@ export function CajasScreen() {
               Estado de cajas
             </h2>
           </div>
-          <Button onClick={() => setModal({ type: "crear" })}>
-            <Plus size={16} />
-            Nueva Caja
-          </Button>
+          <Can permission={Permission.CASH_MANAGE}>
+            <Button onClick={() => setModal({ type: "crear" })}>
+              <Plus size={16} />
+              Nueva Caja
+            </Button>
+          </Can>
         </div>
 
         {/* ── cards grid ───────────────────────────────────────────────── */}
@@ -279,7 +286,6 @@ export function CajasScreen() {
       {modal?.type === "abrir" && (
         <AbrirTurnoModal
           caja={modal.caja}
-          branchId={selectedBranchId}
           onConfirm={handleConfirmAbrir}
           onClose={() => setModal(null)}
           loading={loading}

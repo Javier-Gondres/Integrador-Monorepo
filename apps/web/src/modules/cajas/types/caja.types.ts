@@ -18,7 +18,6 @@ export interface Caja {
 
 export interface AbrirTurnoPayload {
   cajaId: string;
-  empleadoId: string;
   montoApertura: number;
 }
 

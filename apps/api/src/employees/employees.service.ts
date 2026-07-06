@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@repo/db';
+import { Prisma, RoleName } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
+import { AuthContext } from '../auth/auth.types';
+import { BranchAccessService } from '../branch/branch-access.service';
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
+import { assertAssignableRole } from '../users/helpers/assert-assignable-role';
+import { UsersRepository } from '../users/users.repository';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import {
   NormalizedQueryEmployees,
@@ -11,16 +15,25 @@ import {
 } from './dto/query-employees.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeesRepository } from './employees.repository';
+import type { EmployeeRecord } from './employees.selects';
+import {
+  assertCanDeleteEmployee,
+  assertCanUpdateEmployee,
+} from './policies/employee-management.policy';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
 
 @Injectable()
 export class EmployeesService {
-  constructor(private readonly employeesRepository: EmployeesRepository) {}
+  constructor(
+    private readonly employeesRepository: EmployeesRepository,
+    private readonly branchAccessService: BranchAccessService,
+    private readonly usersRepository: UsersRepository,
+  ) {}
 
   async findPaginatedByCompany(companyId: string, query: QueryEmployeesDto) {
-    const normalized = this.normalizeQuery(query);
+    const normalized = await this.normalizeQuery(companyId, query);
     const { items, total } =
       await this.employeesRepository.findPaginatedByCompany(
         companyId,
@@ -28,7 +41,9 @@ export class EmployeesService {
       );
 
     return {
-      items,
+      items: items.map((employee) =>
+        this.sanitizeEmployeeRecord(employee, companyId),
+      ),
       meta: {
         page: normalized.page,
         take: normalized.take,
@@ -51,14 +66,30 @@ export class EmployeesService {
       );
     }
 
-    return employee;
+    return this.sanitizeEmployeeRecord(employee, companyId);
   }
 
-  async create(companyId: string, dto: CreateEmployeeDto) {
+  async create(
+    companyId: string,
+    dto: CreateEmployeeDto,
+    actorRole: RoleName | null,
+  ) {
+    const role = await this.usersRepository.findRoleById(dto.roleId.trim());
+
+    if (!role) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El rol no existe',
+      );
+    }
+
+    assertAssignableRole(actorRole, role.name);
+
     const email = dto.email.trim().toLowerCase();
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const branchId = dto.branchId.trim();
-    await this.assertBranchInCompany(branchId, companyId);
+    // Asignación inicial de sucursal; reasignación vía update. Ver employee-branch.policy.
+    await this.branchAccessService.assertBranchInCompany(branchId, companyId);
 
     const result = await this.employeesRepository.create({
       companyId,
@@ -88,11 +119,17 @@ export class EmployeesService {
       );
     }
 
-    return result.employee;
+    return this.sanitizeEmployeeRecord(result.employee, companyId);
   }
 
-  async update(id: string, companyId: string, dto: UpdateEmployeeDto) {
-    await this.findByIdInCompany(id, companyId);
+  async update(
+    id: string,
+    companyId: string,
+    dto: UpdateEmployeeDto,
+    auth: AuthContext,
+  ) {
+    const employee = await this.findByIdInCompany(id, companyId);
+    this.assertCanModifyEmployee(auth, employee);
 
     const data = getDefinedData(dto);
     const updateData: Prisma.EmployeeUpdateInput = {};
@@ -126,7 +163,7 @@ export class EmployeesService {
     }
     if (dto.branchId !== undefined) {
       const branchId = dto.branchId.trim();
-      await this.assertBranchInCompany(branchId, companyId);
+      await this.branchAccessService.assertBranchInCompany(branchId, companyId);
       updateData.branch = { connect: { id: branchId } };
     }
 
@@ -137,17 +174,29 @@ export class EmployeesService {
       );
     }
 
-    return this.employeesRepository.update(id, updateData);
+    return this.sanitizeEmployeeRecord(
+      await this.employeesRepository.update(id, updateData),
+      companyId,
+    );
   }
 
-  async remove(id: string, companyId: string) {
-    await this.findByIdInCompany(id, companyId);
+  async remove(id: string, companyId: string, auth: AuthContext) {
+    const employee = await this.findByIdInCompany(id, companyId);
+    this.assertCanDeleteEmployeeRecord(auth, employee);
+
     await this.employeesRepository.softDelete(id);
 
     return { message: 'Empleado eliminado correctamente' };
   }
 
-  async restore(id: string, companyId: string) {
+  async restore(id: string, companyId: string, auth: AuthContext) {
+    const deletedEmployee =
+      await this.employeesRepository.findDeletedByIdInCompany(id, companyId);
+
+    if (deletedEmployee) {
+      this.assertCanModifyEmployee(auth, deletedEmployee);
+    }
+
     const employee = await this.employeesRepository.restore(id, companyId);
 
     if (!employee) {
@@ -157,7 +206,82 @@ export class EmployeesService {
       );
     }
 
+    return this.sanitizeEmployeeRecord(employee, companyId);
+  }
+
+  async findIdByUserId(userId: string, companyId: string) {
+    const employee = await this.employeesRepository.findIdByUserId(
+      userId,
+      companyId,
+    );
+
+    if (!employee) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario actual no tiene un empleado asociado',
+      );
+    }
+
     return employee;
+  }
+
+  private sanitizeEmployeeRecord(
+    employee: EmployeeRecord,
+    companyId: string,
+  ): EmployeeRecord {
+    return {
+      ...employee,
+      user: {
+        ...employee.user,
+        memberships: employee.user.memberships.filter(
+          (membership) => membership.companyId === companyId,
+        ),
+      },
+    };
+  }
+
+  private assertCanModifyEmployee(
+    auth: AuthContext,
+    employee: EmployeeRecord,
+  ): void {
+    assertCanUpdateEmployee(
+      { userId: auth.userId, role: auth.role },
+      {
+        userId: employee.userId,
+        role: this.resolveEmployeeRole(employee, employee.companyId),
+      },
+    );
+  }
+
+  private assertCanDeleteEmployeeRecord(
+    auth: AuthContext,
+    employee: EmployeeRecord,
+  ): void {
+    assertCanDeleteEmployee(
+      { userId: auth.userId, role: auth.role },
+      {
+        userId: employee.userId,
+        role: this.resolveEmployeeRole(employee, employee.companyId),
+      },
+    );
+  }
+
+  private resolveEmployeeRole(
+    employee: EmployeeRecord,
+    companyId: string,
+  ): RoleName {
+    const membership = employee.user.memberships.find(
+      (item) => item.companyId === companyId,
+    );
+
+    if (!membership) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El empleado no tiene rol en esta empresa',
+      );
+    }
+
+    return membership.role.name;
   }
 
   private async assertBranchInCompany(branchId: string, companyId: string) {
@@ -181,13 +305,22 @@ export class EmployeesService {
     return new Prisma.Decimal(value);
   }
 
-  private normalizeQuery(query: QueryEmployeesDto): NormalizedQueryEmployees {
+  private async normalizeQuery(
+    companyId: string,
+    query: QueryEmployeesDto,
+  ): Promise<NormalizedQueryEmployees> {
+    const branchId = query.branchId?.trim();
+
+    if (branchId) {
+      await this.branchAccessService.assertBranchInCompany(branchId, companyId);
+    }
+
     return {
       page: query.page ?? DEFAULT_PAGE,
       take: query.take ?? DEFAULT_TAKE,
       ...(query.search?.trim() && { search: query.search.trim() }),
       ...(query.isActive !== undefined && { isActive: query.isActive }),
-      ...(query.branchId?.trim() && { branchId: query.branchId.trim() }),
+      ...(branchId && { branchId }),
     };
   }
 }

@@ -3,14 +3,17 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import type { PermissionCode } from '@repo/shared';
 import * as bcrypt from 'bcrypt';
 import { AuthException } from 'src/common/errors';
 
+import { stripTenantMembershipForSuperAdmin } from '../common/platform';
 import { AuthRepository } from './auth.repository';
 import {
   AccessTokenPayload,
   AuthTokens,
   AuthUser,
+  BasicUserProfile,
   RefreshTokenPayload,
   UserAuthContext,
 } from './auth.types';
@@ -35,19 +38,47 @@ export class AuthService {
       return null;
     }
 
+    // Un usuario tiene como máximo una membresía activa (restricción intencional).
+    // Ver comentario en UserCompany en auth.prisma para el razonamiento completo.
     const membership = user.memberships[0] ?? null;
 
-    return {
+    return stripTenantMembershipForSuperAdmin({
       id: user.id,
       email: user.email,
       isActive: user.isActive,
+      isSuperAdmin: user.isSuperAdmin,
       membership: membership
         ? {
             companyId: membership.companyId,
             defaultBranchId: membership.defaultBranchId,
-            role: { name: membership.role.name },
+            role: {
+              name: membership.role.name,
+              permissions: (membership.role.permissions ?? []).map(
+                (rp) => rp.permission.code as PermissionCode,
+              ),
+            },
           }
         : null,
+    });
+  }
+
+  async isUserActive(userId: string): Promise<boolean> {
+    const result = await this.authRepository.findActiveStatus(userId);
+    return result?.isActive ?? false;
+  }
+
+  async getBasicProfile(userId: string): Promise<BasicUserProfile> {
+    const user = await this.authRepository.findBasicProfile(userId);
+
+    if (!user) {
+      throw AuthException.unauthorized();
+    }
+
+    return {
+      userId: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
     };
   }
 
@@ -73,7 +104,11 @@ export class AuthService {
 
   async login(authenticatedUser: AuthUser): Promise<AuthTokens> {
     await this.authRepository.updateLastLogin(authenticatedUser.id);
-    return this.generateAccessAndRefreshTokens(authenticatedUser.id);
+    const userContext = await this.findAuthContext(authenticatedUser.id);
+    return this.generateAccessAndRefreshTokens(
+      authenticatedUser.id,
+      userContext,
+    );
   }
 
   async refreshSession(
@@ -94,6 +129,7 @@ export class AuthService {
     return this.revokeOldRefreshTokenAndCreateNew(
       refreshTokenRecord.id,
       refreshTokenPayload.sub,
+      userAuthContext,
     );
   }
 
@@ -108,8 +144,38 @@ export class AuthService {
     await this.authRepository.revokeAllRefreshTokensForUser(userId);
   }
 
-  private buildAccessTokenClaims(userId: string): AccessTokenPayload {
-    return { sub: userId };
+  /**
+   * Emite un nuevo access token con el contexto actual de BD (sin rotar refresh token).
+   * Usado tras cambios que afectan claims del JWT, p. ej. switchBranch.
+   */
+  async issueAccessToken(userId: string): Promise<string> {
+    const userContext = await this.findAuthContext(userId);
+
+    if (!userContext?.isActive) {
+      throw AuthException.unauthorized();
+    }
+
+    return this.generateAccessToken(
+      this.buildAccessTokenClaims(userId, userContext),
+    );
+  }
+
+  private buildAccessTokenClaims(
+    userId: string,
+    userContext: UserAuthContext | null,
+  ): AccessTokenPayload {
+    const isSuperAdmin = userContext?.isSuperAdmin ?? false;
+    const membership = isSuperAdmin ? null : (userContext?.membership ?? null);
+
+    return {
+      sub: userId,
+      email: userContext?.email ?? '',
+      companyId: membership?.companyId ?? null,
+      branchId: membership?.defaultBranchId ?? null,
+      role: membership?.role.name ?? null,
+      permissions: membership?.role.permissions ?? [],
+      isSuperAdmin,
+    };
   }
 
   private generateAccessToken(claims: AccessTokenPayload): string {
@@ -148,10 +214,11 @@ export class AuthService {
 
   private async generateAccessAndRefreshTokens(
     userId: string,
+    userContext: UserAuthContext | null = null,
   ): Promise<AuthTokens> {
     const newRefreshTokenId = randomUUID();
     const accessToken = this.generateAccessToken(
-      this.buildAccessTokenClaims(userId),
+      this.buildAccessTokenClaims(userId, userContext),
     );
     const refreshToken = this.generateRefreshToken({
       sub: userId,
@@ -204,10 +271,11 @@ export class AuthService {
   private async revokeOldRefreshTokenAndCreateNew(
     previousRefreshTokenId: string,
     userId: string,
+    userContext: UserAuthContext | null = null,
   ): Promise<AuthTokens> {
     const newRefreshTokenId = randomUUID();
     const accessToken = this.generateAccessToken(
-      this.buildAccessTokenClaims(userId),
+      this.buildAccessTokenClaims(userId, userContext),
     );
     const refreshToken = this.generateRefreshToken({
       sub: userId,

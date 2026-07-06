@@ -9,10 +9,14 @@ export const ENDPOINTS = {
     login: "/auth/login",
     logout: "/auth/logout",
     refresh: "/auth/refresh",
+    session: "/auth/session",
+    profile: "/auth/profile",
   },
   me: {
     profile: "/me",
     company: "/me/company",
+    branch: "/me/branch",
+    switchBranch: "/me/switch-branch",
   },
   products: {
     root: "/products",
@@ -38,6 +42,15 @@ export const ENDPOINTS = {
   suppliers: {
     root: "/suppliers",
     byId: (id: string) => `/suppliers/${id}`,
+    products: {
+      root: (supplierId: string) => `/suppliers/${supplierId}/products`,
+      byId: (supplierId: string, productId: string) =>
+        `/suppliers/${supplierId}/products/${productId}`,
+      activate: (supplierId: string, productId: string) =>
+        `/suppliers/${supplierId}/products/${productId}/activate`,
+      deactivate: (supplierId: string, productId: string) =>
+        `/suppliers/${supplierId}/products/${productId}/deactivate`,
+    },
   },
   employees: {
     root: "/employees",
@@ -52,7 +65,27 @@ export const ENDPOINTS = {
     byId: (id: string) => `/companies/${id}`,
   },
   users: {
+    root: "/users",
     roles: "/users/roles",
+    byId: (id: string) => `/users/${id}`,
+    activate: (id: string) => `/users/${id}/activate`,
+    deactivate: (id: string) => `/users/${id}/deactivate`,
+  },
+  platform: {
+    overview: "/platform/overview",
+    companies: "/platform/companies",
+    companyById: (id: string) => `/platform/companies/${id}`,
+    activateCompany: (id: string) => `/platform/companies/${id}/activate`,
+    deactivateCompany: (id: string) => `/platform/companies/${id}/deactivate`,
+  },
+  purchases: {
+    root: "/purchases",
+    byId: (id: string) => `/purchases/${id}`,
+  },
+  returns: {
+    root: "/returns",
+    byId: (id: string) => `/returns/${id}`,
+    saleLookup: "/returns/sale-lookup",
   },
   cashRegisters: {
     root: "/cash-registers",
@@ -61,5 +94,30 @@ export const ENDPOINTS = {
     closeShift: (id: string, shiftId: string) =>
       `/cash-registers/${id}/close-shift/${shiftId}`,
     shifts: (id: string) => `/cash-registers/${id}/shifts`,
+  },
+  inventories: {
+    root: "/inventories",
+    byId: (id: string) => `/inventories/${id}`,
+    activate: (id: string) => `/inventories/${id}/activate`,
+    deactivate: (id: string) => `/inventories/${id}/deactivate`,
+  },
+  inventoryMovements: {
+    root: "/inventory-movements",
+    adjustments: "/inventory-movements/adjustments",
+    waste: "/inventory-movements/waste",
+  },
+  transfers: {
+    root: "/transfers",
+    stock: "/transfers/stock",
+    dispatch: (id: string) => `/transfers/${id}/dispatch`,
+    complete: (id: string) => `/transfers/${id}/complete`,
+    cancel: (id: string) => `/transfers/${id}/cancel`,
+  },
+  customers: {
+    root: "/customers",
+    byId: (id: string) => `/customers/${id}`,
+    activate: (id: string) => `/customers/${id}/activate`,
+    deactivate: (id: string) => `/customers/${id}/deactivate`,
+    checkUniqueness: "/customers/check-uniqueness",
   },
 } as const;

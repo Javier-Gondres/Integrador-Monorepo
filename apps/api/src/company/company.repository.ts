@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { prisma, RoleName } from '@repo/db';
 
+import { assertUserEligibleForTenantMembership } from '../common/platform';
 import {
   type CompanyRecord,
   companySelect,
@@ -129,6 +130,13 @@ export class CompanyRepository {
     data: CreateCompanyWithOnboardingData,
   ): Promise<CompanyWithBranchesRecord> {
     return prisma.$transaction(async (tx) => {
+      const actor = await tx.user.findUnique({
+        where: { id: data.userId },
+        select: { isSuperAdmin: true },
+      });
+
+      assertUserEligibleForTenantMembership(actor?.isSuperAdmin ?? false);
+
       const ownerRole = await tx.role.findFirst({
         where: { name: RoleName.OWNER },
         select: { id: true },

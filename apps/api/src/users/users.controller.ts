@@ -8,9 +8,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Permission } from '@repo/shared';
 import { AuthContext } from 'src/auth/auth.types';
 import { Auth } from 'src/auth/decorators/auth.decorator';
-import { CompanyId, RequireCompany } from 'src/common/company';
+import { CompanyId } from 'src/common/company';
+import { RequirePermissions } from 'src/common/permissions';
 
 import { CreateUserDto } from './dto/createUser.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
@@ -21,75 +23,92 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_READ)
   @Get()
   findAll(@CompanyId() companyId: string, @Query() query: QueryUsersDto) {
     return this.usersService.findAllByCompany(companyId, query);
   }
 
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_READ)
   @Get('roles')
-  listRoles() {
-    return this.usersService.listRoles();
+  listRoles(@Auth() auth: AuthContext) {
+    return this.usersService.listRoles(auth.role);
   }
 
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {
     return this.usersService.findByIdInCompany(id, companyId);
   }
 
-  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_CREATE)
   @Post()
-  create(@Body() createUserDto: CreateUserDto, @CompanyId() companyId: string) {
-    return this.usersService.create(companyId, createUserDto);
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.usersService.create(companyId, createUserDto, auth.role);
   }
 
-  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_ACTIVATE)
   @Patch(':id/activate')
-  activate(@Param('id') id: string, @CompanyId() companyId: string) {
-    return this.usersService.activateUser(id, companyId);
+  activate(
+    @Param('id') id: string,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.usersService.activateUser(id, companyId, auth.role);
   }
 
-  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_DEACTIVATE)
   @Patch(':id/deactivate')
   deactivate(
     @Param('id') id: string,
     @CompanyId() companyId: string,
     @Auth() auth: AuthContext,
   ) {
-    return this.usersService.deactivateUser(id, companyId, auth.userId);
+    return this.usersService.deactivateUser(
+      id,
+      companyId,
+      auth.userId,
+      auth.role,
+    );
   }
 
-  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_UPDATE)
   @Patch(':id/restore')
-  restore(@Param('id') id: string, @CompanyId() companyId: string) {
-    return this.usersService.restoreUser(id, companyId);
+  restore(
+    @Param('id') id: string,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.usersService.restoreUser(id, companyId, auth.role);
   }
 
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_UPDATE)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
   ) {
-    return this.usersService.updateUser(id, updateUserDto, companyId);
+    return this.usersService.updateUser(
+      id,
+      updateUserDto,
+      companyId,
+      auth.role,
+    );
   }
 
-  // TODO: @Roles(OWNER, ADMIN) cuando exista RolesGuard
-  @RequireCompany()
+  @RequirePermissions(Permission.USERS_DELETE)
   @Delete(':id')
   remove(
     @Param('id') id: string,
     @CompanyId() companyId: string,
     @Auth() auth: AuthContext,
   ) {
-    return this.usersService.removeUser(id, companyId, auth.userId);
+    return this.usersService.removeUser(id, companyId, auth.userId, auth.role);
   }
 }

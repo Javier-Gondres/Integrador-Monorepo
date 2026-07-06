@@ -2,27 +2,51 @@ import { apiFetch } from "@/lib/api/client";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import type { AuthUser } from "@/types";
 
-import type { AuthSession, MeProfileResponse } from "../types/auth.types";
+import type {
+  AuthSession,
+  BasicProfileResponse,
+  MyCompanyResponse,
+  SessionResponse,
+} from "../types/auth.types";
 
-function mapProfileToUser(profile: MeProfileResponse): AuthUser {
+function mapToAuthUser(
+  session: SessionResponse,
+  profile: BasicProfileResponse,
+  companySlug?: string,
+): AuthUser {
   return {
-    id: profile.id,
-    email: profile.email,
+    id: session.userId,
+    email: session.email,
     firstName: profile.firstName,
     lastName: profile.lastName,
-    companyId: profile.membership?.companyId,
-    branchId: profile.membership?.defaultBranchId ?? undefined,
-    role: profile.membership?.role
-      ? {
-          id: profile.membership.role.id,
-          name: profile.membership.role.name,
-          permissions: [],
-        }
-      : undefined,
+    isSuperAdmin: session.isSuperAdmin,
+    permissions: session.permissions,
+    companyId: session.companyId ?? undefined,
+    companySlug,
+    branchId: session.branchId ?? undefined,
+    role: session.role ? { id: session.role, name: session.role } : undefined,
   };
 }
 
+async function fetchCompanySlug(
+  companyId: string | null,
+): Promise<string | undefined> {
+  if (!companyId) {
+    return undefined;
+  }
+
+  const company = await apiFetch<MyCompanyResponse>(ENDPOINTS.me.company);
+
+  return company.slug;
+}
+
 export async function getSession(): Promise<AuthSession> {
-  const profile = await apiFetch<MeProfileResponse>(ENDPOINTS.me.profile);
-  return { user: mapProfileToUser(profile) };
+  const [session, profile] = await Promise.all([
+    apiFetch<SessionResponse>(ENDPOINTS.auth.session),
+    apiFetch<BasicProfileResponse>(ENDPOINTS.auth.profile),
+  ]);
+
+  const companySlug = await fetchCompanySlug(session.companyId);
+
+  return { user: mapToAuthUser(session, profile, companySlug) };
 }

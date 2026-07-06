@@ -210,18 +210,22 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 
 ### Módulos implementados
 
-| Módulo        | Estado                                              |
-| ------------- | --------------------------------------------------- |
-| `categories`  | Completo (CRUD + tabla)                             |
-| `products`    | Completo (CRUD + tabla + combobox categorías)       |
-| `employees`   | Completo (CRUD transaccional User+Employee + tabla) |
-| `suppliers`   | Completo (CRUD + tabla)                             |
-| `companies`   | Pantalla legacy migrada (lista + CRUD básico)       |
-| `branches`    | Pantalla legacy migrada (lista + CRUD básico)       |
-| `auth`        | Scaffold (API hooks, sin UI de login aún)           |
-| `users`       | Scaffold RBAC                                       |
-| `roles`       | Scaffold RBAC                                       |
-| `permissions` | Scaffold RBAC                                       |
+| Módulo           | Estado                                                                |
+| ---------------- | --------------------------------------------------------------------- |
+| `categories`     | Completo (CRUD + tabla)                                               |
+| `products`       | Completo (CRUD + tabla + combobox categorías)                         |
+| `employees`      | Completo (CRUD transaccional User+Employee + tabla + jerarquía roles) |
+| `inventories`    | Completo (CRUD + movimientos + ajustes)                               |
+| `mermas`         | Registro de mermas (inventario por sucursal)                          |
+| `transferencias` | Transferencias entre sucursales                                       |
+| `suppliers`      | Completo (CRUD + tabla)                                               |
+| `companies`      | Pantalla legacy migrada (lista + CRUD básico)                         |
+| `branches`       | Pantalla legacy migrada (lista + CRUD básico)                         |
+| `auth`           | Scaffold (API hooks, sin UI de login aún)                             |
+| `users`          | **Provisional** — CRUD en `/users`; ver nota §18.1                    |
+| `platform`       | Admin SaaS — `/platform/*` (Super Admin)                              |
+| `roles`          | Scaffold RBAC                                                         |
+| `permissions`    | Scaffold RBAC                                                         |
 
 ### Convención obligatoria de carpeta
 
@@ -454,9 +458,17 @@ export function useCreateCategory() {
 | Mutaciones CRUD                 | Metadata que no cambia en sesión            |
 | Infinite scroll (combobox)      | `getDashboardMetrics()` en Server Component |
 
-### 9.5 Infinite query (ejemplo: combobox de categorías en productos)
+### 9.5 Infinite query (combobox containers)
 
-`CategoryComboboxContainer` usa `useInfiniteQuery` para scroll infinito al seleccionar categorías en el formulario de producto.
+Patrón estándar: **container** con `useInfiniteQuery` + componente visual reutilizable (`ProductCombobox`, etc.). El formulario **no** importa hooks de datos.
+
+| Container                    | Fuente de datos              | Uso                                     |
+| ---------------------------- | ---------------------------- | --------------------------------------- |
+| `ProductComboboxContainer`   | `GET /products` (catálogo)   | Alta inventario, ajustes de stock       |
+| `InventoryComboboxContainer` | `GET /inventories?branchId=` | Mermas (producto con stock en sucursal) |
+| `CategoryComboboxContainer`  | `GET /categories`            | Formulario de producto                  |
+
+Ejemplo de referencia: `CategoryComboboxContainer` en productos.
 
 ---
 
@@ -910,40 +922,111 @@ modules/categories/
 
 ## 18. Autenticación y RBAC
 
-### Modelo multiempresa esperado
+> **Guía práctica (API + web):** [`docs/permissions-guide.md`](../../docs/permissions-guide.md) — `usePermissions`, `<Can>`, sidebar, `route-access`, decoradores NestJS y checklist para nuevos módulos.
+
+### Modelo multiempresa
 
 ```
-Company
- └── Branch
-      └── User
-           └── Role
-                └── Permission
+Company (+ isActive)
+ └── Branch (+ isActive)
+      └── Employee (+ branchId, isActive) → User → Role → Permission[]
 ```
 
-### Módulo auth (scaffold)
+**Capas de acceso (backend):** ver `apps/api/docs/tenant-access.md`.
+
+- **Empresa inactiva** → `CompanyGuard` bloquea tenant (403).
+- **Sucursal inactiva** → `BranchAccessService` bloquea flujos branch-scoped (403).
+- **Catálogo** (`products`, `categories`, etc.) → company-wide; no depende de sucursal activa.
+
+### Módulo auth
 
 ```
 modules/auth/
-├── api/get-session.ts    # GET /auth/me, POST login/logout
-├── hooks/use-auth.ts     # useCurrentUser, useHasPermission
-├── hooks/use-login.ts
-├── schemas/login.schema.ts
+├── api/get-session.ts      # GET /auth/session + /auth/profile
+├── api/switch-branch.ts    # POST /me/switch-branch → nuevo accessToken
+├── hooks/use-auth.ts
+├── hooks/use-permissions.ts
+├── store/auth-store.ts
 └── components/auth-provider.tsx
 ```
 
-Uso futuro de permisos:
+`getSession()` reconstruye el usuario desde JWT + perfil BD.
+
+### Permisos en UI
 
 ```tsx
-const canEdit = useHasPermission("products:update");
+import { usePermissions } from "@/modules/auth";
+import { Can } from "@/shared/ui";
+
+const { can, isSuperAdmin } = usePermissions();
+
+if (can("products.create")) { ... }   // RBAC tenant (desde JWT)
+if (isSuperAdmin) { ... }             // plataforma — NO bypass en can()
 ```
 
-### Scaffolds RBAC
+```tsx
+<Can permission="users.delete">
+  <DeleteUserButton />
+</Can>
+```
 
-- `modules/users/` — tipos + query keys
-- `modules/roles/` — tipos + query keys
-- `modules/permissions/` — tipos + query keys
+**Reglas:**
 
-**No mezclar auth en `shared/`.** Toda autenticación vive en `modules/auth/`.
+- `isSuperAdmin` **no** otorga permisos tenant en `can()` / `<Can>`.
+- El backend (`PermissionGuard`) es la autoridad real; la UI solo oculta controles.
+
+Documentación API: `apps/api/docs/auth-and-utilities.md`. Revisión de riesgos: `docs/security-rbac-critical-review.md`.
+
+### Jerarquía de roles (UI)
+
+Además de permisos RBAC, usuarios y empleados aplican `canManageTargetRole` (`shared/auth/role-hierarchy.ts`):
+
+- **Usuarios:** `users-table-container` + `assertCanManageUser` (API).
+- **Empleados:** `employee-access.ts` + `employee-management.policy.ts` (API).
+
+Ver `docs/permissions-guide.md` y `docs/employee-user-registration-flow.md` §8.2.
+
+### 18.1 Gestión de usuarios en web (provisional)
+
+La pantalla `/users` y el módulo `modules/users/` son **provisionales**. Implementan un CRUD tenant genérico (`GET|POST|PATCH|DELETE /users`) pero **no** reflejan el diseño final de gestión de identidades.
+
+| Tema                 | Estado actual                           | Objetivo                                                                                  |
+| -------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Super Admin vs Owner | Misma UI para cualquier rol con permiso | Pantallas y flujos separados (plataforma vs tenant)                                       |
+| Alta de usuarios     | Formulario «crear usuario» en tenant    | Owner **invita** miembros a su empresa; Super Admin crea tenant + owner vía `/platform/*` |
+| Quitar acceso        | Botón «Eliminar» → `DELETE /users/:id`  | Owner **expulsa** (solo membresía `UserCompany`); **no** elimina la cuenta global         |
+| Eliminar cuenta      | Expuesto si `can('users.delete')`       | Reservado a **plataforma** (Super Admin)                                                  |
+
+**Reglas de diseño acordadas (pendientes de implementar):**
+
+- El **Owner** puede invitar y gestionar usuarios de **su** empresa, pero **no** debería poder eliminarlos del sistema — solo **expulsarlos** de la empresa.
+- El **Super Admin** crea empresas, el owner inicial y cuentas de plataforma; no sustituye al Owner en la operación diaria del tenant.
+- Personal operativo con ficha laboral sigue dándose de alta por **`/employees`** (`POST /employees`), no por sustituir ese flujo con `/users`.
+
+Documentación completa: [`docs/user-management-roadmap.md`](../../docs/user-management-roadmap.md).  
+Revisión de seguridad y backlog: [`docs/security-rbac-critical-review.md`](../../docs/security-rbac-critical-review.md).
+
+### 18.2 Super Admin — plataforma (`/platform/*`)
+
+Separado del RBAC tenant. Usa `isSuperAdmin` del JWT, **no** `can()` ni `<Can>`.
+
+| Componente            | Uso                                                  |
+| --------------------- | ---------------------------------------------------- |
+| `PlatformGuard`       | Protege layout `(platform)` — solo Super Admin       |
+| `CanPlatformAdmin`    | Equivalente UI de `@RequirePlatformAdmin()`          |
+| `PlatformSidebar`     | Nav: panel + empresas (+ enlace ERP si tiene tenant) |
+| `getPostLoginRoute()` | Super Admin sin `companyId` → `/platform/dashboard`  |
+
+Rutas web:
+
+| URL                   | Pantalla                                    |
+| --------------------- | ------------------------------------------- |
+| `/platform/dashboard` | Métricas de tenants                         |
+| `/platform/companies` | Alta/suspensión de empresas + owner inicial |
+
+API: `GET|POST /platform/companies`, `GET /platform/overview` — ver `docs/platform-admin-roadmap.md`.
+
+El ítem **Admin SaaS** en el sidebar tenant (`access: { type: "platform" }`) enlaza a plataforma cuando el Super Admin también opera un tenant.
 
 ---
 
@@ -1019,4 +1102,4 @@ pnpm lint             # ESLint (max-warnings 0)
 
 ---
 
-_Última actualización: refactor arquitectónico con containers, mappers, data-table y scaffolds RBAC._
+_Estructura actual: containers, mappers, data-table, RBAC tenant (`usePermissions`, `<Can>`). Gestión de usuarios web: **provisional** (§18.1). Ver `docs/user-management-roadmap.md`._

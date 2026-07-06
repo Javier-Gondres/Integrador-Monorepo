@@ -111,11 +111,4 @@ export class CashRegistersRepository {
       ])
       .then(([items, total]) => ({ items, total }));
   }
-
-  getEmployeeIdByUserId(userId: string): Promise<{ id: string } | null> {
-    return prisma.employee.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
-  }
 }

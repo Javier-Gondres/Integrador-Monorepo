@@ -1,6 +1,42 @@
 @import "tailwindcss";
 @source "../../../../packages/ui/src";
 
+/* Paleta ERP expuesta como tokens de Tailwind (bg-primary, text-body, border-card-border, …).
+   Mantener sincronizada con src/constants/theme.ts (ERP_COLORS). */
+@theme {
+  --color-primary: #3c50e0;
+  --color-primary-hover: #2d3fc7;
+  --color-page: #f1f5f9;
+  --color-card: #ffffff;
+  --color-card-border: #e2e8f0;
+  --color-table-head: #f7f9fc;
+  --color-head: #637381;
+  --color-body: #1c2434;
+  --color-muted: #9ba3af;
+  --color-divider: #eff4fb;
+  --color-green-bg: #edfcf2;
+  --color-green-text: #0d9f5f;
+  --color-green-border: #a6f4c5;
+  --color-gray-bg: #f3f4f6;
+  --color-gray-text: #6b7280;
+  --color-gray-border: #d1d5db;
+  --color-input-border: #e2e8f0;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fef2f2;
+}
+
+@layer utilities {
+  /* Scrollbars finos para las regiones desplazables de la orden de compra. */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #d9e0ec;
+    border-radius: 8px;
+  }
+}
+
 @layer base {
   html,
   body {

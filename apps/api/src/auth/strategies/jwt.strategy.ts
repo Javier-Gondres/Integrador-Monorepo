@@ -6,7 +6,7 @@ import { AuthException } from 'src/common/errors';
 
 import { AuthService } from '../auth.service';
 import { AccessTokenPayload, AuthContext } from '../auth.types';
-import { toAuthContext } from '../mappers/auth-context.mapper';
+import { toAuthContextFromPayload } from '../mappers/auth-context.mapper';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -22,13 +22,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: AccessTokenPayload): Promise<AuthContext> {
-    const userAuthContext = await this.authService.findAuthContext(payload.sub);
+    const isActive = await this.authService.isUserActive(payload.sub);
 
-    if (!userAuthContext?.isActive) {
+    if (!isActive) {
+      console.warn('User is not active', payload.sub);
       throw AuthException.unauthorized();
     }
 
-    // TODO: cargar permisos dinámicos aquí antes de devolver el contexto
-    return toAuthContext(userAuthContext);
+    return toAuthContextFromPayload(payload);
   }
 }

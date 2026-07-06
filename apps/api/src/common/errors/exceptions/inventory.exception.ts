@@ -17,6 +17,14 @@ export class InventoryException extends BusinessException {
     );
   }
 
+  static inventoryNotInBranch(): InventoryException {
+    return new InventoryException(
+      ErrorCodes.INVENTORY_NOT_IN_BRANCH,
+      'No hay inventario registrado para este producto en la sucursal seleccionada',
+      HttpStatus.NOT_FOUND,
+    );
+  }
+
   static productNotFound(productId?: string): InventoryException {
     const suffix = productId ? ` (id: ${productId})` : '';
     return new InventoryException(

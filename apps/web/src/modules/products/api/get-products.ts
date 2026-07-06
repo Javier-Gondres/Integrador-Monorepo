@@ -11,6 +11,7 @@ export async function getProducts(filters?: ProductFilters) {
       take: filters?.take,
       search: filters?.search,
       categoryId: filters?.categoryId,
+      excludeSupplierId: filters?.excludeSupplierId,
       isActive: filters?.isActive,
     },
   });
