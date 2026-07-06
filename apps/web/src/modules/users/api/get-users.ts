@@ -7,7 +7,7 @@ export async function getUsers(filters?: UserFilters) {
   return apiFetch<UsersApiPage>(ENDPOINTS.users.root, {
     params: {
       page: filters?.page,
-      limit: filters?.take,
+      take: filters?.take,
       search: filters?.search,
       role: filters?.role,
       isActive: filters?.isActive,

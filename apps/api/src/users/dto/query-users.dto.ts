@@ -32,10 +32,10 @@ export class QueryUsersDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsInt({ message: 'limit debe ser un entero' })
-  @Min(1, { message: 'limit debe ser al menos 1' })
-  @Max(100, { message: 'limit no puede ser mayor a 100' })
-  limit?: number;
+  @IsInt({ message: 'take debe ser un entero' })
+  @Min(1, { message: 'take debe ser al menos 1' })
+  @Max(100, { message: 'take no puede ser mayor a 100' })
+  take?: number;
 
   @IsOptional()
   @IsString({ message: 'search debe ser texto' })
@@ -53,7 +53,7 @@ export class QueryUsersDto {
 
 export type NormalizedQueryUsers = {
   page: number;
-  limit: number;
+  take: number;
   search?: string;
   role?: RoleName;
   isActive?: boolean;

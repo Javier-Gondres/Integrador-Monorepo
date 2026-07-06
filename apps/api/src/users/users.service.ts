@@ -19,7 +19,7 @@ import type { PublicUserWithMembership } from './users.repository';
 import { UsersRepository } from './users.repository';
 
 const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 10;
+const DEFAULT_TAKE = 10;
 
 @Injectable()
 export class UsersService {
@@ -40,9 +40,9 @@ export class UsersService {
       items,
       meta: {
         page: normalized.page,
-        limit: normalized.limit,
+        take: normalized.take,
         total,
-        totalPages: Math.ceil(total / normalized.limit) || 0,
+        totalPages: Math.ceil(total / normalized.take) || 0,
       },
     };
   }
@@ -307,12 +307,12 @@ export class UsersService {
 
   private normalizeQuery(query: QueryUsersDto): NormalizedQueryUsers {
     const page = query.page ?? DEFAULT_PAGE;
-    const limit = query.limit ?? DEFAULT_LIMIT;
+    const take = query.take ?? DEFAULT_TAKE;
     const search = query.search?.trim();
 
     return {
       page,
-      limit,
+      take,
       ...(search && { search }),
       ...(query.role !== undefined && { role: query.role }),
       ...(query.isActive !== undefined && { isActive: query.isActive }),

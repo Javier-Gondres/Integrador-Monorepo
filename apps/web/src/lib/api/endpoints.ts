@@ -26,6 +26,7 @@ export const ENDPOINTS = {
   },
   categories: {
     root: "/categories",
+    all: "/categories/all",
     byId: (id: string) => `/categories/${id}`,
     activate: (id: string) => `/categories/${id}/activate`,
     deactivate: (id: string) => `/categories/${id}/deactivate`,
@@ -42,6 +43,7 @@ export const ENDPOINTS = {
   suppliers: {
     root: "/suppliers",
     byId: (id: string) => `/suppliers/${id}`,
+    restore: (id: string) => `/suppliers/${id}/restore`,
     products: {
       root: (supplierId: string) => `/suppliers/${supplierId}/products`,
       byId: (supplierId: string, productId: string) =>
@@ -55,6 +57,7 @@ export const ENDPOINTS = {
   employees: {
     root: "/employees",
     byId: (id: string) => `/employees/${id}`,
+    restore: (id: string) => `/employees/${id}/restore`,
   },
   branches: {
     root: "/branches",
@@ -70,6 +73,7 @@ export const ENDPOINTS = {
     byId: (id: string) => `/users/${id}`,
     activate: (id: string) => `/users/${id}/activate`,
     deactivate: (id: string) => `/users/${id}/deactivate`,
+    restore: (id: string) => `/users/${id}/restore`,
   },
   platform: {
     overview: "/platform/overview",
@@ -86,6 +90,18 @@ export const ENDPOINTS = {
     root: "/returns",
     byId: (id: string) => `/returns/${id}`,
     saleLookup: "/returns/sale-lookup",
+  },
+  sales: {
+    root: "/sales",
+    byId: (id: string) => `/sales/${id}`,
+    products: "/sales/products",
+    currentShift: "/sales/current-shift",
+    creditNotes: "/sales/credit-notes",
+  },
+  reservations: {
+    root: "/reservations",
+    byId: (id: string) => `/reservations/${id}`,
+    cancel: (id: string) => `/reservations/${id}/cancel`,
   },
   cashRegisters: {
     root: "/cash-registers",

@@ -141,6 +141,12 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   },
   { section: "Operación" },
   {
+    label: "Facturación",
+    icon: ShoppingCart,
+    href: "/sales",
+    access: { type: "permission", permission: Permission.SALES_CREATE },
+  },
+  {
     label: "Cajas",
     icon: LayoutDashboard,
     href: "/cajas",

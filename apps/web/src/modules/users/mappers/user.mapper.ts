@@ -25,7 +25,7 @@ export function mapUsersPageToUi(
     items: response.items.map(mapUserDtoToUi),
     meta: {
       page: response.meta.page,
-      take: response.meta.limit,
+      take: response.meta.take,
       total: response.meta.total,
       totalPages: response.meta.totalPages,
     },

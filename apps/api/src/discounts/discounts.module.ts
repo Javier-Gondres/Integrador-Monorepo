@@ -11,5 +11,6 @@ import { DiscountsService } from './discounts.service';
   imports: [AuthModule, ProductsModule, CategoriesModule],
   controllers: [DiscountsController],
   providers: [DiscountsRepository, DiscountsService],
+  exports: [DiscountsService],
 })
 export class DiscountsModule {}

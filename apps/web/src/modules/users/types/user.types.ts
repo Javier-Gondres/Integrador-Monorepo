@@ -61,12 +61,11 @@ export interface UpdateUserPayload {
   role?: string;
 }
 
-/** Respuesta paginada del API (`meta.limit` → normalizado a `take` en el mapper). */
 export interface UsersApiPage {
   items: UserDto[];
   meta: {
     page: number;
-    limit: number;
+    take: number;
     total: number;
     totalPages: number;
   };

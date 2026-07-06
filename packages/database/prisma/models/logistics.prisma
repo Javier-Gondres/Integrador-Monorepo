@@ -105,9 +105,15 @@ model CreditNote {
   amount   Decimal  @db.Decimal(10, 2)
   isActive Boolean  @default(true)
 
-  return      Return       @relation(fields: [returnId], references: [id])
-  customer    Customer?    @relation(fields: [customerId], references: [id])
-  ncfSequence NcfSequence? @relation(fields: [ncfSequenceId], references: [id])
+  // Redención de la nota de crédito como crédito de tienda en una venta.
+  // Solo redención total (sin uso parcial). Al aplicarse: isActive=false.
+  redeemedAt       DateTime?
+  redeemedInSaleId String?
+
+  return         Return       @relation(fields: [returnId], references: [id])
+  customer       Customer?    @relation(fields: [customerId], references: [id])
+  ncfSequence    NcfSequence? @relation(fields: [ncfSequenceId], references: [id])
+  redeemedInSale Sale?        @relation("CreditNoteRedemption", fields: [redeemedInSaleId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -115,4 +121,5 @@ model CreditNote {
   @@index([returnId])
   @@index([customerId])
   @@index([ncfSequenceId])
+  @@index([redeemedInSaleId])
 }

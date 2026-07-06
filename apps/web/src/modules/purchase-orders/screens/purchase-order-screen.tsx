@@ -1,27 +1,31 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { Permission } from "@/modules/auth";
 import { BranchSelect } from "@/modules/branches/components/branch-select";
-import { useBranches } from "@/modules/branches/hooks/use-branches";
+import { useOperationalBranches } from "@/shared/hooks/use-operational-branches";
+import { Can } from "@/shared/ui/can";
 
 import { PurchaseOrderContainer } from "../containers/purchase-order-container";
 
 export function PurchaseOrderScreen() {
-  const { user } = useAuth();
-  const { data: branches, isLoading: branchesLoading } = useBranches();
+  const {
+    branches,
+    canSelectBranch,
+    defaultBranchId,
+    isLoading: branchesLoading,
+  } = useOperationalBranches();
 
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
 
-  // Sucursal inicial: la activa del usuario, o la primera disponible.
   useEffect(() => {
-    if (selectedBranchId) return;
-    const fallback = user?.branchId ?? branches?.[0]?.id ?? null;
-    if (fallback) setSelectedBranchId(fallback);
-  }, [user?.branchId, branches, selectedBranchId]);
+    if (defaultBranchId && (!selectedBranchId || !canSelectBranch)) {
+      setSelectedBranchId(defaultBranchId);
+    }
+  }, [defaultBranchId, selectedBranchId, canSelectBranch]);
 
   return (
     <main className="min-h-screen bg-page">
@@ -51,9 +55,15 @@ export function PurchaseOrderScreen() {
               Sucursal
             </span>
             <BranchSelect
-              branches={branches ?? []}
+              branches={branches}
               value={selectedBranchId}
               loading={branchesLoading}
+              disabled={!canSelectBranch}
+              title={
+                canSelectBranch
+                  ? "Seleccionar sucursal"
+                  : "Sucursal asignada a tu usuario"
+              }
               onChange={setSelectedBranchId}
             />
           </div>
@@ -61,7 +71,17 @@ export function PurchaseOrderScreen() {
       </div>
 
       <div className="px-6 py-6">
-        <PurchaseOrderContainer branchId={selectedBranchId} />
+        <Can
+          permission={Permission.PURCHASES_CREATE}
+          fallback={
+            <div className="flex items-center gap-2 rounded-lg border border-danger-bg bg-danger-bg px-4 py-3 text-sm text-danger">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              No tienes permiso para registrar órdenes de compra.
+            </div>
+          }
+        >
+          <PurchaseOrderContainer branchId={selectedBranchId} />
+        </Can>
       </div>
     </main>
   );

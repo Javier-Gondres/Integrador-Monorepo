@@ -66,13 +66,13 @@ export class UsersRepository {
     query: NormalizedQueryUsers,
   ): Promise<PaginatedUsersResult> {
     const where = this.buildListWhere(companyId, query);
-    const skip = (query.page - 1) * query.limit;
+    const skip = (query.page - 1) * query.take;
 
     const [rows, total] = await Promise.all([
       prisma.user.findMany({
         where,
         skip,
-        take: query.limit,
+        take: query.take,
         orderBy: { createdAt: 'desc' },
         select: {
           ...publicUserSelect,

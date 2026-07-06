@@ -5,6 +5,9 @@ interface BranchSelectProps {
   value: string | null;
   onChange: (branchId: string) => void;
   loading?: boolean;
+  /** Deshabilita el selector (p.ej. cajero con sucursal asignada). */
+  disabled?: boolean;
+  title?: string;
 }
 
 export function BranchSelect({
@@ -12,12 +15,15 @@ export function BranchSelect({
   value,
   onChange,
   loading = false,
+  disabled = false,
+  title,
 }: BranchSelectProps) {
   return (
     <select
       aria-label="Sucursal"
       value={value ?? ""}
-      disabled={loading || branches.length === 0}
+      disabled={loading || branches.length === 0 || disabled}
+      title={title}
       onChange={(e) => onChange(e.target.value)}
       style={{
         height: "40px",

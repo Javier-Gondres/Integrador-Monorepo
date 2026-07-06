@@ -8,11 +8,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import {
-  Company,
-  type CompanyContext,
-  RequireCompany,
-} from 'src/common/company';
 
 import { AuthService } from './auth.service';
 import { AuthContext, RefreshGuardRequestUser } from './auth.types';
@@ -100,9 +95,4 @@ export class AuthController {
     return this.authService.getBasicProfile(auth.userId);
   }
 
-  @RequireCompany()
-  @Get('me')
-  getMe(@Auth() auth: AuthContext, @Company() company: CompanyContext) {
-    return { auth, company };
-  }
 }

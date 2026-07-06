@@ -62,6 +62,10 @@ export const Permission = {
   BRANCHES_DELETE: "branches.delete",
 
   REPORTS_READ: "reports.read",
+
+  RESERVATIONS_CREATE: "reservations.create",
+  RESERVATIONS_READ: "reservations.read",
+  RESERVATIONS_CANCEL: "reservations.cancel",
 } as const;
 
 export type PermissionCode = (typeof Permission)[keyof typeof Permission];
@@ -154,4 +158,14 @@ export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
   { code: Permission.BRANCHES_DELETE, description: "Eliminar sucursales" },
 
   { code: Permission.REPORTS_READ, description: "Ver reportes" },
+
+  {
+    code: Permission.RESERVATIONS_CREATE,
+    description: "Crear reservaciones",
+  },
+  { code: Permission.RESERVATIONS_READ, description: "Ver reservaciones" },
+  {
+    code: Permission.RESERVATIONS_CANCEL,
+    description: "Cancelar reservaciones",
+  },
 ];

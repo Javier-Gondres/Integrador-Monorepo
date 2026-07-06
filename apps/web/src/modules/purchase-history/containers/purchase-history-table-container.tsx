@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
-import { useBranches } from "@/modules/branches/hooks/use-branches";
+import { useOperationalBranches } from "@/shared/hooks/use-operational-branches";
 import { DataTable } from "@/shared/data-table";
 
 import { getPurchaseHistoryColumns } from "../components/purchase-history-table";
@@ -21,7 +21,7 @@ export function PurchaseHistoryTableContainer() {
   const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_PAGE_SIZE);
   const [detail, setDetail] = useState<PurchaseListDto | null>(null);
 
-  const { data: branches } = useBranches();
+  const { branches, canSelectBranch } = useOperationalBranches();
 
   const filters = {
     page: currentPage,
@@ -48,14 +48,22 @@ export function PurchaseHistoryTableContainer() {
           <span className="text-[13px] font-semibold text-head">Sucursal</span>
           <select
             value={branchFilter}
+            disabled={!canSelectBranch}
+            title={
+              !canSelectBranch
+                ? "Solo puedes ver tu sucursal asignada"
+                : undefined
+            }
             onChange={(e) => {
               setBranchFilter(e.target.value);
               resetPage();
             }}
-            className="h-10 min-w-52 rounded-lg border border-input-border bg-white px-3 text-sm text-body outline-none focus:border-primary"
+            className="h-10 min-w-52 rounded-lg border border-input-border bg-white px-3 text-sm text-body outline-none focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <option value={ALL_BRANCHES}>Todas las sucursales</option>
-            {(branches ?? []).map((branch) => (
+            {canSelectBranch && (
+              <option value={ALL_BRANCHES}>Todas las sucursales</option>
+            )}
+            {branches.map((branch) => (
               <option key={branch.id} value={branch.id}>
                 {branch.name}
               </option>
