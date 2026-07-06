@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 
 import { Permission } from "@/modules/auth";
 import { BranchSelect } from "@/modules/branches/components/branch-select";
-import { Can } from "@/shared/ui/can";
 import { useOperationalBranches } from "@/shared/hooks/use-operational-branches";
+import { Can } from "@/shared/ui/can";
 
 import { SaleScreenContainer } from "../containers/sale-screen-container";
 import { useCurrentShift } from "../hooks/use-current-shift";

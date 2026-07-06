@@ -16,7 +16,9 @@ export function useCreateSale() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: saleKeys.all });
       void queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
-      void queryClient.invalidateQueries({ queryKey: inventoryMovementKeys.all });
+      void queryClient.invalidateQueries({
+        queryKey: inventoryMovementKeys.all,
+      });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "No se pudo registrar la venta"));

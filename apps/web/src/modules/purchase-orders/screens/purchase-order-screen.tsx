@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 

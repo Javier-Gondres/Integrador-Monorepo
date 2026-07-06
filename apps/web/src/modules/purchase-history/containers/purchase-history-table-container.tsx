@@ -3,8 +3,8 @@
 import { useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
-import { useOperationalBranches } from "@/shared/hooks/use-operational-branches";
 import { DataTable } from "@/shared/data-table";
+import { useOperationalBranches } from "@/shared/hooks/use-operational-branches";
 
 import { getPurchaseHistoryColumns } from "../components/purchase-history-table";
 import { usePurchases } from "../hooks/use-purchases";

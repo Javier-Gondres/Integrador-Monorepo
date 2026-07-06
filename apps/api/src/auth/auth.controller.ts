@@ -94,5 +94,4 @@ export class AuthController {
   getProfile(@Auth() auth: AuthContext) {
     return this.authService.getBasicProfile(auth.userId);
   }
-
 }
