@@ -17,6 +17,7 @@ import { InventoryMovementRepository } from './inventory-movement.repository';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
+const RECURRING_WASTE_THRESHOLD = 2;
 
 @Injectable()
 export class InventoryMovementService {
@@ -54,6 +55,20 @@ export class InventoryMovementService {
         totalPages: Math.ceil(total / normalized.take) || 0,
       },
     };
+  }
+
+  async getRecurringWasteAlerts(company: CompanyContext, branchId?: string) {
+    const resolvedBranchId = await this.branchAccessService.resolveBranchId(
+      company.companyId,
+      branchId,
+      company.branchId,
+    );
+
+    return this.inventoryMovementRepository.findRecurringWasteAlerts(
+      company.companyId,
+      resolvedBranchId,
+      RECURRING_WASTE_THRESHOLD,
+    );
   }
 
   async createAdjustment(

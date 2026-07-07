@@ -40,6 +40,26 @@ export type CreateWasteData = {
   };
 };
 
+export type InventoryAlert = {
+  type: 'RECURRING_WASTE' | 'LOW_STOCK';
+  company: {
+    id: string;
+    name: string;
+  };
+  branch: {
+    id: string;
+    name: string;
+  };
+  product: {
+    id: string;
+    code: string;
+    name: string;
+  };
+  latestDate: Date;
+  wasteCount: number;
+  periodDays: number;
+};
+
 @Injectable()
 export class InventoryMovementRepository {
   async findPaginatedByBranch(
@@ -62,6 +82,97 @@ export class InventoryMovementRepository {
     ]);
 
     return { items, total };
+  }
+
+  async findRecurringWasteAlerts(
+    companyId: string,
+    branchId: string,
+    threshold: number,
+  ): Promise<InventoryAlert[]> {
+    // Tomamos la fecha de hace 7 días para filtrar los movimientos de inventario recientes
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const movements = await prisma.inventoryMovement.findMany({
+      where: {
+        branch: { companyId },
+        type: InventoryMovementType.WASTE,
+        branchId,
+        createdAt: { gte: sevenDaysAgo },
+      },
+      select: {
+        branchId: true,
+        productId: true,
+        createdAt: true,
+        branch: {
+          select: {
+            id: true,
+            name: true,
+            company: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        product: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const groupedAlerts = new Map<string, InventoryAlert>();
+    const wasteCounts = new Map<string, number>();
+
+    movements.forEach((movement) => {
+      const key = `${movement.branchId}:${movement.productId}`;
+      const existing = groupedAlerts.get(key);
+
+      if (!existing) {
+        groupedAlerts.set(key, {
+          type: 'RECURRING_WASTE',
+          company: {
+            id: movement.branch.company.id,
+            name: movement.branch.company.name,
+          },
+          branch: {
+            id: movement.branch.id,
+            name: movement.branch.name,
+          },
+          product: {
+            id: movement.product.id,
+            code: movement.product.code,
+            name: movement.product.name,
+          },
+          latestDate: movement.createdAt,
+          wasteCount: 1,
+          periodDays: 7,
+        });
+        wasteCounts.set(key, 1);
+        return;
+      }
+
+      const nextCount = (wasteCounts.get(key) ?? 0) + 1;
+      wasteCounts.set(key, nextCount);
+
+      if (movement.createdAt > existing.latestDate) {
+        existing.latestDate = movement.createdAt;
+      }
+
+      existing.wasteCount = nextCount;
+    });
+
+    return Array.from(groupedAlerts.values())
+      .filter((alert) => alert.wasteCount >= threshold)
+      .sort(
+        (left, right) => left.latestDate.getTime() - right.latestDate.getTime(),
+      );
   }
 
   async createAdjustment(
