@@ -49,6 +49,10 @@ function renderAlertDescription(alert: InventoryAlert) {
 export function InventoryAlertsSection() {
   const { data, isLoading } = useRecurringWasteAlerts();
 
+  const recurringWasteAlerts = (data ?? []).filter(
+    (alert) => alert.type === "RECURRING_WASTE",
+  );
+
   const columns: DataTableColumn<InventoryAlert>[] = [
     {
       id: "type",
@@ -131,7 +135,7 @@ export function InventoryAlertsSection() {
                 letterSpacing: "0.08em",
               }}
             >
-              Alertas de Inventario
+              Merma recurrente
             </div>
             <div
               style={{
@@ -142,10 +146,10 @@ export function InventoryAlertsSection() {
                 margin: "8px 0",
               }}
             >
-              {isLoading ? "…" : (data?.length ?? 0)}
+              {isLoading ? "…" : recurringWasteAlerts.length}
             </div>
             <div style={{ fontSize: "13px", color: "#667085" }}>
-              Alertas recurrentes de merma
+              Productos con mermas recurrentes
             </div>
           </div>
         </div>
