@@ -55,9 +55,16 @@ export type InventoryAlert = {
     code: string;
     name: string;
   };
-  latestDate: Date;
-  wasteCount: number;
-  periodDays: number;
+  // For both alert types the latest relevant date (optional)
+  latestDate?: Date;
+
+  // RECURRING_WASTE specific
+  wasteCount?: number;
+  periodDays?: number;
+
+  // LOW_STOCK specific
+  currentStock?: string;
+  minimumStock?: string;
 };
 
 @Injectable()
@@ -161,18 +168,71 @@ export class InventoryMovementRepository {
       const nextCount = (wasteCounts.get(key) ?? 0) + 1;
       wasteCounts.set(key, nextCount);
 
-      if (movement.createdAt > existing.latestDate) {
+      if (movement.createdAt > (existing.latestDate ?? new Date(0))) {
         existing.latestDate = movement.createdAt;
       }
 
       existing.wasteCount = nextCount;
     });
 
-    return Array.from(groupedAlerts.values())
-      .filter((alert) => alert.wasteCount >= threshold)
-      .sort(
-        (left, right) => left.latestDate.getTime() - right.latestDate.getTime(),
-      );
+    const recurringAlerts = Array.from(groupedAlerts.values()).filter(
+      (alert) => (alert.wasteCount ?? 0) >= threshold,
+    );
+
+    // Find low stock inventories for the company (and optional branch)
+    const inventories = await prisma.inventory.findMany({
+      where: {
+        branch: { companyId },
+        ...(branchId && { branchId }),
+      },
+      select: {
+        branchId: true,
+        productId: true,
+        quantity: true,
+        minimumQuantity: true,
+        updatedAt: true,
+        branch: {
+          select: {
+            id: true,
+            name: true,
+            company: { select: { id: true, name: true } },
+          },
+        },
+        product: {
+          select: { id: true, code: true, name: true },
+        },
+      },
+    });
+
+    const lowStockAlerts: InventoryAlert[] = inventories
+      .filter((inv) => Number(inv.quantity) <= Number(inv.minimumQuantity))
+      .map((inv) => ({
+        type: 'LOW_STOCK',
+        company: {
+          id: inv.branch.company.id,
+          name: inv.branch.company.name,
+        },
+        branch: {
+          id: inv.branch.id,
+          name: inv.branch.name,
+        },
+        product: {
+          id: inv.product.id,
+          code: inv.product.code,
+          name: inv.product.name,
+        },
+        latestDate: inv.updatedAt,
+        currentStock: inv.quantity.toString(),
+        minimumStock: inv.minimumQuantity.toString(),
+      }));
+
+    const combined = [...recurringAlerts, ...lowStockAlerts];
+
+    return combined.sort((left, right) => {
+      const lTime = left.latestDate ? left.latestDate.getTime() : 0;
+      const rTime = right.latestDate ? right.latestDate.getTime() : 0;
+      return lTime - rTime;
+    });
   }
 
   async createAdjustment(

@@ -17,4 +17,8 @@ export interface InventoryAlert {
   latestWasteDate?: string;
   wasteCount?: number;
   periodDays?: number;
+
+  // LOW_STOCK specific
+  currentStock?: string | number;
+  minimumStock?: string | number;
 }

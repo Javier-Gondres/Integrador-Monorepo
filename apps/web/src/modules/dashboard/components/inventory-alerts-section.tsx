@@ -27,23 +27,40 @@ function formatDate(value?: string) {
 }
 
 function renderAlertDescription(alert: InventoryAlert) {
-  if (alert.type !== "RECURRING_WASTE") {
-    return null;
+  if (alert.type === "RECURRING_WASTE") {
+    const wasteCount = alert.wasteCount ?? 0;
+    const periodDays = alert.periodDays ?? 7;
+
+    return (
+      <span className="text-sm text-slate-600">
+        Se registraron{" "}
+        <span className="font-semibold text-slate-900">{wasteCount}</span>{" "}
+        mermas en los últimos{" "}
+        <span className="font-semibold text-slate-900">{periodDays}</span> días
+        para este producto en la sucursal{" "}
+        <span className="font-semibold text-slate-900">
+          {alert.branch.name}
+        </span>
+        .
+      </span>
+    );
   }
 
-  const wasteCount = alert.wasteCount ?? 0;
-  const periodDays = alert.periodDays ?? 7;
+  if (alert.type === "LOW_STOCK") {
+    const currentStock = alert.currentStock ?? "—";
+    const minimumStock = alert.minimumStock ?? "—";
 
-  return (
-    <span className="text-sm text-slate-600">
-      Se registraron{" "}
-      <span className="font-semibold text-slate-900">{wasteCount}</span> mermas
-      en los últimos{" "}
-      <span className="font-semibold text-slate-900">{periodDays}</span> días
-      para este producto en la sucursal{" "}
-      <span className="font-semibold text-slate-900">{alert.branch.name}</span>.
-    </span>
-  );
+    return (
+      <span className="text-sm text-slate-600">
+        Stock actual:{" "}
+        <span className="font-semibold text-slate-900">{currentStock}</span>.
+        Mínimo requerido:{" "}
+        <span className="font-semibold text-slate-900">{minimumStock}</span>.
+      </span>
+    );
+  }
+
+  return null;
 }
 
 export function InventoryAlertsSection() {
@@ -58,15 +75,37 @@ export function InventoryAlertsSection() {
       id: "type",
       header: "Tipo de Alerta",
       align: "left",
-      cell: () => (
-        <Badge variant="warning">
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
-          >
-            <AlertTriangle size={12} /> Merma recurrente
-          </span>
-        </Badge>
-      ),
+      cell: (row) => {
+        if (row.type === "RECURRING_WASTE") {
+          return (
+            <Badge variant="warning">
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <AlertTriangle size={12} /> Merma recurrente
+              </span>
+            </Badge>
+          );
+        }
+
+        return (
+          <Badge variant="error">
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <PackageSearch size={12} /> Stock mínimo
+            </span>
+          </Badge>
+        );
+      },
     },
     {
       id: "product",
@@ -149,7 +188,7 @@ export function InventoryAlertsSection() {
               {isLoading ? "…" : recurringWasteAlerts.length}
             </div>
             <div style={{ fontSize: "13px", color: "#667085" }}>
-              Productos con mermas recurrentes
+              Productos con mermas recurrentes Alertas de Inventario
             </div>
           </div>
         </div>
@@ -161,9 +200,9 @@ export function InventoryAlertsSection() {
         data={data ?? []}
         loading={isLoading}
         loadingMessage="Cargando alertas..."
-        emptyMessage="No hay alertas recurrentes de merma para mostrar."
+        emptyMessage="No hay alertas de inventario para mostrar."
         total={data?.length ?? 0}
-        getRowKey={(row) => `${row.branch.id}-${row.product.id}`}
+        getRowKey={(row) => `${row.type}-${row.branch.id}-${row.product.id}`}
         pagination={{
           currentPage: 1,
           rowsPerPage: data?.length ?? 0,
