@@ -9,14 +9,6 @@ import { Badge } from "@/shared/ui/badge";
 import { useRecurringWasteAlerts } from "../hooks/use-recurring-waste-alerts";
 import type { InventoryAlert } from "../types/recurring-waste-alerts";
 
-const cardStyle = {
-  backgroundColor: "#ffffff",
-  borderRadius: "18px",
-  border: "1px solid #e2e8f0",
-  padding: "20px",
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.05)",
-} as const;
-
 function formatDate(value?: string) {
   if (!value) {
     return "—";
