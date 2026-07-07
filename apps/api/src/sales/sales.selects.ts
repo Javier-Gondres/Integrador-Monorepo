@@ -28,6 +28,15 @@ export const saleListSelect = {
   createdAt: true,
   branch: { select: branchSummarySelect },
   customer: { select: customerSummarySelect },
+  cashier: {
+    select: {
+      id: true,
+      user: { select: { firstName: true, lastName: true } },
+    },
+  },
+  cashShift: {
+    select: { cashRegister: { select: { id: true, name: true } } },
+  },
   _count: { select: { items: true } },
 } as const satisfies Prisma.SaleSelect;
 

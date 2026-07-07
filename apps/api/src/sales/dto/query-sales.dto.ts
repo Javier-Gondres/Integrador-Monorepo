@@ -33,6 +33,18 @@ export class QuerySalesDto {
   branchId?: string;
 
   @IsOptional()
+  @IsString({ message: 'customerId debe ser texto' })
+  customerId?: string;
+
+  @IsOptional()
+  @IsString({ message: 'cashierId debe ser texto' })
+  cashierId?: string;
+
+  @IsOptional()
+  @IsString({ message: 'cashRegisterId debe ser texto' })
+  cashRegisterId?: string;
+
+  @IsOptional()
   @IsEnum(SaleStatus, { message: 'El estado de la venta no es válido' })
   status?: SaleStatus;
 
@@ -50,6 +62,9 @@ export type NormalizedQuerySales = {
   take: number;
   search?: string;
   branchId?: string;
+  customerId?: string;
+  cashierId?: string;
+  cashRegisterId?: string;
   status?: SaleStatus;
   dateFrom?: string;
   dateTo?: string;

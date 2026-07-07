@@ -229,6 +229,11 @@ export class SalesService {
       take: query.take ?? DEFAULT_TAKE,
       ...(query.search?.trim() && { search: query.search.trim() }),
       ...(query.branchId?.trim() && { branchId: query.branchId.trim() }),
+      ...(query.customerId?.trim() && { customerId: query.customerId.trim() }),
+      ...(query.cashierId?.trim() && { cashierId: query.cashierId.trim() }),
+      ...(query.cashRegisterId?.trim() && {
+        cashRegisterId: query.cashRegisterId.trim(),
+      }),
       ...(query.status && { status: query.status }),
       ...(query.dateFrom && { dateFrom: query.dateFrom }),
       ...(query.dateTo && { dateTo: query.dateTo }),
@@ -290,6 +295,10 @@ function mapSaleListItem(record: SaleListRecord) {
     createdAt: record.createdAt,
     branchName: record.branch.name,
     customerName: customerName(record.customer),
+    cashierName: record.cashier?.user
+      ? `${record.cashier.user.firstName} ${record.cashier.user.lastName}`
+      : null,
+    cashRegisterName: record.cashShift?.cashRegister?.name ?? null,
     itemsCount: record._count.items,
   };
 }

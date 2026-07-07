@@ -147,6 +147,12 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
     access: { type: "permission", permission: Permission.SALES_CREATE },
   },
   {
+    label: "Historial de ventas",
+    icon: ReceiptText,
+    href: "/sales-history",
+    access: { type: "permission", permission: Permission.SALES_READ },
+  },
+  {
     label: "Cajas",
     icon: LayoutDashboard,
     href: "/cajas",
