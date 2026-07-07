@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, PackageSearch } from "lucide-react";
+import { AlertCircle, AlertTriangle, PackageSearch } from "lucide-react";
 
 import type { DataTableColumn } from "@/shared/data-table";
 import { DataTable } from "@/shared/data-table";
@@ -68,6 +68,9 @@ export function InventoryAlertsSection() {
 
   const recurringWasteAlerts = (data ?? []).filter(
     (alert) => alert.type === "RECURRING_WASTE",
+  );
+  const lowStockAlerts = (data ?? []).filter(
+    (alert) => alert.type === "LOW_STOCK",
   );
 
   const columns: DataTableColumn<InventoryAlert>[] = [
@@ -148,47 +151,95 @@ export function InventoryAlertsSection() {
 
   return (
     <section style={{ marginBottom: "20px" }}>
-      <div className="w-fit mb-4 rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
-            style={{
-              width: "42px",
-              height: "42px",
-              borderRadius: "12px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
-              color: "#fff",
-            }}
-          >
-            <PackageSearch size={18} />
+      <div className="mb-4 flex flex-wrap gap-4">
+        <div className="w-fit rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div
+              style={{
+                width: "42px",
+                height: "42px",
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
+                color: "#fff",
+              }}
+            >
+              <PackageSearch size={18} />
+            </div>
+            <div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#3c50e0",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Merma recurrente
+              </div>
+              <div
+                style={{
+                  fontSize: "32px",
+                  fontWeight: 700,
+                  color: "#101828",
+                  textAlign: "center",
+                  margin: "8px 0",
+                }}
+              >
+                {isLoading ? "…" : recurringWasteAlerts.length}
+              </div>
+              <div style={{ fontSize: "13px", color: "#667085" }}>
+                Productos con mermas recurrentes
+              </div>
+            </div>
           </div>
-          <div>
+        </div>
+
+        <div className="w-fit rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div
               style={{
-                fontSize: "12px",
-                fontWeight: 700,
-                color: "#3c50e0",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
+                width: "42px",
+                height: "42px",
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "linear-gradient(135deg, #ef4444, #f87171)",
+                color: "#fff",
               }}
             >
-              Merma recurrente
+              <PackageSearch size={18} />
             </div>
-            <div
-              style={{
-                fontSize: "32px",
-                fontWeight: 700,
-                color: "#101828",
-                textAlign: "center",
-                margin: "8px 0",
-              }}
-            >
-              {isLoading ? "…" : recurringWasteAlerts.length}
-            </div>
-            <div style={{ fontSize: "13px", color: "#667085" }}>
-              Productos con mermas recurrentes Alertas de Inventario
+            <div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#2563eb",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Stock mínimo
+              </div>
+              <div
+                style={{
+                  fontSize: "32px",
+                  fontWeight: 700,
+                  color: "#101828",
+                  textAlign: "center",
+                  margin: "8px 0",
+                }}
+              >
+                {isLoading ? "…" : lowStockAlerts.length}
+              </div>
+              <div style={{ fontSize: "13px", color: "#667085" }}>
+                Productos bajo el stock mínimo
+              </div>
             </div>
           </div>
         </div>
