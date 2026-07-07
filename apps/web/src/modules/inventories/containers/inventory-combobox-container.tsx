@@ -59,7 +59,7 @@ export function InventoryComboboxContainer({
     data?.pages.flatMap((page) =>
       page.items.map((inventory) => ({
         id: inventory.productId,
-        code: `${inventory.code} · Stock: ${inventory.quantity}`,
+        code: `${inventory.code} · Disponible: ${inventory.available}`,
         name: inventory.name,
         price: inventory.price,
         isActive: inventory.isActive,

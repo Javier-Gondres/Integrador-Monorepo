@@ -17,6 +17,17 @@ export interface InventoryDto {
   productId: string;
   /** Decimal serializado por Prisma (puede llegar como string). */
   quantity: string | number;
+  /**
+   * Unidades bloqueadas por reservas `ACTIVE`.
+   * Solo presente en la respuesta paginada (`GET /inventories`);
+   * los endpoints de mutación no lo incluyen.
+   */
+  reserved?: number;
+  /**
+   * `quantity - reserved`: existencia realmente vendible.
+   * Solo presente en la respuesta paginada (`GET /inventories`).
+   */
+  available?: number;
   /** Decimal serializado por Prisma (puede llegar como string). */
   minimumQuantity: string | number;
   /** Estado propio de la fila de inventario (no del producto). */
@@ -34,6 +45,10 @@ export interface Inventory {
   code: string;
   name: string;
   quantity: number;
+  /** Unidades bloqueadas por reservas `ACTIVE`. */
+  reserved: number;
+  /** `quantity - reserved`: existencia realmente vendible. */
+  available: number;
   minimumQuantity: number;
   price: number;
   /** Estado de la fila de inventario (toggleable). */
