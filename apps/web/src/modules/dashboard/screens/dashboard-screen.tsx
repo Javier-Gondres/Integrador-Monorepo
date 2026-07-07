@@ -2,6 +2,7 @@ import {
   DashboardHeroActions,
   DashboardQuickLinksSection,
 } from "../components/dashboard-quick-links";
+import { InventoryAlertsSection } from "../components/inventory-alerts-section";
 import styles from "./dashboard-screen.module.css";
 
 export function DashboardScreen() {
@@ -20,6 +21,7 @@ export function DashboardScreen() {
         </div>
       </section>
 
+      <InventoryAlertsSection />
       <DashboardQuickLinksSection />
     </main>
   );
