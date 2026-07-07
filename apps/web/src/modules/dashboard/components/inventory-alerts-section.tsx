@@ -123,7 +123,7 @@ export function InventoryAlertsSection() {
               color: "#fff",
             }}
           >
-            <PackageSearch size={18} />
+            <AlertTriangle size={18} />
           </div>
           <div>
             <div
