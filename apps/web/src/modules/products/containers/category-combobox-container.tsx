@@ -57,10 +57,10 @@ export function CategoryComboboxContainer({
       enabled: open,
     });
 
-  const categoriesFromQuery =
-    data?.pages.flatMap((page) => page.items.map(mapCategoryDtoToUi)) ?? [];
-
   const categories = useMemo(() => {
+    const categoriesFromQuery =
+      data?.pages.flatMap((page) => page.items.map(mapCategoryDtoToUi)) ?? [];
+
     const byId = new Map<string, { id: string; name: string }>();
     for (const category of extraCategories) {
       byId.set(category.id, category);
@@ -69,7 +69,7 @@ export function CategoryComboboxContainer({
       byId.set(category.id, { id: category.id, name: category.name });
     }
     return Array.from(byId.values());
-  }, [categoriesFromQuery, extraCategories]);
+  }, [data, extraCategories]);
 
   useEffect(() => {
     if (!open) setSearch("");
