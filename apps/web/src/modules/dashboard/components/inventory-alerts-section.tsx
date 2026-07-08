@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, AlertTriangle, PackageSearch } from "lucide-react";
+import { AlertTriangle, PackageSearch } from "lucide-react";
 
 import type { DataTableColumn } from "@/shared/data-table";
 import { DataTable } from "@/shared/data-table";
@@ -166,7 +166,7 @@ export function InventoryAlertsSection() {
                 color: "#fff",
               }}
             >
-              <PackageSearch size={18} />
+              <AlertTriangle size={18} />
             </div>
             <div>
               <div
@@ -212,7 +212,7 @@ export function InventoryAlertsSection() {
                 color: "#fff",
               }}
             >
-              <AlertTriangle size={18} />
+              <PackageSearch size={18} />
             </div>
             <div>
               <div
@@ -224,7 +224,7 @@ export function InventoryAlertsSection() {
                   letterSpacing: "0.08em",
                 }}
               >
-                Stock mínimo
+                Inventario mínimo
               </div>
               <div
                 style={{
@@ -238,7 +238,7 @@ export function InventoryAlertsSection() {
                 {isLoading ? "…" : lowStockAlerts.length}
               </div>
               <div style={{ fontSize: "13px", color: "#667085" }}>
-                Productos bajo el stock mínimo
+                Productos con inventario bajo al mínimo
               </div>
             </div>
           </div>
