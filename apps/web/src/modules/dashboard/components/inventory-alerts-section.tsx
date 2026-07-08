@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, PackageSearch } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 import type { DataTableColumn } from "@/shared/data-table";
 import { DataTable } from "@/shared/data-table";
