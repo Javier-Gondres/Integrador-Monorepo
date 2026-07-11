@@ -176,8 +176,7 @@ export class SalesRepository {
           // Una venta con porción a crédito queda PENDING hasta que la cuenta
           // por cobrar se salde; el módulo de pagos la marca COMPLETED al
           // liquidar el saldo. Las ventas totalmente al contado quedan COMPLETED.
-          status:
-            creditPortion > 0 ? SaleStatus.PENDING : SaleStatus.COMPLETED,
+          status: creditPortion > 0 ? SaleStatus.PENDING : SaleStatus.COMPLETED,
           ...(generated && {
             ncf: generated.ncf,
             ncfType: generated.ncfType,
