@@ -173,7 +173,11 @@ export class SalesRepository {
           subtotal: new Prisma.Decimal(data.subtotal),
           taxAmount: new Prisma.Decimal(data.taxAmount),
           total: new Prisma.Decimal(data.total),
-          status: SaleStatus.COMPLETED,
+          // Una venta con porción a crédito queda PENDING hasta que la cuenta
+          // por cobrar se salde; el módulo de pagos la marca COMPLETED al
+          // liquidar el saldo. Las ventas totalmente al contado quedan COMPLETED.
+          status:
+            creditPortion > 0 ? SaleStatus.PENDING : SaleStatus.COMPLETED,
           ...(generated && {
             ncf: generated.ncf,
             ncfType: generated.ncfType,
