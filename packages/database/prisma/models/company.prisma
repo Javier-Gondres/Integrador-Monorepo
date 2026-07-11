@@ -4,8 +4,9 @@ model Company {
   slug String
   rnc  String?
 
-  email String?
-  phone String?
+  email   String?
+  phone   String?
+  address String?
 
   isActive  Boolean   @default(true)
   deletedAt DateTime?
