@@ -9,7 +9,9 @@ import { Modal } from "@/shared/ui/modal";
 import type { AccountReceivable } from "../types/accounts-receivable";
 
 const fmtCurrency = (value: number) =>
-  new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(value);
+  new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(
+    value,
+  );
 
 interface FormData {
   amount: number;
@@ -52,17 +54,26 @@ export function RegisterReceivablePaymentModal({
       onClose={onClose}
       maxWidth="600px"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="p-6 flex flex-col gap-4 overflow-y-auto">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="p-6 flex flex-col gap-4 overflow-y-auto"
+      >
         {/* Summary */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4.5 mb-5 text-sm md:text-[15px] grid grid-cols-2 gap-x-4 gap-y-2.5">
           <span className="text-gray-500 font-medium">Fecha Venta:</span>
           <span className="font-semibold text-gray-900">
-            {format(new Date(receivable.sale.createdAt), "dd MMM yyyy", { locale: es })}
+            {format(new Date(receivable.sale.createdAt), "dd MMM yyyy", {
+              locale: es,
+            })}
           </span>
           <span className="text-gray-500 font-medium">Monto Original:</span>
-          <span className="font-semibold text-gray-900">{fmtCurrency(receivable.originalAmount)}</span>
+          <span className="font-semibold text-gray-900">
+            {fmtCurrency(receivable.originalAmount)}
+          </span>
           <span className="text-gray-500 font-medium">Balance Pendiente:</span>
-          <span className="font-bold text-red-600 text-base md:text-lg">{fmtCurrency(receivable.balance)}</span>
+          <span className="font-bold text-red-600 text-base md:text-lg">
+            {fmtCurrency(receivable.balance)}
+          </span>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -80,7 +91,10 @@ export function RegisterReceivablePaymentModal({
             {...register("amount", {
               required: "Monto es requerido",
               min: { value: 0.01, message: "Debe ser mayor a 0" },
-              max: { value: Math.max(0, receivable.balance), message: "No puede ser mayor al balance" },
+              max: {
+                value: Math.max(0, receivable.balance),
+                message: "No puede ser mayor al balance",
+              },
               valueAsNumber: true,
             })}
             error={errors.amount?.message}
@@ -110,7 +124,11 @@ export function RegisterReceivablePaymentModal({
           <Button
             variant="primary"
             type="submit"
-            disabled={isSubmitting || Number(amount) <= 0 || Number(amount) > receivable.balance}
+            disabled={
+              isSubmitting ||
+              Number(amount) <= 0 ||
+              Number(amount) > receivable.balance
+            }
           >
             {isSubmitting ? "Guardando..." : "Confirmar Abono"}
           </Button>

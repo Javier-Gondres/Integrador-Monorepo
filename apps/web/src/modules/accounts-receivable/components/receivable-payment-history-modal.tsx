@@ -8,7 +8,9 @@ import { Modal } from "@/shared/ui/modal";
 import { useAccountReceivable } from "../hooks/use-accounts-receivable";
 
 const fmtCurrency = (value: number) =>
-  new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(value);
+  new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(
+    value,
+  );
 
 const methodLabel: Record<string, string> = {
   CASH: "Efectivo",
@@ -38,9 +40,13 @@ export function ReceivablePaymentHistoryModal({
     >
       <div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
         {isLoading ? (
-          <p className="text-center text-gray-500 py-8">Cargando historial...</p>
+          <p className="text-center text-gray-500 py-8">
+            Cargando historial...
+          </p>
         ) : !data ? (
-          <p className="text-center text-gray-500 py-8">No se encontró la factura.</p>
+          <p className="text-center text-gray-500 py-8">
+            No se encontró la factura.
+          </p>
         ) : (
           <>
             {/* Summary */}
@@ -51,7 +57,9 @@ export function ReceivablePaymentHistoryModal({
               </span>
               <span className="text-gray-500 font-medium">NCF / Factura:</span>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-900">{data.sale.ncf || "N/A"}</span>
+                <span className="font-semibold text-gray-900">
+                  {data.sale.ncf || "N/A"}
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -63,9 +71,13 @@ export function ReceivablePaymentHistoryModal({
                 </Button>
               </div>
               <span className="text-gray-500 font-medium">Monto Original:</span>
-              <span className="font-semibold text-gray-900">{fmtCurrency(data.originalAmount)}</span>
+              <span className="font-semibold text-gray-900">
+                {fmtCurrency(data.originalAmount)}
+              </span>
               <span className="text-gray-500 font-medium">Balance Actual:</span>
-              <span className="font-bold text-red-600 text-base md:text-lg">{fmtCurrency(data.balance)}</span>
+              <span className="font-bold text-red-600 text-base md:text-lg">
+                {fmtCurrency(data.balance)}
+              </span>
             </div>
 
             {/* Payments table */}
@@ -93,11 +105,20 @@ export function ReceivablePaymentHistoryModal({
                   </thead>
                   <tbody>
                     {data.payments.map((payment) => (
-                      <tr key={payment.id} className="border-b border-gray-100 last:border-b-0">
+                      <tr
+                        key={payment.id}
+                        className="border-b border-gray-100 last:border-b-0"
+                      >
                         <td className="px-3 py-2 text-gray-500">
-                          {format(new Date(payment.createdAt), "dd MMM yyyy HH:mm", { locale: es })}
+                          {format(
+                            new Date(payment.createdAt),
+                            "dd MMM yyyy HH:mm",
+                            { locale: es },
+                          )}
                         </td>
-                        <td className="px-3 py-2">{methodLabel[payment.method] ?? payment.method}</td>
+                        <td className="px-3 py-2">
+                          {methodLabel[payment.method] ?? payment.method}
+                        </td>
                         <td className="px-3 py-2 text-gray-400 text-xs">
                           {payment.notes ?? "—"}
                         </td>

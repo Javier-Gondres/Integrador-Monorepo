@@ -19,9 +19,12 @@ export async function fetchCustomerReceivables(
   customerId: string,
   query: AccountsReceivableQuery,
 ): Promise<AccountsReceivableResponse> {
-  return apiFetch<AccountsReceivableResponse>(`/receivables/customers/${customerId}`, {
-    params: query as Record<string, string | number | boolean | undefined>,
-  });
+  return apiFetch<AccountsReceivableResponse>(
+    `/receivables/customers/${customerId}`,
+    {
+      params: query as Record<string, string | number | boolean | undefined>,
+    },
+  );
 }
 
 export async function fetchAccountReceivable(

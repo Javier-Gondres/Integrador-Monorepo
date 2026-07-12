@@ -7,10 +7,15 @@ import { Button } from "@/shared/ui/button";
 import { Modal } from "@/shared/ui/modal";
 
 import { useCustomerReceivables } from "../hooks/use-accounts-receivable";
-import type { AccountReceivable, ReceivableCustomerSummary } from "../types/accounts-receivable";
+import type {
+  AccountReceivable,
+  ReceivableCustomerSummary,
+} from "../types/accounts-receivable";
 
 const fmtCurrency = (value: number) =>
-  new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(value);
+  new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(
+    value,
+  );
 
 const statusConfig = {
   PAID: { label: "Saldada", variant: "success" as const },
@@ -54,9 +59,7 @@ export function CustomerReceivablesModal({
     >
       <div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
         {isLoading ? (
-          <p className="text-center text-gray-500 py-8">
-            Cargando facturas...
-          </p>
+          <p className="text-center text-gray-500 py-8">Cargando facturas...</p>
         ) : !data?.items.length ? (
           <p className="text-center text-gray-500 py-8">
             No hay facturas a crédito pendientes.
@@ -66,7 +69,15 @@ export function CustomerReceivablesModal({
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  {["NCF / Venta", "Sucursal", "Fecha", "Vencimiento", "Estado", "Balance", ""].map((h) => (
+                  {[
+                    "NCF / Venta",
+                    "Sucursal",
+                    "Fecha",
+                    "Vencimiento",
+                    "Estado",
+                    "Balance",
+                    "",
+                  ].map((h) => (
                     <th
                       key={h}
                       className="px-3 py-2.5 text-left font-semibold text-gray-700 text-xs"
@@ -89,12 +100,18 @@ export function CustomerReceivablesModal({
                           {item.sale.ncf || "N/A"}
                         </button>
                       </td>
-                      <td className="px-3 py-2.5 text-gray-500">{item.sale.branchName}</td>
                       <td className="px-3 py-2.5 text-gray-500">
-                        {format(new Date(item.sale.createdAt), "dd MMM yyyy", { locale: es })}
+                        {item.sale.branchName}
                       </td>
                       <td className="px-3 py-2.5 text-gray-500">
-                        {format(new Date(item.dueDate), "dd MMM yyyy", { locale: es })}
+                        {format(new Date(item.sale.createdAt), "dd MMM yyyy", {
+                          locale: es,
+                        })}
+                      </td>
+                      <td className="px-3 py-2.5 text-gray-500">
+                        {format(new Date(item.dueDate), "dd MMM yyyy", {
+                          locale: es,
+                        })}
                       </td>
                       <td className="px-3 py-2.5">
                         <Badge variant={s.variant}>{s.label}</Badge>
@@ -104,11 +121,21 @@ export function CustomerReceivablesModal({
                       </td>
                       <td className="px-3 py-2.5">
                         <div className="flex items-center gap-1.5">
-                          <Button variant="icon" size="sm" onClick={() => onViewHistory(item)} title="Ver historial">
+                          <Button
+                            variant="icon"
+                            size="sm"
+                            onClick={() => onViewHistory(item)}
+                            title="Ver historial"
+                          >
                             <Eye className="w-3.5 h-3.5" />
                           </Button>
                           {item.status !== "PAID" && (
-                            <Button variant="primary" size="sm" onClick={() => onPay(item)} title="Abonar">
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => onPay(item)}
+                              title="Abonar"
+                            >
                               <HandCoins className="w-3.5 h-3.5" />
                             </Button>
                           )}

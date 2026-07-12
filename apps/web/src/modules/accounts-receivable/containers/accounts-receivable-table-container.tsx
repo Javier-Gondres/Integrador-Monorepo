@@ -12,17 +12,27 @@ import { CustomerReceivablesModal } from "../components/customer-receivables-mod
 import { ReceivablePaymentHistoryModal } from "../components/receivable-payment-history-modal";
 import { RegisterReceivablePaymentModal } from "../components/register-receivable-payment-modal";
 import { SaleDetailModal } from "../components/sale-detail-modal";
-import { useCreateReceivablePayment,useReceivableCustomers } from "../hooks/use-accounts-receivable";
-import type { AccountReceivable, ReceivableCustomerSummary } from "../types/accounts-receivable";
+import {
+  useCreateReceivablePayment,
+  useReceivableCustomers,
+} from "../hooks/use-accounts-receivable";
+import type {
+  AccountReceivable,
+  ReceivableCustomerSummary,
+} from "../types/accounts-receivable";
 
 export function AccountsReceivableTableContainer() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_PAGE_SIZE);
   const [branchId, setBranchId] = useState<string>("todas");
 
-  const [selectedCustomer, setSelectedCustomer] = useState<ReceivableCustomerSummary | null>(null);
-  const [paymentReceivable, setPaymentReceivable] = useState<AccountReceivable | null>(null);
-  const [historyReceivableId, setHistoryReceivableId] = useState<string | null>(null);
+  const [selectedCustomer, setSelectedCustomer] =
+    useState<ReceivableCustomerSummary | null>(null);
+  const [paymentReceivable, setPaymentReceivable] =
+    useState<AccountReceivable | null>(null);
+  const [historyReceivableId, setHistoryReceivableId] = useState<string | null>(
+    null,
+  );
   const [saleDetailId, setSaleDetailId] = useState<string | null>(null);
 
   const { data, isLoading, isFetching } = useReceivableCustomers({
@@ -38,7 +48,11 @@ export function AccountsReceivableTableContainer() {
   const total = data?.meta.total ?? 0;
   const totalPages = data?.meta.totalPages ?? 1;
 
-  const handlePay = async (paymentData: { amount: number; method: string; notes?: string }) => {
+  const handlePay = async (paymentData: {
+    amount: number;
+    method: string;
+    notes?: string;
+  }) => {
     if (!paymentReceivable) return;
     try {
       await createPaymentMutation.mutateAsync({
@@ -78,7 +92,9 @@ export function AccountsReceivableTableContainer() {
 
       <DataTable<ReceivableCustomerSummary>
         title="Clientes con Saldo Pendiente"
-        columns={getAccountsReceivableTableColumns({ onViewCustomer: setSelectedCustomer })}
+        columns={getAccountsReceivableTableColumns({
+          onViewCustomer: setSelectedCustomer,
+        })}
         data={customers}
         loading={isLoading}
         loadingMessage="Cargando clientes..."

@@ -6,7 +6,9 @@ import { getSale } from "@/modules/sales/api/get-sale";
 import { Modal } from "@/shared/ui/modal";
 
 const fmtCurrency = (value: number) =>
-  new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(value);
+  new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(
+    value,
+  );
 
 interface SaleDetailModalProps {
   saleId: string;
@@ -53,34 +55,71 @@ export function SaleDetailModal({ saleId, onClose }: SaleDetailModalProps) {
           >
             <span style={{ color: "#6B7280" }}>Fecha:</span>
             <span style={{ fontWeight: 500 }}>
-              {format(new Date(data.createdAt), "dd MMM yyyy HH:mm", { locale: es })}
+              {format(new Date(data.createdAt), "dd MMM yyyy HH:mm", {
+                locale: es,
+              })}
             </span>
             <span style={{ color: "#6B7280" }}>Cliente:</span>
             <span style={{ fontWeight: 500 }}>
               {data.customerName || "Consumidor Final"}
             </span>
             <span style={{ color: "#6B7280" }}>Subtotal:</span>
-            <span style={{ fontWeight: 500 }}>{fmtCurrency(Number(data.subtotal))}</span>
+            <span style={{ fontWeight: 500 }}>
+              {fmtCurrency(Number(data.subtotal))}
+            </span>
             <span style={{ color: "#6B7280" }}>ITBIS:</span>
-            <span style={{ fontWeight: 500 }}>{fmtCurrency(Number(data.taxAmount))}</span>
+            <span style={{ fontWeight: 500 }}>
+              {fmtCurrency(Number(data.taxAmount))}
+            </span>
             <span style={{ color: "#6B7280", fontWeight: 600 }}>Total:</span>
-            <span style={{ fontWeight: 700, fontSize: "15px", color: "#4F46E5" }}>
+            <span
+              style={{ fontWeight: 700, fontSize: "15px", color: "#4F46E5" }}
+            >
               {fmtCurrency(Number(data.total))}
             </span>
           </div>
 
           {/* Items table */}
-          <h4 style={{ margin: "0 0 10px 0", fontSize: "14px", fontWeight: 600, color: "#111827" }}>
+          <h4
+            style={{
+              margin: "0 0 10px 0",
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "#111827",
+            }}
+          >
             Productos
           </h4>
-          <div style={{ border: "1px solid #E5E7EB", borderRadius: "8px", overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+          <div
+            style={{
+              border: "1px solid #E5E7EB",
+              borderRadius: "8px",
+              overflow: "hidden",
+            }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "13px",
+              }}
+            >
               <thead>
-                <tr style={{ backgroundColor: "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
+                <tr
+                  style={{
+                    backgroundColor: "#F9FAFB",
+                    borderBottom: "1px solid #E5E7EB",
+                  }}
+                >
                   {["Producto", "Cant.", "Precio", "Total"].map((h) => (
                     <th
                       key={h}
-                      style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#374151" }}
+                      style={{
+                        padding: "8px 12px",
+                        textAlign: "left",
+                        fontWeight: 600,
+                        color: "#374151",
+                      }}
                     >
                       {h}
                     </th>
@@ -89,15 +128,32 @@ export function SaleDetailModal({ saleId, onClose }: SaleDetailModalProps) {
               </thead>
               <tbody>
                 {data.items.map((item) => (
-                  <tr key={item.id} style={{ borderBottom: "1px solid #F3F4F6" }}>
-                    <td style={{ padding: "8px 12px", fontWeight: 500, color: "#111827" }}>
+                  <tr
+                    key={item.id}
+                    style={{ borderBottom: "1px solid #F3F4F6" }}
+                  >
+                    <td
+                      style={{
+                        padding: "8px 12px",
+                        fontWeight: 500,
+                        color: "#111827",
+                      }}
+                    >
                       {item.name}
                     </td>
-                    <td style={{ padding: "8px 12px", color: "#6B7280" }}>{item.quantity}</td>
+                    <td style={{ padding: "8px 12px", color: "#6B7280" }}>
+                      {item.quantity}
+                    </td>
                     <td style={{ padding: "8px 12px", color: "#6B7280" }}>
                       {fmtCurrency(Number(item.unitPrice))}
                     </td>
-                    <td style={{ padding: "8px 12px", fontWeight: 600, color: "#111827" }}>
+                    <td
+                      style={{
+                        padding: "8px 12px",
+                        fontWeight: 600,
+                        color: "#111827",
+                      }}
+                    >
                       {fmtCurrency(Number(item.subtotal))}
                     </td>
                   </tr>
