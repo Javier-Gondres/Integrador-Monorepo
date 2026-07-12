@@ -33,8 +33,6 @@ const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
     fontWeight: 500,
   },
   icon: {
-    width: "40px",
-    height: "40px",
     padding: 0,
     backgroundColor: C.cardBg,
     border: `1px solid ${C.cardBorder}`,
@@ -57,10 +55,11 @@ export function Button({
         alignItems: "center",
         justifyContent: "center",
         gap: "8px",
-        borderRadius: variant === "icon" ? "8px" : "8px",
+        borderRadius: "8px",
         cursor: props.disabled ? "not-allowed" : "pointer",
         opacity: props.disabled ? 0.7 : 1,
-        ...sizeStyles[variant === "icon" ? "md" : size],
+        ...sizeStyles[size],
+        ...(variant === "icon" ? { width: sizeStyles[size].height } : {}),
         ...variantStyles[variant],
         ...style,
       }}
