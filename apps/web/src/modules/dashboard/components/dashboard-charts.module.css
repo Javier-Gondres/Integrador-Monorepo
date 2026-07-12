@@ -1,0 +1,414 @@
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025);
+  display: flex;
+  flex-direction: column;
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.chartTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.chartDescription {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.periodToggles {
+  display: flex;
+  background: #f1f5f9;
+  padding: 0.25rem;
+  border-radius: 8px;
+  gap: 0.25rem;
+}
+
+.periodBtn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.periodBtnActive {
+  background: white;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.legendContainer {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+
+.legendDisabled {
+  opacity: 0.4;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.salesDot {
+  background: #10b981;
+}
+
+.purchasesDot {
+  background: #f43f5e;
+}
+
+.legendText {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.plotContainer {
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 220px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+  position: relative;
+}
+
+.barChart {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
+.chartCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+  position: relative;
+}
+
+.barGroup {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.bar {
+  width: 10px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: opacity 0.2s;
+}
+
+.bar:hover {
+  opacity: 0.85;
+}
+
+.salesBar {
+  background: #10b981;
+}
+
+.purchasesBar {
+  background: #f43f5e;
+}
+
+.colLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+/* Tooltip style */
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  background: #0f172a;
+  color: white;
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 100;
+  pointer-events: none;
+  min-width: 100px;
+  text-align: center;
+}
+
+.tooltipDate {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+
+.tooltipValue {
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Category Content layout */
+.categoryContent {
+  display: flex;
+  gap: 1.5rem;
+  flex-grow: 1;
+}
+
+@media (max-width: 768px) {
+  .categoryContent {
+    flex-direction: column;
+  }
+}
+
+.donutSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.donutWrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.donutSegment {
+  cursor: pointer;
+  transition: stroke-width 0.2s ease-in-out;
+}
+
+.donutSegment:hover {
+  stroke-width: 16px;
+}
+
+.donutText {
+  font-size: 0.75rem;
+  font-weight: 700;
+  fill: #64748b;
+}
+
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.categoryListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.categoryListItem:hover, .categoryListItemActive {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.categoryNameContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.categoryDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.categoryListName {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.categoryListVal {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Category Products Panel */
+.categoryProductsPanel {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelHeader {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.panelTitle {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.panelTitle span {
+  color: #3b82f6;
+}
+
+.panelList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-grow: 1;
+}
+
+.prodItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.prodItem:last-child {
+  border-bottom: none;
+}
+
+.prodInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.prodRank {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.prodName {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prodMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.prodQty {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.prodTotal {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.noData {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+  text-align: center;
+  margin: auto;
+}
+
+/* Skeletons */
+.skeletonHeader {
+  width: 60%;
+  height: 24px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  animation: pulse 1.5s infinite;
+}
+
+.skeletonPlot {
+  flex-grow: 1;
+  height: 200px;
+  background: #e2e8f0;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
