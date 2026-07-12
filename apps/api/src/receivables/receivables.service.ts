@@ -117,7 +117,10 @@ export class ReceivablesService {
 
     if (newBalance.equals(0)) {
       newStatus = ReceivableStatus.PAID;
-    } else if (newStatus === ReceivableStatus.OPEN || newStatus === ReceivableStatus.OVERDUE) {
+    } else if (
+      newStatus === ReceivableStatus.OPEN ||
+      newStatus === ReceivableStatus.OVERDUE
+    ) {
       newStatus = ReceivableStatus.PARTIAL;
     }
 

@@ -15,7 +15,10 @@ export class ReceivablesController {
 
   @RequireCompany()
   @Get()
-  findAll(@Company() company: CompanyContext, @Query() query: QueryReceivablesDto) {
+  findAll(
+    @Company() company: CompanyContext,
+    @Query() query: QueryReceivablesDto,
+  ) {
     return this.receivablesService.findCustomers(company, query);
   }
 
@@ -26,7 +29,11 @@ export class ReceivablesController {
     @Company() company: CompanyContext,
     @Query() query: QueryReceivablesDto,
   ) {
-    return this.receivablesService.findReceivablesByCustomer(customerId, company, query);
+    return this.receivablesService.findReceivablesByCustomer(
+      customerId,
+      company,
+      query,
+    );
   }
 
   @RequireCompany()
