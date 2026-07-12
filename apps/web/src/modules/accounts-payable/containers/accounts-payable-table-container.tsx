@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
 import { useBranches } from "@/modules/branches/hooks/use-branches";
