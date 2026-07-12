@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PayableStatus,Prisma } from '@repo/db';
+import { PayableStatus, Prisma } from '@repo/db';
 import type { CompanyContext } from 'src/common/company';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
 
