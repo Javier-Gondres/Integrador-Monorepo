@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@repo/db';
+import { endOfDay, format, startOfDay, subDays } from 'date-fns';
 import type { CompanyContext } from 'src/common/company';
-import { startOfDay, endOfDay, subDays, format } from 'date-fns';
 
 @Injectable()
 export class DashboardService {

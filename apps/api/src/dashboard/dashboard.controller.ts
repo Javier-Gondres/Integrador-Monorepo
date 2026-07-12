@@ -1,7 +1,8 @@
-import { Controller, Get, Query, ParseIntPipe, Optional } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { Permission } from '@repo/shared';
 import { Company, type CompanyContext } from 'src/common/company';
 import { RequirePermissions } from 'src/common/permissions';
+
 import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
