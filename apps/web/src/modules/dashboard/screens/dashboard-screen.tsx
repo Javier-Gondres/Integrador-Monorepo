@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 
 import { useBranches } from "@/modules/branches/hooks/use-branches";
