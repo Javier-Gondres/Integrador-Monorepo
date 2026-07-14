@@ -15,12 +15,14 @@ export class DashboardController {
     @Company() company: CompanyContext,
     @Query('branchId') branchId?: string,
     @Query('days') days?: string,
+    @Query('month') month?: string,
   ) {
     const daysNum = days ? parseInt(days, 10) : 7;
     return this.dashboardService.getSummary(
       company,
       branchId,
       isNaN(daysNum) ? 7 : daysNum,
+      month,
     );
   }
 }
