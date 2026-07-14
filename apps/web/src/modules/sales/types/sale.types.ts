@@ -81,8 +81,21 @@ export interface SaleDetailDto {
   total: number;
   createdAt: string;
   reservationId: string | null;
-  branch: { id: string; name: string };
+  company: {
+    name: string;
+    rnc: string | null;
+    address: string | null;
+    phone: string | null;
+  };
+  branch: { id: string; name: string; address: string | null };
   customerName: string | null;
+  customer: {
+    name: string;
+    rnc: string | null;
+    cedula: string | null;
+    address: string | null;
+    phone: string | null;
+  } | null;
   cashierName: string | null;
   items: SaleItemDetailDto[];
   payments: SalePaymentDetailDto[];

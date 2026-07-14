@@ -11,6 +11,33 @@ const customerSummarySelect = {
   lastName: true,
 } as const;
 
+/** Datos fiscales del cliente para la Representación Impresa / factura. */
+const customerFiscalSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  rnc: true,
+  cedula: true,
+  address: true,
+  phone: true,
+} as const;
+
+/** Emisor (sucursal + empresa) para el encabezado de la factura impresa. */
+const branchFiscalSelect = {
+  id: true,
+  name: true,
+  address: true,
+  company: {
+    select: {
+      name: true,
+      rnc: true,
+      address: true,
+      phone: true,
+      email: true,
+    },
+  },
+} as const;
+
 const productSummarySelect = {
   id: true,
   code: true,
@@ -50,8 +77,8 @@ export const saleDetailSelect = {
   total: true,
   createdAt: true,
   reservationId: true,
-  branch: { select: branchSummarySelect },
-  customer: { select: customerSummarySelect },
+  branch: { select: branchFiscalSelect },
+  customer: { select: customerFiscalSelect },
   cashier: {
     select: {
       id: true,

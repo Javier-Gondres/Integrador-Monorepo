@@ -326,8 +326,27 @@ function mapSaleDetail(record: SaleDetailRecord) {
     total: Number(record.total),
     createdAt: record.createdAt,
     reservationId: record.reservationId,
-    branch: record.branch,
+    company: {
+      name: record.branch.company.name,
+      rnc: record.branch.company.rnc,
+      address: record.branch.company.address,
+      phone: record.branch.company.phone,
+    },
+    branch: {
+      id: record.branch.id,
+      name: record.branch.name,
+      address: record.branch.address,
+    },
     customerName: customerName(record.customer),
+    customer: record.customer
+      ? {
+          name: `${record.customer.firstName} ${record.customer.lastName}`,
+          rnc: record.customer.rnc,
+          cedula: record.customer.cedula,
+          address: record.customer.address,
+          phone: record.customer.phone,
+        }
+      : null,
     cashierName: cashierUser
       ? `${cashierUser.firstName} ${cashierUser.lastName}`
       : null,
