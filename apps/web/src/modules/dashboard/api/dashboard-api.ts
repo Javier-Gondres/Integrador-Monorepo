@@ -7,6 +7,9 @@ export interface DashboardSummary {
     salesYesterday: number;
     receivablesBalance: number;
     payablesBalance: number;
+    cashOnHand: number;
+    avgCollectionDays: number;
+    avgPaymentDays: number;
   };
   charts: {
     comparisonHistory: Array<{
@@ -42,12 +45,17 @@ export interface DashboardSummary {
 export async function fetchDashboardSummary(
   branchId?: string,
   days: number = 7,
+  month?: string,
 ): Promise<DashboardSummary> {
   const params = new URLSearchParams();
   if (branchId && branchId !== "todas") {
     params.append("branchId", branchId);
   }
-  params.append("days", days.toString());
+  if (month) {
+    params.append("month", month);
+  } else {
+    params.append("days", days.toString());
+  }
 
   return apiFetch<DashboardSummary>(
     `${ENDPOINTS.dashboard.summary}?${params.toString()}`,

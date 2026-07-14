@@ -20,13 +20,13 @@ interface RecentMovementsProps {
 }
 
 const typeLabels: Record<string, { label: string; colorClass: string }> = {
-  SALE: { label: "Venta", colorClass: styles.sale },
-  PURCHASE: { label: "Compra", colorClass: styles.purchase },
-  RETURN: { label: "Devolución", colorClass: styles.return },
-  ADJUSTMENT: { label: "Ajuste", colorClass: styles.adjustment },
-  TRANSFER_IN: { label: "Entrada Transf.", colorClass: styles.transfer },
-  TRANSFER_OUT: { label: "Salida Transf.", colorClass: styles.transfer },
-  WASTE: { label: "Merma", colorClass: styles.waste },
+  SALE: { label: "Venta", colorClass: styles.sale ?? "" },
+  PURCHASE: { label: "Compra", colorClass: styles.purchase ?? "" },
+  RETURN: { label: "Devolución", colorClass: styles.return ?? "" },
+  ADJUSTMENT: { label: "Ajuste", colorClass: styles.adjustment ?? "" },
+  TRANSFER_IN: { label: "Entrada Transf.", colorClass: styles.transfer ?? "" },
+  TRANSFER_OUT: { label: "Salida Transf.", colorClass: styles.transfer ?? "" },
+  WASTE: { label: "Merma", colorClass: styles.waste ?? "" },
 };
 
 export function RecentMovementsList({
