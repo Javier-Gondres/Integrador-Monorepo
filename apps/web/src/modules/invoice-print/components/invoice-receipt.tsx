@@ -42,9 +42,7 @@ export function InvoiceReceipt({ sale }: InvoiceReceiptProps) {
         <div className="text-center font-semibold uppercase">
           {ncfTypeLabel(sale.ncfType)}
         </div>
-        {sale.ncf && (
-          <Row label="NCF" value={sale.ncf} />
-        )}
+        {sale.ncf && <Row label="NCF" value={sale.ncf} />}
         <Row label="Fecha" value={`${day} ${time}`} />
         {sale.cashierName && <Row label="Cajero" value={sale.cashierName} />}
       </section>
