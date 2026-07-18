@@ -55,6 +55,7 @@ export const ROLE_PERMISSION_MATRIX: Record<
     Permission.SALES_READ,
     Permission.SALES_CREATE,
     Permission.SALES_CANCEL,
+    Permission.SALES_BACKDATE,
     Permission.PURCHASES_READ,
     Permission.PURCHASES_CREATE,
     Permission.REPORTS_READ,
