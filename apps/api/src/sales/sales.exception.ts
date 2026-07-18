@@ -63,4 +63,20 @@ export class SalesException extends BusinessException {
       HttpStatus.CONFLICT,
     );
   }
+
+  static backdateForbidden(): SalesException {
+    return new SalesException(
+      ErrorCodes.SALE_BACKDATE_FORBIDDEN,
+      'No tiene permiso para registrar ventas con una fecha pasada',
+      HttpStatus.FORBIDDEN,
+    );
+  }
+
+  static backdateInvalid(): SalesException {
+    return new SalesException(
+      ErrorCodes.SALE_BACKDATE_INVALID,
+      'La fecha de la venta no es válida o está en el futuro',
+      HttpStatus.BAD_REQUEST,
+    );
+  }
 }
