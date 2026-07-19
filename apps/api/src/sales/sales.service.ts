@@ -1,19 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { NcfType, PaymentMethod } from '@repo/db';
-import type { CompanyContext } from 'src/common/company';
-import { BusinessException, ErrorCodes } from 'src/common/errors';
-import { DiscountsService } from 'src/discounts/discounts.service';
-import { EmployeesService } from 'src/employees/employees.service';
+import { Injectable } from "@nestjs/common";
+import { NcfType, PaymentMethod } from "@repo/db";
+import { Permission } from "@repo/shared";
+import type { AuthContext } from "src/auth/auth.types";
+import type { CompanyContext } from "src/common/company";
+import { BusinessException, ErrorCodes } from "src/common/errors";
+import { DiscountsService } from "src/discounts/discounts.service";
+import { EmployeesService } from "src/employees/employees.service";
 
-import { CreateSaleDto } from './dto/create-sale.dto';
-import { NormalizedQuerySales, QuerySalesDto } from './dto/query-sales.dto';
-import { SalesException } from './sales.exception';
-import { CreateSaleLine, SalesRepository } from './sales.repository';
+import { CreateSaleDto } from "./dto/create-sale.dto";
+import { NormalizedQuerySales, QuerySalesDto } from "./dto/query-sales.dto";
+import { SalesException } from "./sales.exception";
+import { CreateSaleLine, SalesRepository } from "./sales.repository";
 import {
   CreditNoteForSaleRecord,
   SaleDetailRecord,
   SaleListRecord,
-} from './sales.selects';
+} from "./sales.selects";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -50,7 +52,7 @@ export class SalesService {
     if (!record) {
       throw BusinessException.notFound(
         ErrorCodes.SALE_NOT_FOUND,
-        'La venta no existe',
+        "La venta no existe",
       );
     }
     return mapSaleDetail(record);
@@ -132,7 +134,8 @@ export class SalesService {
     };
   }
 
-  async create(dto: CreateSaleDto, company: CompanyContext, userId: string) {
+  async create(dto: CreateSaleDto, company: CompanyContext, auth: AuthContext) {
+    const userId = auth.userId;
     const branchId = this.resolveBranchId(company, dto.branchId);
     const customerId = dto.customerId?.trim() || null;
     if (!customerId) {
@@ -141,11 +144,13 @@ export class SalesService {
     const creditNoteIds = dto.creditNoteIds ?? [];
     const payments = dto.payments ?? [];
 
+    const soldAt = this.resolveSoldAt(dto.soldAt, auth);
+
     const productIds = dto.items.map((item) => item.productId);
     if (new Set(productIds).size !== productIds.length) {
       throw new BusinessException(
         ErrorCodes.VALIDATION_ERROR,
-        'Hay productos duplicados en la venta',
+        "Hay productos duplicados en la venta",
       );
     }
 
@@ -207,9 +212,27 @@ export class SalesService {
         amount: payment.amount,
       })),
       creditNoteIds,
+      soldAt,
     });
 
     return mapSaleDetail(record);
+  }
+
+  private resolveSoldAt(
+    soldAt: string | undefined,
+    auth: AuthContext,
+  ): Date | null {
+    if (!soldAt) {
+      return null;
+    }
+    if (!auth.permissions.includes(Permission.SALES_BACKDATE)) {
+      throw SalesException.backdateForbidden();
+    }
+    const parsed = new Date(soldAt);
+    if (Number.isNaN(parsed.getTime()) || parsed.getTime() > Date.now()) {
+      throw SalesException.backdateInvalid();
+    }
+    return parsed;
   }
 
   private resolveBranchId(company: CompanyContext, branchId?: string): string {
@@ -217,7 +240,7 @@ export class SalesService {
     if (!resolved) {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        'No hay una sucursal seleccionada',
+        "No hay una sucursal seleccionada",
       );
     }
     return resolved;
