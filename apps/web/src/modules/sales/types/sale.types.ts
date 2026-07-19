@@ -125,4 +125,10 @@ export interface CreateSalePayload {
   items: { productId: string; quantity: number }[];
   payments?: { method: PaymentMethod; amount: number }[];
   creditNoteIds?: string[];
+  /**
+   * Fecha en que ocurrió la venta (instante ISO), para registrar ventas
+   * pasadas. Solo la usan OWNER/ADMIN; si se omite, el backend usa la fecha
+   * actual.
+   */
+  soldAt?: string;
 }
