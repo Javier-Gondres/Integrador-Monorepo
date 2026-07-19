@@ -57,6 +57,8 @@ export type CreateSaleData = {
   lines: CreateSaleLine[];
   payments: CreateSalePaymentData[];
   creditNoteIds: string[];
+  /** Fecha en que ocurrió la venta (venta pasada). `null` = fecha actual. */
+  soldAt: Date | null;
 };
 
 @Injectable()
@@ -174,6 +176,7 @@ export class SalesRepository {
           taxAmount: new Prisma.Decimal(data.taxAmount),
           total: new Prisma.Decimal(data.total),
           status: SaleStatus.COMPLETED,
+          ...(data.soldAt && { createdAt: data.soldAt }),
           ...(generated && {
             ncf: generated.ncf,
             ncfType: generated.ncfType,
@@ -229,12 +232,13 @@ export class SalesRepository {
             saleId: sale.id,
             performedByEmployeeId: data.employeeId,
             notes: 'Venta registrada',
+            ...(data.soldAt && { createdAt: data.soldAt }),
           },
         });
       }
 
       if (creditPortion > 0 && data.customerId) {
-        const dueDate = new Date();
+        const dueDate = new Date(data.soldAt ?? Date.now());
         dueDate.setDate(dueDate.getDate() + CREDIT_DUE_DAYS);
 
         await tx.accountReceivable.create({
@@ -245,6 +249,7 @@ export class SalesRepository {
             balance: new Prisma.Decimal(creditPortion),
             dueDate,
             status: ReceivableStatus.OPEN,
+            ...(data.soldAt && { createdAt: data.soldAt }),
           },
         });
       }
