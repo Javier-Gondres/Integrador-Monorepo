@@ -155,9 +155,7 @@ export function SaleScreenContainer({
 
     // Solo OWNER/ADMIN pueden enviar una fecha pasada; el backend lo valida.
     const soldAt =
-      canBackdate && order.saleDate
-        ? saleDayToIso(order.saleDate)
-        : undefined;
+      canBackdate && order.saleDate ? saleDayToIso(order.saleDate) : undefined;
 
     try {
       const sale = await createSale.mutateAsync({
