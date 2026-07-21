@@ -16,6 +16,7 @@ import { RequirePermissions } from 'src/common/permissions';
 
 import { CreateUserDto } from './dto/createUser.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
+import { TransferOwnershipDto } from './dto/transfer-ownership.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { UsersService } from './users.service';
 
@@ -102,13 +103,33 @@ export class UsersController {
     );
   }
 
-  @RequirePermissions(Permission.USERS_DELETE)
-  @Delete(':id')
-  remove(
+  @RequirePermissions(Permission.USERS_UPDATE)
+  @Post('transfer-ownership')
+  transferOwnership(
+    @Body() dto: TransferOwnershipDto,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.usersService.transferOwnership(
+      companyId,
+      dto.newOwnerUserId,
+      auth.userId,
+      auth.role,
+    );
+  }
+
+  @RequirePermissions(Permission.USERS_REMOVE_MEMBERSHIP)
+  @Delete(':id/membership')
+  removeMembership(
     @Param('id') id: string,
     @CompanyId() companyId: string,
     @Auth() auth: AuthContext,
   ) {
-    return this.usersService.removeUser(id, companyId, auth.userId, auth.role);
+    return this.usersService.removeMembership(
+      id,
+      companyId,
+      auth.userId,
+      auth.role,
+    );
   }
 }

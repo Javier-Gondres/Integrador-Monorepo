@@ -7,11 +7,11 @@ import { PageHeader } from "@/shared/ui";
 
 import { EmployeeFormModalContainer } from "../containers/employee-form-modal-container";
 import { EmployeesTableContainer } from "../containers/employees-table-container";
-import type { Employee } from "../types/employee.types";
+import type { CompanyMember } from "../types/company-member.types";
 
 export function EmployeesScreen() {
-  const [modalEmployee, setModalEmployee] = useState<
-    Employee | null | undefined
+  const [modalMember, setModalMember] = useState<
+    CompanyMember | null | undefined
   >(undefined);
 
   return (
@@ -33,15 +33,15 @@ export function EmployeesScreen() {
         }}
       >
         <EmployeesTableContainer
-          onEdit={setModalEmployee}
-          onCreate={() => setModalEmployee(null)}
+          onEdit={setModalMember}
+          onCreate={() => setModalMember(null)}
         />
       </div>
 
-      {modalEmployee !== undefined && (
+      {modalMember !== undefined && (
         <EmployeeFormModalContainer
-          employee={modalEmployee}
-          onClose={() => setModalEmployee(undefined)}
+          member={modalMember}
+          onClose={() => setModalMember(undefined)}
         />
       )}
     </main>

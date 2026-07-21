@@ -9,6 +9,12 @@ export const Permission = {
   USERS_ACTIVATE: "users.activate",
   USERS_DEACTIVATE: "users.deactivate",
   USERS_DELETE: "users.delete",
+  USERS_REMOVE_MEMBERSHIP: "users.removeMembership",
+
+  INVITATIONS_CREATE: "invitations.create",
+  INVITATIONS_READ: "invitations.read",
+  INVITATIONS_RESEND: "invitations.resend",
+  INVITATIONS_REVOKE: "invitations.revoke",
 
   EMPLOYEES_CREATE: "employees.create",
   EMPLOYEES_READ: "employees.read",
@@ -101,6 +107,27 @@ export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
   {
     code: Permission.USERS_DELETE,
     description: "Eliminar usuarios de la empresa",
+  },
+  {
+    code: Permission.USERS_REMOVE_MEMBERSHIP,
+    description:
+      "Expulsar usuarios de la empresa sin eliminar su identidad global",
+  },
+  {
+    code: Permission.INVITATIONS_CREATE,
+    description: "Invitar usuarios a la empresa",
+  },
+  {
+    code: Permission.INVITATIONS_READ,
+    description: "Ver invitaciones de la empresa",
+  },
+  {
+    code: Permission.INVITATIONS_RESEND,
+    description: "Reenviar invitaciones de la empresa",
+  },
+  {
+    code: Permission.INVITATIONS_REVOKE,
+    description: "Revocar invitaciones de la empresa",
   },
 
   { code: Permission.EMPLOYEES_CREATE, description: "Registrar empleados" },

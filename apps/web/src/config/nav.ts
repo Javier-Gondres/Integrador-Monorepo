@@ -198,10 +198,10 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   },
   { section: "Administración" },
   {
-    label: "Usuarios",
+    label: "Equipo",
     icon: UserCog,
-    href: "/users",
-    access: { type: "permission", permission: Permission.USERS_READ },
+    href: "/settings/team",
+    access: { type: "permission", permission: Permission.INVITATIONS_READ },
   },
   {
     label: "Empresa",

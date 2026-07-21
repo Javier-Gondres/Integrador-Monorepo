@@ -30,6 +30,22 @@ export class EmployeesController {
     return this.employeesService.findPaginatedByCompany(companyId, query);
   }
 
+  @RequirePermissions(Permission.EMPLOYEES_UPDATE)
+  @Patch('by-user/:userId/labor-profile')
+  upsertLaborProfile(
+    @Param('userId') userId: string,
+    @Body() dto: UpdateEmployeeDto,
+    @CompanyId() companyId: string,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.employeesService.upsertLaborProfileForUser(
+      userId,
+      companyId,
+      dto,
+      auth,
+    );
+  }
+
   @RequirePermissions(Permission.EMPLOYEES_READ)
   @Get(':id')
   findById(@Param('id') id: string, @CompanyId() companyId: string) {

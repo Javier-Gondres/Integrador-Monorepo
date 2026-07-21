@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard } from "lucide-react";
+import { Building2, KeyRound, LayoutDashboard, Users } from "lucide-react";
 
 export const PLATFORM_NAV_ITEMS = [
   {
@@ -10,6 +10,16 @@ export const PLATFORM_NAV_ITEMS = [
     label: "Empresas",
     href: "/platform/companies",
     icon: Building2,
+  },
+  {
+    label: "Usuarios",
+    href: "/platform/users",
+    icon: Users,
+  },
+  {
+    label: "Permisos",
+    href: "/platform/permissions",
+    icon: KeyRound,
   },
 ] as const;
 

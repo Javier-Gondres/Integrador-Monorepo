@@ -12,6 +12,7 @@ model Company {
 
   branches     Branch[]
   users        UserCompany[]
+  invitations  Invitation[]
   categories   Category[]
   products     Product[]
   employees    Employee[]

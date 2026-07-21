@@ -13,6 +13,7 @@ import { DiscountsModule } from './discounts/discounts.module';
 import { EmployeesModule } from './employees/employees.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { InventoryMovementModule } from './inventory-movement/inventory-movement.module';
+import { InvitationsModule } from './invitations/invitations.module';
 import { MeModule } from './me/me.module';
 import { PlatformModule } from './platform/platform.module';
 import { ProductSupplierModule } from './product-supplier/product-supplier.module';
@@ -49,6 +50,7 @@ const envFilePath =
     CashRegistersModule,
     InventoryModule,
     InventoryMovementModule,
+    InvitationsModule,
     TransfersModule,
     ProductSupplierModule,
     PurchasesModule,

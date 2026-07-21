@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import slugify from 'slug';
 import { getDefinedData } from 'src/common/helpers/object.utils';
 
+import { AuthService } from '../auth/auth.service';
 import { AuthContext } from '../auth/auth.types';
 import {
   assertCanManageCompany,
@@ -17,7 +18,10 @@ const DEFAULT_BRANCH_NAME = 'Sucursal principal';
 
 @Injectable()
 export class CompanyService {
-  constructor(private readonly companyRepository: CompanyRepository) {}
+  constructor(
+    private readonly companyRepository: CompanyRepository,
+    private readonly authService: AuthService,
+  ) {}
 
   async createOnboarding(auth: AuthContext, dto: CreateCompanyDto) {
     assertSuperAdminCannotJoinTenant(auth);
@@ -46,13 +50,17 @@ export class CompanyService {
       );
     }
 
-    return this.companyRepository.createWithOnboarding({
+    const company = await this.companyRepository.createWithOnboarding({
       userId: auth.userId,
       name: dto.name.trim(),
       slug: companySlug,
       rnc,
       defaultBranchName: DEFAULT_BRANCH_NAME,
     });
+
+    const accessToken = await this.authService.issueAccessToken(auth.userId);
+
+    return { company, accessToken };
   }
 
   async findMyCompanies(userId: string) {

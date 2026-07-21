@@ -11,6 +11,7 @@ export const employeeUserSelect = {
       companyId: true,
       role: {
         select: {
+          id: true,
           name: true,
         },
       },

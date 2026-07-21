@@ -17,7 +17,9 @@ export const membershipRelationSelect = {
     select: {
       name: true,
       permissions: {
-        select: { permission: { select: { code: true } } },
+        select: {
+          permission: { select: { code: true, description: true } },
+        },
       },
     },
   },
@@ -28,12 +30,15 @@ export const membershipRelationSelectFull = {
   companyId: true,
   roleId: true,
   defaultBranchId: true,
+  createdAt: true,
   role: {
     select: {
       id: true,
       name: true,
       permissions: {
-        select: { permission: { select: { code: true } } },
+        select: {
+          permission: { select: { code: true, description: true } },
+        },
       },
     },
   },
@@ -45,10 +50,13 @@ export type UserMembership = {
   companyId: string;
   roleId: string;
   defaultBranchId: string | null;
+  createdAt: Date;
   role: {
     id: string;
     name: RoleName;
-    permissions?: { permission: { code: string } }[];
+    permissions?: {
+      permission: { code: string; description: string | null };
+    }[];
   };
   company: { id: string; name: string; slug: string };
 };

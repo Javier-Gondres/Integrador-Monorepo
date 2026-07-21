@@ -11,6 +11,7 @@ export interface EmployeeUserDto {
   memberships?: Array<{
     companyId: string;
     role: {
+      id: string;
       name: string;
     };
   }>;
@@ -44,6 +45,7 @@ export interface Employee {
   companyId: string;
   branchId: string;
   userId: string;
+  roleId: string | null;
   roleName: TenantRoleName | null;
   firstName: string;
   lastName: string;
