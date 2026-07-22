@@ -53,6 +53,7 @@ export const Permission = {
   SALES_CREATE: "sales.create",
   SALES_READ: "sales.read",
   SALES_CANCEL: "sales.cancel",
+  SALES_BACKDATE: "sales.backdate",
 
   PURCHASES_CREATE: "purchases.create",
   PURCHASES_READ: "purchases.read",
@@ -170,6 +171,10 @@ export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
   { code: Permission.SALES_CREATE, description: "Registrar ventas" },
   { code: Permission.SALES_READ, description: "Ver ventas" },
   { code: Permission.SALES_CANCEL, description: "Cancelar ventas" },
+  {
+    code: Permission.SALES_BACKDATE,
+    description: "Registrar ventas con fecha pasada",
+  },
 
   { code: Permission.PURCHASES_CREATE, description: "Registrar compras" },
   { code: Permission.PURCHASES_READ, description: "Ver compras" },

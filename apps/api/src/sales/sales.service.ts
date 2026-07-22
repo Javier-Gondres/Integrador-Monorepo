@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NcfType, PaymentMethod } from '@repo/db';
+import { Permission } from '@repo/shared';
+import type { AuthContext } from 'src/auth/auth.types';
 import type { CompanyContext } from 'src/common/company';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
 import { DiscountsService } from 'src/discounts/discounts.service';
@@ -132,7 +134,8 @@ export class SalesService {
     };
   }
 
-  async create(dto: CreateSaleDto, company: CompanyContext, userId: string) {
+  async create(dto: CreateSaleDto, company: CompanyContext, auth: AuthContext) {
+    const userId = auth.userId;
     const branchId = this.resolveBranchId(company, dto.branchId);
     const customerId = dto.customerId?.trim() || null;
     if (!customerId) {
@@ -140,6 +143,8 @@ export class SalesService {
     }
     const creditNoteIds = dto.creditNoteIds ?? [];
     const payments = dto.payments ?? [];
+
+    const soldAt = this.resolveSoldAt(dto.soldAt, auth);
 
     const productIds = dto.items.map((item) => item.productId);
     if (new Set(productIds).size !== productIds.length) {
@@ -207,9 +212,27 @@ export class SalesService {
         amount: payment.amount,
       })),
       creditNoteIds,
+      soldAt,
     });
 
     return mapSaleDetail(record);
+  }
+
+  private resolveSoldAt(
+    soldAt: string | undefined,
+    auth: AuthContext,
+  ): Date | null {
+    if (!soldAt) {
+      return null;
+    }
+    if (!auth.permissions.includes(Permission.SALES_BACKDATE)) {
+      throw SalesException.backdateForbidden();
+    }
+    const parsed = new Date(soldAt);
+    if (Number.isNaN(parsed.getTime()) || parsed.getTime() > Date.now()) {
+      throw SalesException.backdateInvalid();
+    }
+    return parsed;
   }
 
   private resolveBranchId(company: CompanyContext, branchId?: string): string {

@@ -67,7 +67,18 @@ Convención de códigos: `dominio.accion` (ej. `products.read`, `users.delete`).
 
 Dominios actuales: `users`, `employees`, `products`, `categories`, `discounts`, `customers`, `suppliers`, `inventory`, `sales`, `purchases`, `cash`, `branches`, `reports`.
 
-Acciones típicas por dominio: `create`, `read`, `update`, `delete`, más acciones específicas (`users.activate`, `cash.open`, `inventory.adjust`, etc.).
+Acciones típicas por dominio: `create`, `read`, `update`, `delete`, más acciones específicas (`users.activate`, `cash.open`, `inventory.adjust`, `sales.backdate`, etc.).
+
+#### Ventas (`sales`)
+
+| Código | Constante | Descripción | Roles (matriz) |
+| ------ | --------- | ----------- | -------------- |
+| `sales.create` | `SALES_CREATE` | Registrar ventas (POS / facturación) | OWNER, ADMIN, MANAGER, CASHIER |
+| `sales.read` | `SALES_READ` | Ver ventas / historial | OWNER, ADMIN, MANAGER, CASHIER |
+| `sales.cancel` | `SALES_CANCEL` | Cancelar ventas / devoluciones | OWNER, ADMIN, MANAGER |
+| `sales.backdate` | `SALES_BACKDATE` | Registrar ventas con fecha pasada (`soldAt` en `POST /sales`) | OWNER, ADMIN |
+
+Tras añadir un permiso al catálogo o a la matriz, re-ejecutar el seed (`packages/database/prisma/seed.ts`) para upsert en BD y pedir refresh/relogin (el JWT cachea permisos hasta ~15 min).
 
 ### Roles tenant
 
@@ -154,6 +165,20 @@ export class ProductsController {
 
 - `@CompanyId()` y `@Company()` requieren que `CompanyGuard` haya corrido (lo incluye `@RequirePermissions`).
 - Varios permisos en un mismo handler: **todos** deben estar presentes (`required.every(...)`).
+
+### Permiso condicional en el servicio (campo opcional)
+
+Cuando un endpoint admite un campo opcional que requiere un permiso extra, **no** lo pongas en `@RequirePermissions` del handler (sería AND y bloquearía el flujo normal). Valida en el servicio solo si el campo viene:
+
+```typescript
+// POST /sales → @RequirePermissions(Permission.SALES_CREATE)
+// Si el body trae soldAt, el servicio exige además sales.backdate:
+if (soldAt && !auth.permissions.includes(Permission.SALES_BACKDATE)) {
+  throw SalesException.backdateForbidden(); // 403 SALE_BACKDATE_FORBIDDEN
+}
+```
+
+En web, oculta la UI con `can(Permission.SALES_BACKDATE)` (o `<Can>`); el backend sigue siendo la autoridad.
 
 ### Rutas branch-scoped (capa extra)
 
@@ -475,6 +500,8 @@ if (can(Permission.BRANCHES_READ)) {
 ```
 
 Aunque ocultes el selector, la API también valida sucursal en endpoints branch-scoped.
+
+**Ejemplo — fecha de venta pasada (POS `/sales`):** la pantalla se abre con `sales.create`; el botón/modal de fecha solo aparece si `can(Permission.SALES_BACKDATE)`. El payload envía `soldAt` solo en ese caso; la API lo rechaza sin el permiso.
 
 ### Jerarquía de roles (usuarios y empleados)
 

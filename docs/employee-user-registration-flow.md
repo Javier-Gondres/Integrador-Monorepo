@@ -230,7 +230,7 @@ Documentación completa: `apps/api/docs/tenant-access.md` y `src/employees/polic
 | Asignación         | Cada empleado tiene **una** sucursal (`employee.branchId`).                                                                   |
 | Alta               | `POST /employees` exige `branchId` activo (`BranchAccessService`).                                                            |
 | Reasignación       | `PATCH /employees/:id` con nuevo `branchId`; sucursal destino activa.                                                         |
-| Caja (`openShift`) | Turno = empleado del **usuario autenticado**, activo, en la **misma sucursal** que la caja. El cliente no envía `employeeId`. |
+| Caja (`open`/`close`) | La sucursal se toma de la **caja** (no del JWT). Cajeros: solo su sucursal de empleado. Supervisores con `branches.read`: pueden operar otras sucursales. |
 | `switchBranch`     | Cambia sucursal por defecto del JWT; **no** mueve al empleado. Para caja, JWT y empleado deben coincidir en sucursal.         |
 
 ---

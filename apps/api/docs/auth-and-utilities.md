@@ -194,6 +194,32 @@ Todos los endpoints usan `@RequirePermissions(...)`. Jerarquía de roles en `src
 | Eliminar cuenta            | Super Admin (plataforma)  | Soft delete `User` + membresías                     |
 | Desactivar login           | Owner / Admin             | `User.isActive = false`                             |
 
+### `/sales` (facturación)
+
+Todos los endpoints usan `@RequirePermissions(...)`.
+
+| Método | Ruta                   | Permiso(s)     | Descripción                                              |
+| ------ | ---------------------- | -------------- | -------------------------------------------------------- |
+| `GET`  | `/sales`               | `sales.read`   | Listado paginado (filtros: sucursal, cliente, fechas…)   |
+| `GET`  | `/sales/products`      | `sales.create` | Catálogo POS con stock/descuentos por sucursal           |
+| `GET`  | `/sales/current-shift` | `sales.create` | Turno usable para facturar: el del empleado autenticado o, si no tiene, cualquier turno abierto de la sucursal |
+| `GET`  | `/sales/credit-notes`  | `sales.create` | Notas de crédito activas de un cliente (`customerId`)    |
+| `GET`  | `/sales/:id`           | `sales.read`   | Detalle de venta                                         |
+| `POST` | `/sales`               | `sales.create` | Crear venta (contado/crédito/mixta, NCF, etc.)           |
+
+#### Fecha de venta pasada (`soldAt`)
+
+`POST /sales` acepta un campo opcional `soldAt` (ISO 8601). Si se omite, la venta usa la fecha actual.
+
+| Condición                                      | Resultado                                              |
+| ---------------------------------------------- | ------------------------------------------------------ |
+| Sin `soldAt`                                   | `createdAt` = ahora                                    |
+| `soldAt` + permiso `sales.backdate`            | Persiste con esa fecha (no futura)                     |
+| `soldAt` sin `sales.backdate`                  | `403` `SALE_BACKDATE_FORBIDDEN`                        |
+| `soldAt` inválido o futuro                     | `400`/`403` `SALE_BACKDATE_INVALID`                    |
+
+El decorador del endpoint sigue siendo solo `sales.create`. El check de `sales.backdate` es **condicional en el servicio** (`resolveSoldAt`), porque poner ambos en `@RequirePermissions` bloquearía creates normales. Roles con `sales.backdate`: OWNER y ADMIN (ver `ROLE_PERMISSION_MATRIX`).
+
 ---
 
 ## Guards
@@ -461,6 +487,12 @@ switch (response.error) {
     break;
   case ErrorCodes.UNAUTHORIZED_COMPANY_ACCESS:
     // redirigir a onboarding de empresa
+    break;
+  case ErrorCodes.SALE_BACKDATE_FORBIDDEN:
+    // usuario sin sales.backdate intentó enviar soldAt
+    break;
+  case ErrorCodes.SALE_BACKDATE_INVALID:
+    // soldAt no parseable o fecha futura
     break;
 }
 ```

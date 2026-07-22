@@ -192,15 +192,17 @@ export default function CategoriesPage() {
 
 ### Rutas actuales
 
-| URL                        | Página                                         | Screen             |
-| -------------------------- | ---------------------------------------------- | ------------------ |
-| `/`                        | `(public)/page.tsx`                            | Home + links dev   |
-| `/categories`              | `(dashboard)/categories/page.tsx`              | `CategoriesScreen` |
-| `/products`                | `(dashboard)/products/page.tsx`                | `ProductsScreen`   |
-| `/employees`               | `(dashboard)/employees/page.tsx`               | `EmployeesScreen`  |
-| `/suppliers`               | `(dashboard)/suppliers/page.tsx`               | `SuppliersScreen`  |
-| `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`  |
-| `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`   |
+| URL                        | Página                                         | Screen                 |
+| -------------------------- | ---------------------------------------------- | ---------------------- |
+| `/`                        | `(public)/page.tsx`                            | Home + links dev       |
+| `/categories`              | `(dashboard)/categories/page.tsx`              | `CategoriesScreen`     |
+| `/products`                | `(dashboard)/products/page.tsx`                | `ProductsScreen`       |
+| `/employees`               | `(dashboard)/employees/page.tsx`               | `EmployeesScreen`      |
+| `/suppliers`               | `(dashboard)/suppliers/page.tsx`               | `SuppliersScreen`      |
+| `/sales`                   | `(dashboard)/sales/page.tsx`                   | `SalesScreen`          |
+| `/sales-history`           | `(dashboard)/sales-history/page.tsx`           | `SalesHistoryScreen`   |
+| `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`      |
+| `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`       |
 
 ---
 
@@ -218,6 +220,8 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | `inventories`    | Completo (CRUD + movimientos + ajustes)                               |
 | `mermas`         | Registro de mermas (inventario por sucursal)                          |
 | `transferencias` | Transferencias entre sucursales                                       |
+| `sales`          | POS / facturación (`/sales`); fecha pasada vía modal + `soldAt`       |
+| `sales-history`  | Historial de ventas (`/sales-history`)                                |
 | `suppliers`      | Completo (CRUD + tabla)                                               |
 | `companies`      | Pantalla legacy migrada (lista + CRUD básico)                         |
 | `branches`       | Pantalla legacy migrada (lista + CRUD básico)                         |
@@ -974,6 +978,8 @@ if (isSuperAdmin) { ... }             // plataforma — NO bypass en can()
 
 - `isSuperAdmin` **no** otorga permisos tenant en `can()` / `<Can>`.
 - El backend (`PermissionGuard`) es la autoridad real; la UI solo oculta controles.
+
+**Facturación — fecha pasada:** la ruta `/sales` se abre con `sales.create`. El modal/botón “Fecha de venta” solo se muestra si `can(Permission.SALES_BACKDATE)` (OWNER/ADMIN); no es una pantalla ni ítem de nav nuevo. El payload envía `soldAt` opcional en `POST /sales`; la API valida el permiso en servicio.
 
 Documentación API: `apps/api/docs/auth-and-utilities.md`. Revisión de riesgos: `docs/security-rbac-critical-review.md`.
 

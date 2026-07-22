@@ -1,9 +1,11 @@
 "use client";
 
+import { Permission } from "@repo/shared";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/api/errors";
+import { usePermissions } from "@/modules/auth/hooks/use-permissions";
 import { CustomerFormModalContainer } from "@/modules/customers/containers/customer-form-modal-container";
 import { useCustomers } from "@/modules/customers/hooks/use-customers";
 import type { Customer } from "@/modules/customers/types/customer.types";
@@ -12,12 +14,14 @@ import { Modal } from "@/shared/ui/modal";
 
 import { ClientCard } from "../components/client-card";
 import { ProductPicker } from "../components/product-picker";
+import { SaleDateModal } from "../components/sale-date-modal";
 import { SaleDetail } from "../components/sale-detail";
 import { useCreateSale } from "../hooks/use-create-sale";
 import { useCustomerCreditNotes } from "../hooks/use-customer-credit-notes";
 import { round2, useSale } from "../hooks/use-sale";
 import { useSaleProducts } from "../hooks/use-sale-products";
 import type { PaymentMethod } from "../types/sale.types";
+import { saleDayToIso } from "../utils/format";
 
 const PAYMENT_METHOD_MAP: Record<string, PaymentMethod> = {
   contado: "CASH",
@@ -38,12 +42,15 @@ export function SaleScreenContainer({
 }: SaleScreenContainerProps) {
   const order = useSale();
   const createSale = useCreateSale();
+  const { can } = usePermissions();
+  const canBackdate = can(Permission.SALES_BACKDATE);
 
   const [productSearch, setProductSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORIES);
   const [customerSearch, setCustomerSearch] = useState("");
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
 
   const debouncedProductSearch = useDebouncedValue(productSearch);
   const debouncedCustomerSearch = useDebouncedValue(customerSearch);
@@ -77,6 +84,7 @@ export function SaleScreenContainer({
     setCustomerSearch("");
     setShowProductPicker(false);
     setShowCustomerForm(false);
+    setShowDateModal(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branchId]);
 
@@ -145,6 +153,10 @@ export function SaleScreenContainer({
     const payments =
       amountPayable > 0 && method ? [{ method, amount: amountPayable }] : [];
 
+    // Solo OWNER/ADMIN pueden enviar una fecha pasada; el backend lo valida.
+    const soldAt =
+      canBackdate && order.saleDate ? saleDayToIso(order.saleDate) : undefined;
+
     try {
       const sale = await createSale.mutateAsync({
         branchId,
@@ -157,6 +169,7 @@ export function SaleScreenContainer({
         creditNoteIds: order.selectedCreditNoteIds.length
           ? order.selectedCreditNoteIds
           : undefined,
+        soldAt,
       });
       toast.success(
         sale.ncf
@@ -193,6 +206,10 @@ export function SaleScreenContainer({
           onRemove={order.remove}
           onClear={order.clearCart}
           onAddProduct={() => setShowProductPicker(true)}
+          canBackdate={canBackdate}
+          saleDate={order.saleDate}
+          onOpenDateModal={() => setShowDateModal(true)}
+          onClearDate={order.clearSaleDate}
           subtotal={order.subtotal}
           itbis={order.itbis}
           total={order.total}
@@ -237,6 +254,15 @@ export function SaleScreenContainer({
           customer={null}
           onClose={() => setShowCustomerForm(false)}
           onCreated={handlePickCustomer}
+        />
+      )}
+
+      {canBackdate && showDateModal && (
+        <SaleDateModal
+          value={order.saleDate}
+          onConfirm={order.setSaleDate}
+          onClear={order.clearSaleDate}
+          onClose={() => setShowDateModal(false)}
         />
       )}
     </div>

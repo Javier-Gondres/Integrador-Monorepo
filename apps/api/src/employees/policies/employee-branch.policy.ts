@@ -15,11 +15,11 @@ import {
  *    - empleado existente para el `userId` autenticado;
  *    - `employee.isActive === true`;
  *    - `employee.companyId === companyId` del JWT;
- *    - `employee.branchId === branchId` operativo (sucursal de la caja / contexto).
+ *    - `employee.branchId === branchId` operativo (sucursal de la caja / contexto),
+ *      salvo usuarios con alcance multi-sucursal (`allowCrossBranch`, p. ej. `branches.read`).
  * 4. `switchBranch` actualiza la sucursal por defecto del JWT, pero **no** reasigna
- *    al empleado. Para operar en caja, la sucursal activa del JWT debe coincidir con
- *    la sucursal asignada al empleado (o pasarse explícitamente un `branchId` válido
- *    que cumpla la regla 3).
+ *    al empleado. Los cajeros siguen limitados a su sucursal; supervisores con
+ *    `branches.read` pueden operar cajas de otras sucursales de la empresa.
  * 5. Reasignar un empleado a otra sucursal es gestión HR (`employees.update`) y exige
  *    sucursal destino activa vía `BranchAccessService`.
  */
@@ -31,11 +31,20 @@ export type EmployeeOperationalContext = {
   isActive: boolean;
 };
 
+export type AssertEmployeeForBranchOptions = {
+  /**
+   * Si true, no exige `employee.branchId === branchId`.
+   * Usar cuando el actor tiene alcance multi-sucursal (p. ej. `branches.read`).
+   */
+  allowCrossBranch?: boolean;
+};
+
 /** Valida que el empleado del usuario pueda operar en la sucursal indicada. */
 export function assertEmployeeForBranchOperation(
   employee: EmployeeOperationalContext | null | undefined,
   branchId: string,
   companyId: string,
+  options?: AssertEmployeeForBranchOptions,
 ): EmployeeOperationalContext {
   if (!employee) {
     throw new BusinessException(
@@ -57,7 +66,7 @@ export function assertEmployeeForBranchOperation(
     );
   }
 
-  if (employee.branchId !== branchId) {
+  if (!options?.allowCrossBranch && employee.branchId !== branchId) {
     throw AuthException.unauthorizedCompanyAccess(
       'Solo puedes operar en la sucursal asignada a tu empleado.',
     );

@@ -90,8 +90,8 @@ Archivo: `src/employees/policies/employee-branch.policy.ts`.
    - empleado existente para el `userId` autenticado;
    - `employee.isActive === true`;
    - `employee.companyId === companyId` del JWT;
-   - `employee.branchId === branchId` operativo.
-4. `switchBranch` actualiza la sucursal por defecto del JWT; **no** reasigna al empleado. Para operar en caja, la sucursal operativa debe coincidir con la del empleado.
+   - `employee.branchId === branchId` operativo **salvo** alcance multi-sucursal (`allowCrossBranch` cuando el JWT tiene `branches.read`).
+4. `switchBranch` actualiza la sucursal por defecto del JWT; **no** reasigna al empleado. Cajeros siguen limitados a su sucursal; supervisores con `branches.read` pueden abrir/cerrar cajas de otras sucursales de la empresa (la sucursal se toma de la caja, no del JWT).
 5. Reasignar empleado a otra sucursal: `PATCH /employees/:id` (HR); sucursal destino debe estar activa (`BranchAccessService`).
 
 ### Gestión HR por jerarquía de roles
@@ -102,20 +102,21 @@ Archivo: `src/employees/policies/employee-management.policy.ts`.
 - Excepción: cualquier empleado puede **editar su propio** registro laboral.
 - Owner y Admin **no pueden eliminar** su propio registro de empleado.
 
-### Apertura de turno (`openShift`)
+### Apertura / cierre de turno
 
 ```text
 Usuario autenticado
       ↓
-userId → Employee (BD)
+CashRegister by id → assertBranchInCompany(register.branchId, companyId)
       ↓
-assertEmployeeForBranchOperation(employee, branchId, companyId)
+(open) userId → Employee → assertEmployeeForBranchOperation(
+        employee, register.branchId, companyId,
+        { allowCrossBranch: permissions.includes('branches.read') })
       ↓
-openShift(cashierId = employee.id)
+openShift / closeShift
 ```
 
-El cliente **no** envía `employeeId`. Solo `montoApertura`.
-
+El cliente **no** envía `employeeId`. Cerrar no exige que el JWT apunte a la misma sucursal que la caja.
 ---
 
 ## RBAC tenant (`PermissionGuard`)
