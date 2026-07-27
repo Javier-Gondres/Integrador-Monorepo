@@ -65,7 +65,7 @@ import { Permission, type PermissionCode } from "@repo/shared";
 
 Convención de códigos: `dominio.accion` (ej. `products.read`, `users.delete`).
 
-Dominios actuales: `users`, `employees`, `products`, `categories`, `discounts`, `customers`, `suppliers`, `inventory`, `sales`, `purchases`, `cash`, `branches`, `reports`.
+Dominios actuales: `users`, `employees`, `products`, `categories`, `discounts`, `customers`, `suppliers`, `inventory`, `sales`, `receivables`, `purchases`, `cash`, `branches`, `reports`.
 
 Acciones típicas por dominio: `create`, `read`, `update`, `delete`, más acciones específicas (`users.activate`, `cash.open`, `inventory.adjust`, `sales.backdate`, `receivables.pay`, etc.).
 

@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PaymentMethod, Prisma, prisma, ReceivableStatus } from '@repo/db';
+import {
+  PaymentMethod,
+  Prisma,
+  prisma,
+  ReceivableStatus,
+  SaleStatus,
+} from '@repo/db';
 import { PaginatedResult } from 'src/common/types/repository.types';
 
 import { NormalizedQueryReceivables } from './dto/query-receivables.dto';
@@ -162,7 +168,7 @@ export class ReceivablesRepository {
         },
       });
 
-      return tx.accountReceivable.update({
+      const updated = await tx.accountReceivable.update({
         where: { id },
         data: {
           balance: newBalance,
@@ -170,6 +176,16 @@ export class ReceivablesRepository {
         },
         select: receivableDetailSelect,
       });
+
+      // Venta a crédito nace PENDING; al saldar la CxC queda COMPLETED.
+      if (newStatus === ReceivableStatus.PAID) {
+        await tx.sale.update({
+          where: { id: updated.sale.id },
+          data: { status: SaleStatus.COMPLETED },
+        });
+      }
+
+      return updated;
     });
   }
 }

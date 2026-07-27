@@ -219,6 +219,14 @@ Además de totales, ítems y pagos, la respuesta incluye datos para representaci
 
 La web reutiliza este endpoint en historial e impresión (`/print/sales/[id]`); no hay endpoint dedicado de impresión.
 
+#### Estado según tipo de pago
+
+| Condición | `Sale.status` |
+| --------- | ------------- |
+| Venta solo contado (sin porción `CREDIT`) | `COMPLETED` |
+| Venta con porción a crédito | `PENDING` hasta saldar la CxC |
+| Abono que deja `AccountReceivable.status = PAID` | La venta pasa a `COMPLETED` (misma transacción en receivables) |
+
 #### Fecha de venta pasada (`soldAt`)
 
 `POST /sales` acepta un campo opcional `soldAt` (ISO 8601). Si se omite, la venta usa la fecha actual.
@@ -241,7 +249,7 @@ Todos los endpoints usan `@RequirePermissions(...)`.
 | `GET` | `/receivables` | `receivables.read` | Clientes con saldo de CxC (paginado) |
 | `GET` | `/receivables/customers/:customerId` | `receivables.read` | CxC de un cliente |
 | `GET` | `/receivables/:id` | `receivables.read` | Detalle de cuenta + historial de abonos |
-| `POST` | `/receivables/:id/payments` | `receivables.pay` | Registrar abono |
+| `POST` | `/receivables/:id/payments` | `receivables.pay` | Registrar abono; si salda la CxC, marca la venta `COMPLETED` |
 
 Roles típicos: OWNER/ADMIN/MANAGER tienen `read` + `pay`; CASHIER solo `read` (ver matriz).
 
