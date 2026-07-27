@@ -438,16 +438,6 @@ export function PlatformUsersScreen() {
 
   const userColumns: DataTableColumn<PlatformUser>[] = [
     {
-      id: "id",
-      header: "ID",
-      align: "left",
-      cell: (row) => (
-        <span style={{ fontFamily: "monospace", fontSize: 12 }}>
-          {row.id.slice(0, 10)}
-        </span>
-      ),
-    },
-    {
       id: "type",
       header: "Tipo",
       cell: (row) => (
@@ -654,7 +644,7 @@ export function PlatformUsersScreen() {
         </div>
 
         <DataTableToolbar
-          searchPlaceholder="Buscar por ID, nombre, apellido o email..."
+          searchPlaceholder="Buscar por nombre, apellido o email..."
           searchValue={search}
           onSearchChange={(value) => {
             setSearch(value);
@@ -895,7 +885,6 @@ export function PlatformUsersScreen() {
 
             <InfoGrid
               items={[
-                ["ID", selectedUser.id],
                 ["Empresa", selectedUser.company?.name ?? "Sin empresa"],
                 ["Rol", selectedUser.role?.name ?? "—"],
                 ["Creado", formatDate(selectedUser.createdAt)],
