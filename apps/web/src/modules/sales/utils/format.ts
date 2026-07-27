@@ -21,6 +21,13 @@ export function saleDayToIso(day: string): string | undefined {
   return new Date(year, month - 1, date, 12, 0, 0, 0).toISOString();
 }
 
+/** Día de hoy en formato `YYYY-MM-DD` (zona horaria local). */
+export function localToday(): string {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60_000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+}
+
 /** Muestra un día local (`YYYY-MM-DD`) como fecha corta es-DO (DD/MM/YYYY). */
 export function formatSaleDay(day: string): string {
   const [year, month, date] = day.split("-").map(Number);

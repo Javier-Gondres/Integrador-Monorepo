@@ -23,7 +23,7 @@ import { useCustomerCreditNotes } from "../hooks/use-customer-credit-notes";
 import { round2, useSale } from "../hooks/use-sale";
 import { useSaleProducts } from "../hooks/use-sale-products";
 import type { PaymentMethod } from "../types/sale.types";
-import { saleDayToIso } from "../utils/format";
+import { localToday, saleDayToIso } from "../utils/format";
 
 const PAYMENT_METHOD_MAP: Record<string, PaymentMethod> = {
   contado: "CASH",
@@ -157,9 +157,12 @@ export function SaleScreenContainer({
     const payments =
       amountPayable > 0 && method ? [{ method, amount: amountPayable }] : [];
 
-    // Solo OWNER/ADMIN pueden enviar una fecha pasada; el backend lo valida.
+    // Solo OWNER/ADMIN envían fecha pasada. Si el día elegido es hoy, omitimos
+    // soldAt (el backend usa ahora) para no mandar mediodía local "futuro".
     const soldAt =
-      canBackdate && order.saleDate ? saleDayToIso(order.saleDate) : undefined;
+      canBackdate && order.saleDate && order.saleDate !== localToday()
+        ? saleDayToIso(order.saleDate)
+        : undefined;
 
     try {
       const sale = await createSale.mutateAsync({

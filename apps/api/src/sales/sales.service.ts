@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NcfType, PaymentMethod } from '@repo/db';
 import { Permission } from '@repo/shared';
+import { isAfter, isValid, parseISO, startOfDay, startOfToday } from 'date-fns';
 import type { AuthContext } from 'src/auth/auth.types';
 import type { CompanyContext } from 'src/common/company';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
@@ -228,8 +229,13 @@ export class SalesService {
     if (!auth.permissions.includes(Permission.SALES_BACKDATE)) {
       throw SalesException.backdateForbidden();
     }
-    const parsed = new Date(soldAt);
-    if (Number.isNaN(parsed.getTime()) || parsed.getTime() > Date.now()) {
+    const parsed = parseISO(soldAt);
+    if (!isValid(parsed)) {
+      throw SalesException.backdateInvalid();
+    }
+    // Comparar por día calendario: el cliente envía mediodía local del día
+    // elegido, que por la mañana aún sería "futuro" frente a Date.now().
+    if (isAfter(startOfDay(parsed), startOfToday())) {
       throw SalesException.backdateInvalid();
     }
     return parsed;

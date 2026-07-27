@@ -201,6 +201,7 @@ export default function CategoriesPage() {
 | `/suppliers`               | `(dashboard)/suppliers/page.tsx`               | `SuppliersScreen`      |
 | `/sales`                   | `(dashboard)/sales/page.tsx`                   | `SalesScreen`          |
 | `/sales-history`           | `(dashboard)/sales-history/page.tsx`           | `SalesHistoryScreen`   |
+| `/accounts-receivable`     | `(dashboard)/accounts-receivable/page.tsx`     | `AccountsReceivableScreen` |
 | `/print/sales/[id]`        | `(public)/print/sales/[id]/page.tsx`           | `InvoicePrintScreen`   |
 | `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`      |
 | `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`       |
@@ -223,6 +224,7 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | `transferencias` | Transferencias entre sucursales                                       |
 | `sales`          | POS / facturación (`/sales`); fecha pasada + modal de confirmación/impresión |
 | `sales-history`  | Historial de ventas (`/sales-history`); botón Imprimir                       |
+| `accounts-receivable` | Cuentas por cobrar (`/accounts-receivable`); abonos gated por `receivables.pay` |
 | `invoice-print`  | Recibo fiscal 58mm; ruta `/print/sales/[id]` (fuera del dashboard/nav)       |
 | `suppliers`      | Completo (CRUD + tabla)                                               |
 | `companies`      | Pantalla legacy migrada (lista + CRUD básico)                         |

@@ -232,6 +232,19 @@ La web reutiliza este endpoint en historial e impresión (`/print/sales/[id]`); 
 
 El decorador del endpoint sigue siendo solo `sales.create`. El check de `sales.backdate` es **condicional en el servicio** (`resolveSoldAt`), porque poner ambos en `@RequirePermissions` bloquearía creates normales. Roles con `sales.backdate`: OWNER y ADMIN (ver `ROLE_PERMISSION_MATRIX`).
 
+### `/receivables` (cuentas por cobrar)
+
+Todos los endpoints usan `@RequirePermissions(...)`.
+
+| Método | Ruta | Permiso(s) | Descripción |
+| ------ | ---- | ---------- | ----------- |
+| `GET` | `/receivables` | `receivables.read` | Clientes con saldo de CxC (paginado) |
+| `GET` | `/receivables/customers/:customerId` | `receivables.read` | CxC de un cliente |
+| `GET` | `/receivables/:id` | `receivables.read` | Detalle de cuenta + historial de abonos |
+| `POST` | `/receivables/:id/payments` | `receivables.pay` | Registrar abono |
+
+Roles típicos: OWNER/ADMIN/MANAGER tienen `read` + `pay`; CASHIER solo `read` (ver matriz).
+
 ---
 
 ## Guards

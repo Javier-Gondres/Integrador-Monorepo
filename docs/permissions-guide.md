@@ -67,7 +67,7 @@ Convención de códigos: `dominio.accion` (ej. `products.read`, `users.delete`).
 
 Dominios actuales: `users`, `employees`, `products`, `categories`, `discounts`, `customers`, `suppliers`, `inventory`, `sales`, `purchases`, `cash`, `branches`, `reports`.
 
-Acciones típicas por dominio: `create`, `read`, `update`, `delete`, más acciones específicas (`users.activate`, `cash.open`, `inventory.adjust`, `sales.backdate`, etc.).
+Acciones típicas por dominio: `create`, `read`, `update`, `delete`, más acciones específicas (`users.activate`, `cash.open`, `inventory.adjust`, `sales.backdate`, `receivables.pay`, etc.).
 
 #### Ventas (`sales`)
 
@@ -77,6 +77,13 @@ Acciones típicas por dominio: `create`, `read`, `update`, `delete`, más accion
 | `sales.read` | `SALES_READ` | Ver ventas / historial | OWNER, ADMIN, MANAGER, CASHIER |
 | `sales.cancel` | `SALES_CANCEL` | Cancelar ventas / devoluciones | OWNER, ADMIN, MANAGER |
 | `sales.backdate` | `SALES_BACKDATE` | Registrar ventas con fecha pasada (`soldAt` en `POST /sales`) | OWNER, ADMIN |
+
+#### Cuentas por cobrar (`receivables`)
+
+| Código | Constante | Descripción | Roles (matriz) |
+| ------ | --------- | ----------- | -------------- |
+| `receivables.read` | `RECEIVABLES_READ` | Ver CxC / saldos por cliente | OWNER, ADMIN, MANAGER, CASHIER |
+| `receivables.pay` | `RECEIVABLES_PAY` | Registrar abonos | OWNER, ADMIN, MANAGER |
 
 Tras añadir un permiso al catálogo o a la matriz, re-ejecutar el seed (`packages/database/prisma/seed.ts`) para upsert en BD y pedir refresh/relogin (el JWT cachea permisos hasta ~15 min).
 

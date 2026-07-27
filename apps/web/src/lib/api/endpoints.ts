@@ -130,6 +130,13 @@ export const ENDPOINTS = {
     currentShift: "/sales/current-shift",
     creditNotes: "/sales/credit-notes",
   },
+  receivables: {
+    root: "/receivables",
+    byCustomer: (customerId: string) =>
+      `/receivables/customers/${customerId}`,
+    byId: (id: string) => `/receivables/${id}`,
+    payments: (id: string) => `/receivables/${id}/payments`,
+  },
   reservations: {
     root: "/reservations",
     byId: (id: string) => `/reservations/${id}`,

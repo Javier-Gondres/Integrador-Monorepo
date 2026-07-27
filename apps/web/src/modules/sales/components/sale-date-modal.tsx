@@ -6,19 +6,14 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
 
+import { localToday } from "../utils/format";
+
 interface SaleDateModalProps {
   /** Día actualmente seleccionado (`YYYY-MM-DD`) o `null`. */
   value: string | null;
   onConfirm: (day: string) => void;
   onClear: () => void;
   onClose: () => void;
-}
-
-/** Día de hoy en formato `YYYY-MM-DD` (zona horaria local). */
-function today(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60_000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
 }
 
 /**
@@ -32,7 +27,7 @@ export function SaleDateModal({
   onClear,
   onClose,
 }: SaleDateModalProps) {
-  const max = today();
+  const max = localToday();
   const [day, setDay] = useState(value ?? max);
   const invalid = !day || day > max;
 

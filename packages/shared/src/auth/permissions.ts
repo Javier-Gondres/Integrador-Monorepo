@@ -55,6 +55,9 @@ export const Permission = {
   SALES_CANCEL: "sales.cancel",
   SALES_BACKDATE: "sales.backdate",
 
+  RECEIVABLES_READ: "receivables.read",
+  RECEIVABLES_PAY: "receivables.pay",
+
   PURCHASES_CREATE: "purchases.create",
   PURCHASES_READ: "purchases.read",
 
@@ -174,6 +177,12 @@ export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
   {
     code: Permission.SALES_BACKDATE,
     description: "Registrar ventas con fecha pasada",
+  },
+
+  { code: Permission.RECEIVABLES_READ, description: "Ver cuentas por cobrar" },
+  {
+    code: Permission.RECEIVABLES_PAY,
+    description: "Registrar abonos a cuentas por cobrar",
   },
 
   { code: Permission.PURCHASES_CREATE, description: "Registrar compras" },

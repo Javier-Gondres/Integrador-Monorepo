@@ -19,6 +19,7 @@ import { PlatformModule } from './platform/platform.module';
 import { ProductSupplierModule } from './product-supplier/product-supplier.module';
 import { ProductsModule } from './products/products.module';
 import { PurchasesModule } from './purchases/purchases.module';
+import { ReceivablesModule } from './receivables/receivables.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { ReturnsModule } from './returns/returns.module';
 import { SalesModule } from './sales/sales.module';
@@ -57,6 +58,7 @@ const envFilePath =
     ReturnsModule,
     SalesModule,
     ReservationsModule,
+    ReceivablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
