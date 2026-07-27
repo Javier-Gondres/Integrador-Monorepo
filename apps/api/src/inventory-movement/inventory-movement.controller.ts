@@ -39,6 +39,18 @@ export class InventoryMovementController {
     );
   }
 
+  @RequirePermissions(Permission.INVENTORY_READ)
+  @Get('waste/alerts')
+  getRecurringWasteAlerts(
+    @Company() company: CompanyContext,
+    @Query('branchId') branchId?: string,
+  ) {
+    return this.inventoryMovementService.getRecurringWasteAlerts(
+      company,
+      branchId,
+    );
+  }
+
   @RequirePermissions(Permission.INVENTORY_ADJUST)
   @Post('waste')
   createWaste(

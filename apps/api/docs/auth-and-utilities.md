@@ -253,6 +253,14 @@ Todos los endpoints usan `@RequirePermissions(...)`.
 
 Roles típicos: OWNER/ADMIN/MANAGER tienen `read` + `pay`; CASHIER solo `read` (ver matriz).
 
+### `/inventory-movements` (alertas)
+
+| Método | Ruta | Permiso(s) | Descripción |
+| ------ | ---- | ---------- | ----------- |
+| `GET` | `/inventory-movements/waste/alerts` | `inventory.read` | Alertas de merma recurrente (7 días) y stock ≤ mínimo por sucursal |
+
+`branchId` opcional en query: si viene, filtra esa sucursal (validada con `BranchAccessService`); si falta, devuelve alertas de **toda la empresa** (el dashboard no envía `branchId`). En web se muestra en `/dashboard` solo si el usuario tiene `inventory.read`.
+
 ---
 
 ## Guards

@@ -160,6 +160,7 @@ export const ENDPOINTS = {
     root: "/inventory-movements",
     adjustments: "/inventory-movements/adjustments",
     waste: "/inventory-movements/waste",
+    wasteAlerts: "/inventory-movements/waste/alerts",
   },
   transfers: {
     root: "/transfers",

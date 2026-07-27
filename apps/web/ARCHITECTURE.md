@@ -220,6 +220,7 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | `products`       | Completo (CRUD + tabla + combobox categorías)                         |
 | `employees`      | Completo (CRUD transaccional User+Employee + tabla + jerarquía roles) |
 | `inventories`    | Completo (CRUD + movimientos + ajustes)                               |
+| `dashboard`      | Inicio (`/dashboard`); alertas merma/stock gated por `inventory.read` |
 | `mermas`         | Registro de mermas (inventario por sucursal)                          |
 | `transferencias` | Transferencias entre sucursales                                       |
 | `sales`          | POS / facturación (`/sales`); fecha pasada + modal de confirmación/impresión |
