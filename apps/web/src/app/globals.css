@@ -240,6 +240,32 @@
   line-height: 1.6;
 }
 
+/* Impresión de facturas: recibo térmico 58mm (ver modules/invoice-print). */
+@media print {
+  @page {
+    size: 58mm auto;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Oculta la barra de acciones (Imprimir / Cerrar) al imprimir. */
+  .no-print {
+    display: none !important;
+  }
+
+  /* El recibo ocupa el ancho completo del papel, sin márgenes del navegador. */
+  .receipt {
+    width: 58mm !important;
+    max-width: 58mm !important;
+    margin: 0 !important;
+    padding: 3mm 2mm !important;
+  }
+}
+
 @media (max-width: 900px) {
   .sidebar {
     width: 76px;

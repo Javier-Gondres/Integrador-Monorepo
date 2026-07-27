@@ -40,6 +40,9 @@ model Product {
   imageUrl    String?
   price       Decimal @db.Decimal(10, 2)
 
+  itbisRate   Decimal @default(18) @db.Decimal(5, 2)
+  isTaxExempt Boolean @default(false)
+
   isActive  Boolean   @default(true)
   deletedAt DateTime?
 
@@ -127,6 +130,9 @@ model Customer {
   phone   String?
   address String?
   cedula  String?
+  /// RNC del cliente. Requerido para emitir un Crédito Fiscal (E31/B01),
+  /// donde el comprador debe identificarse con RNC.
+  rnc     String?
 
   isActive  Boolean   @default(true)
   deletedAt DateTime?

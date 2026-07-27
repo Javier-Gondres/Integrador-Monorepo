@@ -201,6 +201,7 @@ export default function CategoriesPage() {
 | `/suppliers`               | `(dashboard)/suppliers/page.tsx`               | `SuppliersScreen`      |
 | `/sales`                   | `(dashboard)/sales/page.tsx`                   | `SalesScreen`          |
 | `/sales-history`           | `(dashboard)/sales-history/page.tsx`           | `SalesHistoryScreen`   |
+| `/print/sales/[id]`        | `(public)/print/sales/[id]/page.tsx`           | `InvoicePrintScreen`   |
 | `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`      |
 | `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`       |
 
@@ -220,8 +221,9 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | `inventories`    | Completo (CRUD + movimientos + ajustes)                               |
 | `mermas`         | Registro de mermas (inventario por sucursal)                          |
 | `transferencias` | Transferencias entre sucursales                                       |
-| `sales`          | POS / facturación (`/sales`); fecha pasada vía modal + `soldAt`       |
-| `sales-history`  | Historial de ventas (`/sales-history`)                                |
+| `sales`          | POS / facturación (`/sales`); fecha pasada + modal de confirmación/impresión |
+| `sales-history`  | Historial de ventas (`/sales-history`); botón Imprimir                       |
+| `invoice-print`  | Recibo fiscal 58mm; ruta `/print/sales/[id]` (fuera del dashboard/nav)       |
 | `suppliers`      | Completo (CRUD + tabla)                                               |
 | `companies`      | Pantalla legacy migrada (lista + CRUD básico)                         |
 | `branches`       | Pantalla legacy migrada (lista + CRUD básico)                         |
@@ -980,6 +982,8 @@ if (isSuperAdmin) { ... }             // plataforma — NO bypass en can()
 - El backend (`PermissionGuard`) es la autoridad real; la UI solo oculta controles.
 
 **Facturación — fecha pasada:** la ruta `/sales` se abre con `sales.create`. El modal/botón “Fecha de venta” solo se muestra si `can(Permission.SALES_BACKDATE)` (OWNER/ADMIN); no es una pantalla ni ítem de nav nuevo. El payload envía `soldAt` opcional en `POST /sales`; la API valida el permiso en servicio.
+
+**Facturación — confirmación e impresión:** al confirmar la venta se abre `SaleConfirmModal` (registrar / registrar e imprimir). La impresión reutiliza `GET /sales/:id` (`sales.read`) vía `modules/invoice-print` y la ruta `/print/sales/[id]` (iframe oculto; **no** va en el sidebar). No requiere permiso ni endpoint nuevos.
 
 Documentación API: `apps/api/docs/auth-and-utilities.md`. Revisión de riesgos: `docs/security-rbac-critical-review.md`.
 

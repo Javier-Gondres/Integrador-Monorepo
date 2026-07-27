@@ -204,8 +204,20 @@ Todos los endpoints usan `@RequirePermissions(...)`.
 | `GET`  | `/sales/products`      | `sales.create` | Catálogo POS con stock/descuentos por sucursal           |
 | `GET`  | `/sales/current-shift` | `sales.create` | Turno usable para facturar: el del empleado autenticado o, si no tiene, cualquier turno abierto de la sucursal |
 | `GET`  | `/sales/credit-notes`  | `sales.create` | Notas de crédito activas de un cliente (`customerId`)    |
-| `GET`  | `/sales/:id`           | `sales.read`   | Detalle de venta                                         |
+| `GET`  | `/sales/:id`           | `sales.read`   | Detalle de venta (incluye datos fiscales de empresa y cliente) |
 | `POST` | `/sales`               | `sales.create` | Crear venta (contado/crédito/mixta, NCF, etc.)           |
+
+#### Detalle de venta (`GET /sales/:id`)
+
+Además de totales, ítems y pagos, la respuesta incluye datos para representación impresa:
+
+| Campo | Contenido |
+| ----- | --------- |
+| `company` | `name`, `rnc`, `address`, `phone` del emisor |
+| `branch` | `id`, `name`, `address` |
+| `customer` | `name`, `rnc`, `cedula`, `address`, `phone` (o `null`) |
+
+La web reutiliza este endpoint en historial e impresión (`/print/sales/[id]`); no hay endpoint dedicado de impresión.
 
 #### Fecha de venta pasada (`soldAt`)
 
