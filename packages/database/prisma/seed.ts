@@ -1973,9 +1973,22 @@ async function ensureDemoSalesAndFinance(
 async function ensureDemoTransfer(ctx: SeedContext) {
   const centro = branchByName(ctx, "Sucursal Centro");
   const norte = branchByName(ctx, "Sucursal Norte");
-  const cola355 = productByCode(ctx, "BEB-COLA-355");
   const inventoryAssistant = employeeByEmail(ctx, "inventario@ejemplo.com");
-  const transferQty = 20;
+
+  // Stock inicial de Norte. Norte no recibe compras (todas van a Centro), así
+  // que este traslado es su única fuente de existencias antes de las ventas y
+  // reservas. Debe cubrir todo lo que el seed vende/reserva en Norte para que
+  // la disponibilidad (`quantity − reservado`) no quede negativa:
+  //   cola355: venta 3, devolución +1, reserva activa 10
+  //   lays:    venta 1 + venta-desde-reserva 5, reserva activa 5
+  //   leche:   venta 2
+  //   combo:   venta 5, reserva activa 3
+  const transferItems = [
+    { code: "BEB-COLA-355", suffix: "cola", quantity: 20 },
+    { code: "SNK-LAYS-40", suffix: "lays", quantity: 30 },
+    { code: "LAC-LECHE-1L", suffix: "leche", quantity: 20 },
+    { code: "COMBO-SNACK-BEB", suffix: "combo", quantity: 20 },
+  ].map((item) => ({ ...item, product: productByCode(ctx, item.code) }));
 
   await prisma.transfer.upsert({
     where: { id: SEED_IDS.transferCompleted },
@@ -1984,15 +1997,13 @@ async function ensureDemoTransfer(ctx: SeedContext) {
       fromBranchId: centro.id,
       toBranchId: norte.id,
       status: TransferStatus.COMPLETED,
-      notes: "Traslado inicial de Coca-Cola a sucursal Norte",
+      notes: "Traslado inicial de existencias a sucursal Norte",
       items: {
-        create: [
-          {
-            id: "seed-transfer-item-cola",
-            productId: cola355.id,
-            quantity: transferQty,
-          },
-        ],
+        create: transferItems.map((item) => ({
+          id: `seed-transfer-item-${item.suffix}`,
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
       },
     },
     update: {
@@ -2001,32 +2012,34 @@ async function ensureDemoTransfer(ctx: SeedContext) {
   });
 
   await prisma.$transaction(async (tx) => {
-    await recordMovementIfAbsent(
-      tx,
-      {
-        id: "seed-movement-transfer-out-cola",
-        branchId: centro.id,
-        productId: cola355.id,
-        type: InventoryMovementType.TRANSFER_OUT,
-        quantity: transferQty,
-        transferId: SEED_IDS.transferCompleted,
-        performedByEmployeeId: inventoryAssistant.id,
-      },
-      -transferQty,
-    );
-    await recordMovementIfAbsent(
-      tx,
-      {
-        id: "seed-movement-transfer-in-cola",
-        branchId: norte.id,
-        productId: cola355.id,
-        type: InventoryMovementType.TRANSFER_IN,
-        quantity: transferQty,
-        transferId: SEED_IDS.transferCompleted,
-        performedByEmployeeId: inventoryAssistant.id,
-      },
-      transferQty,
-    );
+    for (const item of transferItems) {
+      await recordMovementIfAbsent(
+        tx,
+        {
+          id: `seed-movement-transfer-out-${item.suffix}`,
+          branchId: centro.id,
+          productId: item.product.id,
+          type: InventoryMovementType.TRANSFER_OUT,
+          quantity: item.quantity,
+          transferId: SEED_IDS.transferCompleted,
+          performedByEmployeeId: inventoryAssistant.id,
+        },
+        -item.quantity,
+      );
+      await recordMovementIfAbsent(
+        tx,
+        {
+          id: `seed-movement-transfer-in-${item.suffix}`,
+          branchId: norte.id,
+          productId: item.product.id,
+          type: InventoryMovementType.TRANSFER_IN,
+          quantity: item.quantity,
+          transferId: SEED_IDS.transferCompleted,
+          performedByEmployeeId: inventoryAssistant.id,
+        },
+        item.quantity,
+      );
+    }
   });
 }
 
