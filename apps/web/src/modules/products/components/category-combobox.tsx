@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Search, X } from "lucide-react";
+import { Check, ChevronDown, Plus, Search, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
@@ -20,6 +20,7 @@ interface CategoryComboboxProps {
   loading: boolean;
   loadingMore: boolean;
   onListScroll: React.UIEventHandler<HTMLDivElement>;
+  onCreateClick?: () => void;
 }
 
 export function CategoryCombobox({
@@ -33,6 +34,7 @@ export function CategoryCombobox({
   loading,
   loadingMore,
   onListScroll,
+  onCreateClick,
 }: CategoryComboboxProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -226,6 +228,29 @@ export function CategoryCombobox({
                 }}
               >
                 No se encontraron categorías
+                {onCreateClick && (
+                  <>
+                    {" "}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCreateClick();
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        fontSize: "13px",
+                        color: C.primary,
+                        cursor: "pointer",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Crear una nueva
+                    </button>
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -295,6 +320,41 @@ export function CategoryCombobox({
               </>
             )}
           </div>
+
+          {onCreateClick && (
+            <div
+              style={{
+                padding: "8px 12px",
+                borderTop: `1px solid ${C.divider}`,
+              }}
+            >
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCreateClick();
+                }}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "8px 10px",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: C.primary,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  borderRadius: "6px",
+                }}
+              >
+                <Plus style={{ width: "14px", height: "14px" }} />
+                Nueva categoría
+              </button>
+            </div>
+          )}
 
           {selectedIds.length > 0 && (
             <div
