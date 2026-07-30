@@ -599,11 +599,17 @@ export function BranchesScreen() {
           {/* Mobile Cards */}
           <div className="block md:hidden p-3">
             {loading ? (
-              <div className="text-center py-8 text-sm" style={{ color: C.mutedText }}>
+              <div
+                className="text-center py-8 text-sm"
+                style={{ color: C.mutedText }}
+              >
                 Cargando sucursales...
               </div>
             ) : rows.length === 0 ? (
-              <div className="text-center py-8 text-sm" style={{ color: C.mutedText }}>
+              <div
+                className="text-center py-8 text-sm"
+                style={{ color: C.mutedText }}
+              >
                 No se encontraron sucursales.
               </div>
             ) : (
@@ -615,8 +621,12 @@ export function BranchesScreen() {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-semibold text-sm text-slate-800">{branch.name}</h4>
-                        <span className="text-xs text-slate-500">{branch.address ?? "Sin dirección"}</span>
+                        <h4 className="font-semibold text-sm text-slate-800">
+                          {branch.name}
+                        </h4>
+                        <span className="text-xs text-slate-500">
+                          {branch.address ?? "Sin dirección"}
+                        </span>
                       </div>
                       <span
                         style={{
@@ -628,7 +638,9 @@ export function BranchesScreen() {
                           fontSize: "11px",
                           fontWeight: 500,
                           border: `1px solid ${branch.isActive ? C.greenBorder : C.grayBorder}`,
-                          backgroundColor: branch.isActive ? C.greenBg : C.grayBg,
+                          backgroundColor: branch.isActive
+                            ? C.greenBg
+                            : C.grayBg,
                           color: branch.isActive ? C.greenText : C.grayText,
                         }}
                       >

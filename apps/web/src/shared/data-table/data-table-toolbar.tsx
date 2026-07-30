@@ -19,7 +19,11 @@ export function DataTableToolbar({
   createPermission,
 }: DataTableToolbarProps) {
   const createButton = (
-    <Button variant="primary" onClick={onCreate} className="w-full sm:w-auto justify-center">
+    <Button
+      variant="primary"
+      onClick={onCreate}
+      className="w-full sm:w-auto justify-center"
+    >
       <Plus style={{ width: "16px", height: "16px" }} />
       {createLabel}
     </Button>
@@ -52,4 +56,3 @@ export function DataTableToolbar({
     </div>
   );
 }
-

@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Grid2x2, LogOut, Menu, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Grid2x2,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -27,7 +34,9 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   // Grouped items state for accordion collapse/expand
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [collapsedSections, setCollapsedSections] = useState<
+    Record<string, boolean>
+  >({});
 
   // Close sidebar on route change in mobile
   useEffect(() => {
@@ -74,7 +83,7 @@ export function Sidebar() {
 
       groupedSections.forEach((section) => {
         const hasActiveChild = section.links.some((link) =>
-          isNavLinkActive(pathname, link.href, navHrefs)
+          isNavLinkActive(pathname, link.href, navHrefs),
         );
         if (hasActiveChild && prev[section.title] === true) {
           next[section.title] = false;
@@ -104,8 +113,12 @@ export function Sidebar() {
             <Grid2x2 size={16} color="#fff" />
           </div>
           <div>
-            <p className="sidebar-logo-name text-white font-bold text-sm">Mi ERP</p>
-            <p className="sidebar-logo-sub text-xs text-slate-400">Bienvenido al ERP</p>
+            <p className="sidebar-logo-name text-white font-bold text-sm">
+              Mi ERP
+            </p>
+            <p className="sidebar-logo-sub text-xs text-slate-400">
+              Bienvenido al ERP
+            </p>
           </div>
         </div>
         {isMobile && (
@@ -124,7 +137,7 @@ export function Sidebar() {
         {groupedSections.map((group) => {
           const isCollapsed = collapsedSections[group.title] ?? false;
           const hasActiveChild = group.links.some((link) =>
-            isNavLinkActive(pathname, link.href, navHrefs)
+            isNavLinkActive(pathname, link.href, navHrefs),
           );
 
           return (
@@ -150,7 +163,11 @@ export function Sidebar() {
                 <div className="pl-1 space-y-1">
                   {group.links.map((link) => {
                     const Icon = link.icon;
-                    const active = isNavLinkActive(pathname, link.href, navHrefs);
+                    const active = isNavLinkActive(
+                      pathname,
+                      link.href,
+                      navHrefs,
+                    );
 
                     return (
                       <Link
@@ -185,8 +202,12 @@ export function Sidebar() {
             AD
           </div>
           <div className="min-w-0 flex-1">
-            <p className="user-name text-white font-bold text-xs truncate">{fullName}</p>
-            <p className="user-role text-[11px] text-slate-400 truncate">{user?.role ? user.role.name : "Rol"}</p>
+            <p className="user-name text-white font-bold text-xs truncate">
+              {fullName}
+            </p>
+            <p className="user-role text-[11px] text-slate-400 truncate">
+              {user?.role ? user.role.name : "Rol"}
+            </p>
           </div>
         </div>
         <button

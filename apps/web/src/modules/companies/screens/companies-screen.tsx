@@ -186,7 +186,9 @@ export function CompaniesScreen() {
     >
       {/* Header de la pagina */}
       <div className="bg-card border-b border-card-border px-4 py-4 sm:px-6 sm:py-5 md:px-10">
-        <p style={{ fontSize: "13px", color: C.mutedText, marginBottom: "4px" }}>
+        <p
+          style={{ fontSize: "13px", color: C.mutedText, marginBottom: "4px" }}
+        >
           Panel / <span style={{ color: C.primary }}>Empresas</span>
         </p>
         <h1
@@ -554,11 +556,17 @@ export function CompaniesScreen() {
           {/* Mobile Cards */}
           <div className="block md:hidden p-3">
             {loading ? (
-              <div className="text-center py-8 text-sm" style={{ color: C.mutedText }}>
+              <div
+                className="text-center py-8 text-sm"
+                style={{ color: C.mutedText }}
+              >
                 Cargando empresas...
               </div>
             ) : rows.length === 0 ? (
-              <div className="text-center py-8 text-sm" style={{ color: C.mutedText }}>
+              <div
+                className="text-center py-8 text-sm"
+                style={{ color: C.mutedText }}
+              >
                 No se encontraron empresas.
               </div>
             ) : (
@@ -570,8 +578,12 @@ export function CompaniesScreen() {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-semibold text-sm text-slate-800">{company.name}</h4>
-                        <span className="text-xs text-slate-500">RNC: {company.rnc ?? "Sin RNC"}</span>
+                        <h4 className="font-semibold text-sm text-slate-800">
+                          {company.name}
+                        </h4>
+                        <span className="text-xs text-slate-500">
+                          RNC: {company.rnc ?? "Sin RNC"}
+                        </span>
                       </div>
                       <span
                         style={{
@@ -583,7 +595,9 @@ export function CompaniesScreen() {
                           fontSize: "11px",
                           fontWeight: 500,
                           border: `1px solid ${company.isActive ? C.greenBorder : C.grayBorder}`,
-                          backgroundColor: company.isActive ? C.greenBg : C.grayBg,
+                          backgroundColor: company.isActive
+                            ? C.greenBg
+                            : C.grayBg,
                           color: company.isActive ? C.greenText : C.grayText,
                         }}
                       >
