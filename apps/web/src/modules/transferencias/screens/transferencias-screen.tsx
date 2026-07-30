@@ -98,17 +98,10 @@ export function TransferenciasScreen() {
         title="Transferencia de Productos"
       />
 
-      <div
-        style={{
-          padding: "32px 40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 24,
-        }}
-      >
+      <div className="page-container">
         {/* ── formulario de transferencia (solo con permiso de transferir) ── */}
         <Can permission={Permission.INVENTORY_TRANSFER}>
-          <div style={{ display: "flex", alignItems: "stretch" }}>
+          <div className="transferencia-panels">
             <SucursalPanel
               role="origen"
               sucursales={sucursales}

@@ -220,13 +220,7 @@ export function BranchesScreen() {
       }}
     >
       {/* Header de la pagina */}
-      <div
-        style={{
-          backgroundColor: C.cardBg,
-          borderBottom: `1px solid ${C.cardBorder}`,
-          padding: "20px 40px",
-        }}
-      >
+      <div className="bg-card border-b border-card-border px-4 py-4 sm:px-6 sm:py-5 md:px-10">
         <p
           style={{ fontSize: "13px", color: C.mutedText, marginBottom: "4px" }}
         >
@@ -247,14 +241,7 @@ export function BranchesScreen() {
       </div>
 
       {/* Body  */}
-      <div
-        style={{
-          padding: "32px 40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-        }}
-      >
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
         {/*Toolbar */}
         <div
           style={{
@@ -265,7 +252,7 @@ export function BranchesScreen() {
           }}
         >
           {/* Buscador y filtro de estado */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="toolbar-filters">
             <input
               type="text"
               placeholder="Buscar sucursal..."
@@ -393,8 +380,8 @@ export function BranchesScreen() {
             </span>
           </div>
 
-          {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          {/* Desktop Table */}
+          <div className="hidden md:block" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ backgroundColor: C.tableHead }}>
@@ -607,6 +594,72 @@ export function BranchesScreen() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="block md:hidden p-3">
+            {loading ? (
+              <div className="text-center py-8 text-sm" style={{ color: C.mutedText }}>
+                Cargando sucursales...
+              </div>
+            ) : rows.length === 0 ? (
+              <div className="text-center py-8 text-sm" style={{ color: C.mutedText }}>
+                No se encontraron sucursales.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {rows.map((branch) => (
+                  <div
+                    key={branch.id}
+                    className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold text-sm text-slate-800">{branch.name}</h4>
+                        <span className="text-xs text-slate-500">{branch.address ?? "Sin dirección"}</span>
+                      </div>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "2px 8px",
+                          borderRadius: "9999px",
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          border: `1px solid ${branch.isActive ? C.greenBorder : C.grayBorder}`,
+                          backgroundColor: branch.isActive ? C.greenBg : C.grayBg,
+                          color: branch.isActive ? C.greenText : C.grayText,
+                        }}
+                      >
+                        {branch.isActive ? "Activo" : "Inactivo"}
+                      </span>
+                    </div>
+
+                    {showActionsColumn && (
+                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 mt-1">
+                        <Can permission={Permission.BRANCHES_UPDATE}>
+                          <button
+                            onClick={() => openEditModal(branch)}
+                            className="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-md flex items-center gap-1"
+                          >
+                            <Pencil size={12} /> Editar
+                          </button>
+                        </Can>
+                        <Can permission={Permission.BRANCHES_DELETE}>
+                          <button
+                            onClick={() => borradoLogico(branch.id)}
+                            className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-md flex items-center gap-1"
+                          >
+                            <Trash2 size={12} /> Eliminar
+                          </button>
+                        </Can>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Footer de paginacion */}
