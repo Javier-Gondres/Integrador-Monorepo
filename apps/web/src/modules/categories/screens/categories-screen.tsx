@@ -5,8 +5,8 @@ import { useState } from "react";
 import { ERP_COLORS as C } from "@/constants/theme";
 import { PageHeader } from "@/shared/ui";
 
-import { CategoryFormModalContainer } from "../containers/category-form-modal-container";
 import { CategoriesTableContainer } from "../containers/categories-table-container";
+import { CategoryFormModalContainer } from "../containers/category-form-modal-container";
 import type { Category } from "../types/category.types";
 
 export function CategoriesScreen() {
