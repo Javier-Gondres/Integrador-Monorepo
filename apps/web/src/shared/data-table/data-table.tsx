@@ -28,31 +28,24 @@ export function DataTable<T>({
         overflow: "hidden",
       }}
     >
+      {/* Título + contador */}
       <div
-        style={{
-          padding: "16px 24px",
-          borderBottom: `1px solid ${C.divider}`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4"
+        style={{ borderBottom: `1px solid ${C.divider}` }}
       >
         <h3
-          style={{
-            margin: 0,
-            fontSize: "16px",
-            fontWeight: 600,
-            color: C.bodyText,
-          }}
+          className="text-sm sm:text-base font-semibold"
+          style={{ margin: 0, color: C.bodyText }}
         >
           {title}
         </h3>
-        <span style={{ fontSize: "13px", color: C.mutedText }}>
+        <span className="text-[13px]" style={{ color: C.mutedText }}>
           {total} {total === 1 ? "resultado" : "resultados"}
         </span>
       </div>
 
-      <div style={{ overflowX: "auto" }}>
+      {/* ── Desktop: tabla normal ── */}
+      <div className="hidden md:block overflow-x-auto">
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ backgroundColor: C.tableHead }}>
@@ -132,6 +125,74 @@ export function DataTable<T>({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* ── Mobile: tarjetas ── */}
+      <div className="block md:hidden p-3">
+        {loading ? (
+          <div
+            className="text-center py-8 text-sm"
+            style={{ color: C.mutedText }}
+          >
+            {loadingMessage}
+          </div>
+        ) : data.length === 0 ? (
+          <div
+            className="text-center py-8 text-sm"
+            style={{ color: C.mutedText }}
+          >
+            {emptyMessage}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {data.map((row, index) => {
+              const actionsCol = columns.find((c) => c.id === "actions");
+              const contentCols = columns.filter((c) => c.id !== "actions");
+
+              return (
+                <div
+                  key={getRowKey(row)}
+                  style={{
+                    backgroundColor: "#fff",
+                    borderRadius: "10px",
+                    border: `1px solid ${C.cardBorder}`,
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+                  }}
+                  className="p-3"
+                >
+                  {contentCols.map((col) => (
+                    <div
+                      key={col.id}
+                      className="flex justify-between items-start gap-3 py-1.5"
+                      style={{
+                        borderBottom: `1px solid ${C.divider}`,
+                      }}
+                    >
+                      <span
+                        className="text-[11px] font-semibold uppercase shrink-0"
+                        style={{ color: C.headText }}
+                      >
+                        {col.header}
+                      </span>
+                      <div
+                        className="text-[13px] text-right min-w-0 break-words"
+                        style={{ color: C.bodyText }}
+                      >
+                        {col.cell(row, index)}
+                      </div>
+                    </div>
+                  ))}
+
+                  {actionsCol && (
+                    <div className="flex justify-end pt-2 mt-1">
+                      {actionsCol.cell(row, index)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <DataTablePagination

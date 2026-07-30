@@ -19,27 +19,22 @@ export function DataTableToolbar({
   createPermission,
 }: DataTableToolbarProps) {
   const createButton = (
-    <Button variant="primary" onClick={onCreate}>
+    <Button variant="primary" onClick={onCreate} className="w-full sm:w-auto justify-center">
       <Plus style={{ width: "16px", height: "16px" }} />
       {createLabel}
     </Button>
   );
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "12px",
-      }}
-    >
-      <SearchInput
-        placeholder={searchPlaceholder}
-        value={searchValue}
-        onChange={(e) => onSearchChange(e.target.value)}
-      />
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="w-full sm:w-80">
+        <SearchInput
+          placeholder={searchPlaceholder}
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+      </div>
+      <div className="flex items-center gap-2 justify-between sm:justify-end">
         <Button variant="icon" onClick={onRefresh} title="Refrescar">
           <RotateCw
             style={{ width: "16px", height: "16px" }}
@@ -57,3 +52,4 @@ export function DataTableToolbar({
     </div>
   );
 }
+

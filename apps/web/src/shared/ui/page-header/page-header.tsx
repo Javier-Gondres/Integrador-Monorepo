@@ -11,19 +11,18 @@ export function PageHeader({ breadcrumb, title }: PageHeaderProps) {
       style={{
         backgroundColor: C.cardBg,
         borderBottom: `1px solid ${C.cardBorder}`,
-        padding: "20px 40px",
       }}
+      className="px-4 py-4 sm:px-6 sm:py-5 md:px-10"
     >
-      <p style={{ fontSize: "13px", color: C.mutedText, marginBottom: "4px" }}>
+      <p
+        style={{ color: C.mutedText, marginBottom: "4px" }}
+        className="text-[13px]"
+      >
         Panel / <span style={{ color: C.primary }}>{breadcrumb}</span>
       </p>
       <h1
-        style={{
-          fontSize: "24px",
-          fontWeight: 700,
-          color: C.bodyText,
-          margin: 0,
-        }}
+        style={{ color: C.bodyText, margin: 0 }}
+        className="text-xl sm:text-2xl font-bold"
       >
         {title}
       </h1>

@@ -42,6 +42,7 @@ export function Modal({
           flexDirection: "column",
           maxHeight: "90vh",
           overflow: "hidden",
+          margin: "auto 8px",
         }}
       >
         <div
