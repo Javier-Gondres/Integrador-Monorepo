@@ -71,26 +71,26 @@ Acciones típicas por dominio: `create`, `read`, `update`, `delete`, más accion
 
 #### Ventas (`sales`)
 
-| Código | Constante | Descripción | Roles (matriz) |
-| ------ | --------- | ----------- | -------------- |
-| `sales.create` | `SALES_CREATE` | Registrar ventas (POS / facturación) | OWNER, ADMIN, MANAGER, CASHIER |
-| `sales.read` | `SALES_READ` | Ver ventas / historial | OWNER, ADMIN, MANAGER, CASHIER |
-| `sales.cancel` | `SALES_CANCEL` | Cancelar ventas / devoluciones | OWNER, ADMIN, MANAGER |
-| `sales.backdate` | `SALES_BACKDATE` | Registrar ventas con fecha pasada (`soldAt` en `POST /sales`) | OWNER, ADMIN |
+| Código           | Constante        | Descripción                                                   | Roles (matriz)                 |
+| ---------------- | ---------------- | ------------------------------------------------------------- | ------------------------------ |
+| `sales.create`   | `SALES_CREATE`   | Registrar ventas (POS / facturación)                          | OWNER, ADMIN, MANAGER, CASHIER |
+| `sales.read`     | `SALES_READ`     | Ver ventas / historial                                        | OWNER, ADMIN, MANAGER, CASHIER |
+| `sales.cancel`   | `SALES_CANCEL`   | Cancelar ventas / devoluciones                                | OWNER, ADMIN, MANAGER          |
+| `sales.backdate` | `SALES_BACKDATE` | Registrar ventas con fecha pasada (`soldAt` en `POST /sales`) | OWNER, ADMIN                   |
 
 #### Cuentas por cobrar (`receivables`)
 
-| Código | Constante | Descripción | Roles (matriz) |
-| ------ | --------- | ----------- | -------------- |
+| Código             | Constante          | Descripción                  | Roles (matriz)                 |
+| ------------------ | ------------------ | ---------------------------- | ------------------------------ |
 | `receivables.read` | `RECEIVABLES_READ` | Ver CxC / saldos por cliente | OWNER, ADMIN, MANAGER, CASHIER |
-| `receivables.pay` | `RECEIVABLES_PAY` | Registrar abonos | OWNER, ADMIN, MANAGER |
+| `receivables.pay`  | `RECEIVABLES_PAY`  | Registrar abonos             | OWNER, ADMIN, MANAGER          |
 
 #### Cuentas por pagar (`payables`)
 
-| Código | Constante | Descripción | Roles (matriz) |
-| ------ | --------- | ----------- | -------------- |
-| `payables.read` | `PAYABLES_READ` | Ver CxP / listado y detalle | OWNER, ADMIN, MANAGER |
-| `payables.pay` | `PAYABLES_PAY` | Registrar abonos a proveedores | OWNER, ADMIN, MANAGER |
+| Código            | Constante         | Descripción                           | Roles (matriz)        |
+| ----------------- | ----------------- | ------------------------------------- | --------------------- |
+| `payables.read`   | `PAYABLES_READ`   | Ver CxP / listado y detalle           | OWNER, ADMIN, MANAGER |
+| `payables.pay`    | `PAYABLES_PAY`    | Registrar abonos a proveedores        | OWNER, ADMIN, MANAGER |
 | `payables.update` | `PAYABLES_UPDATE` | Actualizar CxP (fecha de vencimiento) | OWNER, ADMIN, MANAGER |
 
 Tras añadir un permiso al catálogo o a la matriz, re-ejecutar el seed (`packages/database/prisma/seed.ts`) para upsert en BD y pedir refresh/relogin (el JWT cachea permisos hasta ~15 min).

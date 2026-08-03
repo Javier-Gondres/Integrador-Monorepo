@@ -133,8 +133,7 @@ export const ENDPOINTS = {
   },
   receivables: {
     root: "/receivables",
-    byCustomer: (customerId: string) =>
-      `/receivables/customers/${customerId}`,
+    byCustomer: (customerId: string) => `/receivables/customers/${customerId}`,
     byId: (id: string) => `/receivables/${id}`,
     payments: (id: string) => `/receivables/${id}/payments`,
   },

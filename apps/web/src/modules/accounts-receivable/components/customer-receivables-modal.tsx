@@ -1,7 +1,7 @@
+import { Permission } from "@repo/shared";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Eye, HandCoins } from "lucide-react";
-import { Permission } from "@repo/shared";
 
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";

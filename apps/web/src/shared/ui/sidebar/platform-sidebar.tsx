@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid2x2, LogOut, Menu, X, type LucideIcon } from "lucide-react";
+import { Grid2x2, LogOut, type LucideIcon, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";

@@ -38,11 +38,8 @@ export async function createReceivablePayment(
   id: string,
   data: { amount: number; method: string; notes?: string },
 ): Promise<AccountReceivableDetail> {
-  return apiFetch<AccountReceivableDetail>(
-    ENDPOINTS.receivables.payments(id),
-    {
-      method: "POST",
-      body: JSON.stringify(data),
-    },
-  );
+  return apiFetch<AccountReceivableDetail>(ENDPOINTS.receivables.payments(id), {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }

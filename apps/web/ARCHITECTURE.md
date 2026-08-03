@@ -192,21 +192,21 @@ export default function CategoriesPage() {
 
 ### Rutas actuales
 
-| URL                        | Página                                         | Screen                 |
-| -------------------------- | ---------------------------------------------- | ---------------------- |
-| `/`                        | `(public)/page.tsx`                            | Home + links dev       |
-| `/categories`              | `(dashboard)/categories/page.tsx`              | `CategoriesScreen`     |
-| `/products`                | `(dashboard)/products/page.tsx`                | `ProductsScreen`       |
-| `/employees`               | `(dashboard)/employees/page.tsx`               | `EmployeesScreen`      |
-| `/suppliers`               | `(dashboard)/suppliers/page.tsx`               | `SuppliersScreen`      |
-| `/sales`                   | `(dashboard)/sales/page.tsx`                   | `SalesScreen`          |
-| `/sales-history`           | `(dashboard)/sales-history/page.tsx`           | `SalesHistoryScreen`   |
+| URL                        | Página                                         | Screen                     |
+| -------------------------- | ---------------------------------------------- | -------------------------- |
+| `/`                        | `(public)/page.tsx`                            | Home + links dev           |
+| `/categories`              | `(dashboard)/categories/page.tsx`              | `CategoriesScreen`         |
+| `/products`                | `(dashboard)/products/page.tsx`                | `ProductsScreen`           |
+| `/employees`               | `(dashboard)/employees/page.tsx`               | `EmployeesScreen`          |
+| `/suppliers`               | `(dashboard)/suppliers/page.tsx`               | `SuppliersScreen`          |
+| `/sales`                   | `(dashboard)/sales/page.tsx`                   | `SalesScreen`              |
+| `/sales-history`           | `(dashboard)/sales-history/page.tsx`           | `SalesHistoryScreen`       |
 | `/accounts-receivable`     | `(dashboard)/accounts-receivable/page.tsx`     | `AccountsReceivableScreen` |
-| `/accounts-payable`        | `(dashboard)/accounts-payable/page.tsx`        | `AccountsPayableScreen` |
-| `/profile`                 | `(dashboard)/profile/page.tsx`                 | `ProfileScreen`        |
-| `/print/sales/[id]`        | `(public)/print/sales/[id]/page.tsx`           | `InvoicePrintScreen`   |
-| `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`      |
-| `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`       |
+| `/accounts-payable`        | `(dashboard)/accounts-payable/page.tsx`        | `AccountsPayableScreen`    |
+| `/profile`                 | `(dashboard)/profile/page.tsx`                 | `ProfileScreen`            |
+| `/print/sales/[id]`        | `(public)/print/sales/[id]/page.tsx`           | `InvoicePrintScreen`       |
+| `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`          |
+| `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`           |
 
 ---
 
@@ -216,29 +216,29 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 
 ### Módulos implementados
 
-| Módulo           | Estado                                                                |
-| ---------------- | --------------------------------------------------------------------- |
-| `categories`     | Completo (CRUD + tabla)                                               |
-| `products`       | Completo (CRUD + tabla + combobox categorías)                         |
-| `employees`      | Completo (CRUD transaccional User+Employee + tabla + jerarquía roles) |
-| `inventories`    | Completo (CRUD + movimientos + ajustes)                               |
-| `dashboard`      | Inicio (`/dashboard`); alertas merma/stock gated por `inventory.read` |
-| `mermas`         | Registro de mermas (inventario por sucursal)                          |
-| `transferencias` | Transferencias entre sucursales                                       |
-| `sales`          | POS / facturación (`/sales`); fecha pasada + modal de confirmación/impresión |
-| `sales-history`  | Historial de ventas (`/sales-history`); botón Imprimir                       |
-| `accounts-receivable` | Cuentas por cobrar (`/accounts-receivable`); abonos gated por `receivables.pay` |
-| `accounts-payable` | Cuentas por pagar (`/accounts-payable`); abonos `payables.pay`, vencimiento `payables.update` |
-| `invoice-print`  | Recibo fiscal 58mm; ruta `/print/sales/[id]` (fuera del dashboard/nav)       |
-| `suppliers`      | Completo (CRUD + tabla)                                               |
-| `companies`      | Pantalla legacy migrada (lista + CRUD básico)                         |
-| `branches`       | Pantalla legacy migrada (lista + CRUD básico)                         |
-| `auth`           | Scaffold (API hooks, sin UI de login aún)                             |
-| `users`          | **Provisional** — CRUD en `/users`; ver nota §18.1                    |
-| `profile`        | Autoservicio (`/profile`): editar datos propios + cambiar contraseña; sin permiso RBAC (cualquier autenticado) |
-| `platform`       | Admin SaaS — `/platform/*` (Super Admin)                              |
-| `roles`          | Scaffold RBAC                                                         |
-| `permissions`    | Scaffold RBAC                                                         |
+| Módulo                | Estado                                                                                                         |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `categories`          | Completo (CRUD + tabla)                                                                                        |
+| `products`            | Completo (CRUD + tabla + combobox categorías)                                                                  |
+| `employees`           | Completo (CRUD transaccional User+Employee + tabla + jerarquía roles)                                          |
+| `inventories`         | Completo (CRUD + movimientos + ajustes)                                                                        |
+| `dashboard`           | Inicio (`/dashboard`); alertas merma/stock gated por `inventory.read`                                          |
+| `mermas`              | Registro de mermas (inventario por sucursal)                                                                   |
+| `transferencias`      | Transferencias entre sucursales                                                                                |
+| `sales`               | POS / facturación (`/sales`); fecha pasada + modal de confirmación/impresión                                   |
+| `sales-history`       | Historial de ventas (`/sales-history`); botón Imprimir                                                         |
+| `accounts-receivable` | Cuentas por cobrar (`/accounts-receivable`); abonos gated por `receivables.pay`                                |
+| `accounts-payable`    | Cuentas por pagar (`/accounts-payable`); abonos `payables.pay`, vencimiento `payables.update`                  |
+| `invoice-print`       | Recibo fiscal 58mm; ruta `/print/sales/[id]` (fuera del dashboard/nav)                                         |
+| `suppliers`           | Completo (CRUD + tabla)                                                                                        |
+| `companies`           | Pantalla legacy migrada (lista + CRUD básico)                                                                  |
+| `branches`            | Pantalla legacy migrada (lista + CRUD básico)                                                                  |
+| `auth`                | Scaffold (API hooks, sin UI de login aún)                                                                      |
+| `users`               | **Provisional** — CRUD en `/users`; ver nota §18.1                                                             |
+| `profile`             | Autoservicio (`/profile`): editar datos propios + cambiar contraseña; sin permiso RBAC (cualquier autenticado) |
+| `platform`            | Admin SaaS — `/platform/*` (Super Admin)                                                                       |
+| `roles`               | Scaffold RBAC                                                                                                  |
+| `permissions`         | Scaffold RBAC                                                                                                  |
 
 ### Convención obligatoria de carpeta
 

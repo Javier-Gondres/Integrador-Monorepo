@@ -819,10 +819,7 @@ export function PlatformUsersScreen() {
           description="Crea una cuenta global y envía el correo de activación."
           onClose={() => setIsCreateOpen(false)}
         >
-          <form
-            onSubmit={createUser}
-            className="grid gap-4 p-4 sm:p-6"
-          >
+          <form onSubmit={createUser} className="grid gap-4 p-4 sm:p-6">
             <Input
               label="Nombre"
               required
@@ -1038,7 +1035,7 @@ export function PlatformUsersScreen() {
                 <h3 style={{ margin: 0, fontSize: 15 }}>Agregar a empresa</h3>
                 <form
                   onSubmit={assignSelectedUser}
-                className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(10rem,12rem)_auto] md:items-end"
+                  className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(10rem,12rem)_auto] md:items-end"
                 >
                   <Filter label="Empresa">
                     <CompanySelect

@@ -116,8 +116,7 @@ CashRegister by id → assertBranchInCompany(register.branchId, companyId)
 openShift / closeShift
 ```
 
-El cliente **no** envía `employeeId`. Cerrar no exige que el JWT apunte a la misma sucursal que la caja.
----
+## El cliente **no** envía `employeeId`. Cerrar no exige que el JWT apunte a la misma sucursal que la caja.
 
 ## RBAC tenant (`PermissionGuard`)
 

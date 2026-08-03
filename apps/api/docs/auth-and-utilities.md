@@ -198,45 +198,45 @@ Todos los endpoints usan `@RequirePermissions(...)`. Jerarquía de roles en `src
 
 Todos los endpoints usan `@RequirePermissions(...)`.
 
-| Método | Ruta                   | Permiso(s)     | Descripción                                              |
-| ------ | ---------------------- | -------------- | -------------------------------------------------------- |
-| `GET`  | `/sales`               | `sales.read`   | Listado paginado (filtros: sucursal, cliente, fechas…)   |
-| `GET`  | `/sales/products`      | `sales.create` | Catálogo POS con stock/descuentos por sucursal           |
+| Método | Ruta                   | Permiso(s)     | Descripción                                                                                                    |
+| ------ | ---------------------- | -------------- | -------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/sales`               | `sales.read`   | Listado paginado (filtros: sucursal, cliente, fechas…)                                                         |
+| `GET`  | `/sales/products`      | `sales.create` | Catálogo POS con stock/descuentos por sucursal                                                                 |
 | `GET`  | `/sales/current-shift` | `sales.create` | Turno usable para facturar: el del empleado autenticado o, si no tiene, cualquier turno abierto de la sucursal |
-| `GET`  | `/sales/credit-notes`  | `sales.create` | Notas de crédito activas de un cliente (`customerId`)    |
-| `GET`  | `/sales/:id`           | `sales.read`   | Detalle de venta (incluye datos fiscales de empresa y cliente) |
-| `POST` | `/sales`               | `sales.create` | Crear venta (contado/crédito/mixta, NCF, etc.)           |
+| `GET`  | `/sales/credit-notes`  | `sales.create` | Notas de crédito activas de un cliente (`customerId`)                                                          |
+| `GET`  | `/sales/:id`           | `sales.read`   | Detalle de venta (incluye datos fiscales de empresa y cliente)                                                 |
+| `POST` | `/sales`               | `sales.create` | Crear venta (contado/crédito/mixta, NCF, etc.)                                                                 |
 
 #### Detalle de venta (`GET /sales/:id`)
 
 Además de totales, ítems y pagos, la respuesta incluye datos para representación impresa:
 
-| Campo | Contenido |
-| ----- | --------- |
-| `company` | `name`, `rnc`, `address`, `phone` del emisor |
-| `branch` | `id`, `name`, `address` |
+| Campo      | Contenido                                              |
+| ---------- | ------------------------------------------------------ |
+| `company`  | `name`, `rnc`, `address`, `phone` del emisor           |
+| `branch`   | `id`, `name`, `address`                                |
 | `customer` | `name`, `rnc`, `cedula`, `address`, `phone` (o `null`) |
 
 La web reutiliza este endpoint en historial e impresión (`/print/sales/[id]`); no hay endpoint dedicado de impresión.
 
 #### Estado según tipo de pago
 
-| Condición | `Sale.status` |
-| --------- | ------------- |
-| Venta solo contado (sin porción `CREDIT`) | `COMPLETED` |
-| Venta con porción a crédito | `PENDING` hasta saldar la CxC |
+| Condición                                        | `Sale.status`                                                  |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| Venta solo contado (sin porción `CREDIT`)        | `COMPLETED`                                                    |
+| Venta con porción a crédito                      | `PENDING` hasta saldar la CxC                                  |
 | Abono que deja `AccountReceivable.status = PAID` | La venta pasa a `COMPLETED` (misma transacción en receivables) |
 
 #### Fecha de venta pasada (`soldAt`)
 
 `POST /sales` acepta un campo opcional `soldAt` (ISO 8601). Si se omite, la venta usa la fecha actual.
 
-| Condición                                      | Resultado                                              |
-| ---------------------------------------------- | ------------------------------------------------------ |
-| Sin `soldAt`                                   | `createdAt` = ahora                                    |
-| `soldAt` + permiso `sales.backdate`            | Persiste con esa fecha (no futura)                     |
-| `soldAt` sin `sales.backdate`                  | `403` `SALE_BACKDATE_FORBIDDEN`                        |
-| `soldAt` inválido o futuro                     | `400`/`403` `SALE_BACKDATE_INVALID`                    |
+| Condición                           | Resultado                           |
+| ----------------------------------- | ----------------------------------- |
+| Sin `soldAt`                        | `createdAt` = ahora                 |
+| `soldAt` + permiso `sales.backdate` | Persiste con esa fecha (no futura)  |
+| `soldAt` sin `sales.backdate`       | `403` `SALE_BACKDATE_FORBIDDEN`     |
+| `soldAt` inválido o futuro          | `400`/`403` `SALE_BACKDATE_INVALID` |
 
 El decorador del endpoint sigue siendo solo `sales.create`. El check de `sales.backdate` es **condicional en el servicio** (`resolveSoldAt`), porque poner ambos en `@RequirePermissions` bloquearía creates normales. Roles con `sales.backdate`: OWNER y ADMIN (ver `ROLE_PERMISSION_MATRIX`).
 
@@ -244,12 +244,12 @@ El decorador del endpoint sigue siendo solo `sales.create`. El check de `sales.b
 
 Todos los endpoints usan `@RequirePermissions(...)`.
 
-| Método | Ruta | Permiso(s) | Descripción |
-| ------ | ---- | ---------- | ----------- |
-| `GET` | `/receivables` | `receivables.read` | Clientes con saldo de CxC (paginado) |
-| `GET` | `/receivables/customers/:customerId` | `receivables.read` | CxC de un cliente |
-| `GET` | `/receivables/:id` | `receivables.read` | Detalle de cuenta + historial de abonos |
-| `POST` | `/receivables/:id/payments` | `receivables.pay` | Registrar abono; si salda la CxC, marca la venta `COMPLETED` |
+| Método | Ruta                                 | Permiso(s)         | Descripción                                                  |
+| ------ | ------------------------------------ | ------------------ | ------------------------------------------------------------ |
+| `GET`  | `/receivables`                       | `receivables.read` | Clientes con saldo de CxC (paginado)                         |
+| `GET`  | `/receivables/customers/:customerId` | `receivables.read` | CxC de un cliente                                            |
+| `GET`  | `/receivables/:id`                   | `receivables.read` | Detalle de cuenta + historial de abonos                      |
+| `POST` | `/receivables/:id/payments`          | `receivables.pay`  | Registrar abono; si salda la CxC, marca la venta `COMPLETED` |
 
 Roles típicos: OWNER/ADMIN/MANAGER tienen `read` + `pay`; CASHIER solo `read` (ver matriz).
 
@@ -257,20 +257,20 @@ Roles típicos: OWNER/ADMIN/MANAGER tienen `read` + `pay`; CASHIER solo `read` (
 
 Todos los endpoints usan `@RequirePermissions(...)`.
 
-| Método | Ruta | Permiso(s) | Descripción |
-| ------ | ---- | ---------- | ----------- |
-| `GET` | `/payables` | `payables.read` | Listado paginado de CxP (filtros sucursal/proveedor/estado/fechas) |
-| `GET` | `/payables/:id` | `payables.read` | Detalle de cuenta + historial de abonos |
-| `POST` | `/payables/:id/payments` | `payables.pay` | Registrar abono a proveedor |
-| `PATCH` | `/payables/:id` | `payables.update` | Actualizar fecha de vencimiento |
+| Método  | Ruta                     | Permiso(s)        | Descripción                                                        |
+| ------- | ------------------------ | ----------------- | ------------------------------------------------------------------ |
+| `GET`   | `/payables`              | `payables.read`   | Listado paginado de CxP (filtros sucursal/proveedor/estado/fechas) |
+| `GET`   | `/payables/:id`          | `payables.read`   | Detalle de cuenta + historial de abonos                            |
+| `POST`  | `/payables/:id/payments` | `payables.pay`    | Registrar abono a proveedor                                        |
+| `PATCH` | `/payables/:id`          | `payables.update` | Actualizar fecha de vencimiento                                    |
 
 Roles típicos: OWNER/ADMIN/MANAGER tienen `read` + `pay` + `update`. En web: `/accounts-payable`, nav Finanzas gated por `payables.read`.
 
 ### `/inventory-movements` (alertas)
 
-| Método | Ruta | Permiso(s) | Descripción |
-| ------ | ---- | ---------- | ----------- |
-| `GET` | `/inventory-movements/waste/alerts` | `inventory.read` | Alertas de merma recurrente (7 días) y stock ≤ mínimo por sucursal |
+| Método | Ruta                                | Permiso(s)       | Descripción                                                        |
+| ------ | ----------------------------------- | ---------------- | ------------------------------------------------------------------ |
+| `GET`  | `/inventory-movements/waste/alerts` | `inventory.read` | Alertas de merma recurrente (7 días) y stock ≤ mínimo por sucursal |
 
 `branchId` opcional en query: si viene, filtra esa sucursal (validada con `BranchAccessService`); si falta, devuelve alertas de **toda la empresa** (el dashboard no envía `branchId`). En web se muestra en `/dashboard` solo si el usuario tiene `inventory.read`.
 
