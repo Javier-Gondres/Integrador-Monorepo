@@ -42,4 +42,6 @@ export interface DataTableToolbarProps {
   onCreate: () => void;
   /** Si se define, el botón crear solo se muestra con ese permiso tenant. */
   createPermission?: PermissionCode;
+  /** Botones o acciones adicionales mostrados antes del botón principal. */
+  actions?: ReactNode;
 }

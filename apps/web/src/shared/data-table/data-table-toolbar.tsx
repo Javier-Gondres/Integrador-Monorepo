@@ -17,6 +17,7 @@ export function DataTableToolbar({
   createLabel,
   onCreate,
   createPermission,
+  actions,
 }: DataTableToolbarProps) {
   const createButton = (
     <Button variant="primary" onClick={onCreate}>
@@ -46,6 +47,9 @@ export function DataTableToolbar({
             className={refreshing ? "animate-spin" : ""}
           />
         </Button>
+
+        {actions}
+
         {createLabel ? (
           createPermission ? (
             <Can permission={createPermission}>{createButton}</Can>
