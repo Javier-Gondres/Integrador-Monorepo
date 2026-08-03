@@ -43,8 +43,30 @@ Estas variables deben existir en **`packages/database/.env.development`** (y en 
 | `pnpm db:deploy`            | Aplica migraciones en **local/dev** | Mismo archivo **`.env.development`** (misma convención que staging/prod con otros nombres)                  |
 | `pnpm db:deploy:staging`    | Después de validar en local         | Lee **`.env.staging`**                                                                                      |
 | `pnpm db:deploy:production` | Release a prod                      | Lee **`.env.production`**                                                                                   |
+| `pnpm db:seed:staging`      | Datos demo en **Supabase staging**  | Lee **`.env.staging`** (después de `db:deploy:staging`)                                                     |
+| `pnpm db:seed:production`   | Datos demo en **Supabase prod**     | Lee **`.env.production`** (después de `db:deploy:production`)                                               |
 
 `db:generate`, `db:migrate` y `db:deploy` usan **`.env.development`**; los de staging/prod usan **`dotenv-cli`** con su archivo correspondiente.
+
+### Seed en staging / producción
+
+El script `prisma/seed.ts` es **idempotente** (upsert): puedes ejecutarlo más de una vez sin duplicar la empresa demo ni los usuarios por email.
+
+Orden recomendado por entorno:
+
+```bash
+pnpm db:deploy:staging
+pnpm db:seed:staging
+```
+
+```bash
+pnpm db:deploy:production
+pnpm db:seed:production
+```
+
+Credenciales por defecto (igual que en local): `prueba@ejemplo.com` / `Password123`. Opcional: `SEED_USER_PASSWORD=tuClave` en el mismo `.env.staging` o `.env.production` antes del seed.
+
+**Producción:** el seed inserta datos de demostración y contraseñas conocidas; úsalo solo si quieres esa base poblada para pruebas o demos, no como sustituto de usuarios reales.
 
 ---
 

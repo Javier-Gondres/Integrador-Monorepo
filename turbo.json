@@ -8,10 +8,12 @@
 
       "env": [
         "NODE_ENV",
+        "APP_ENV",
         "DATABASE_URL",
         "DIRECT_URL",
         "NEXT_PUBLIC_*",
-        "PORT"
+        "PORT",
+        "API_URL"
       ],
 
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
@@ -27,7 +29,8 @@
         "APP_ENV",
         "DATABASE_URL",
         "DIRECT_URL",
-        "NEXT_PUBLIC_*"
+        "NEXT_PUBLIC_*",
+        "API_URL"
       ],
 
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
@@ -43,7 +46,11 @@
         "APP_ENV",
         "DATABASE_URL",
         "DIRECT_URL",
-        "NEXT_PUBLIC_*"
+        "NEXT_PUBLIC_*",
+        "JWT_ACCESS_SECRET",
+        "JWT_REFRESH_SECRET",
+        "COOKIE_SAME_SITE",
+        "COOKIE_SECURE"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "cache": false,
@@ -51,15 +58,18 @@
     },
 
     "db:generate": {
-      "cache": false
+      "cache": false,
+      "env": ["DATABASE_URL", "DIRECT_URL"]
     },
 
     "db:migrate": {
-      "cache": false
+      "cache": false,
+      "env": ["DATABASE_URL", "DIRECT_URL"]
     },
 
     "db:deploy": {
-      "cache": false
+      "cache": false,
+      "env": ["DATABASE_URL", "DIRECT_URL"]
     },
 
     "lint": {

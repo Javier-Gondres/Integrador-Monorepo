@@ -1,0 +1,1 @@
+-- Branch.address is already nullable in 20260521183557_modelos_para_autenticacion; phone was never added.

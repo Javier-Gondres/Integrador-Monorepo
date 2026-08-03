@@ -1,0 +1,57 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { ERP_COLORS as C } from "@/constants/theme";
+import { useOperationalBranches } from "@/shared/hooks/use-operational-branches";
+import { PageHeader } from "@/shared/ui";
+
+import { AdjustmentFormModalContainer } from "../containers/adjustment-form-modal-container";
+import { AdjustmentsTableContainer } from "../containers/adjustments-table-container";
+
+export function InventoryAdjustmentsScreen() {
+  const {
+    branches,
+    defaultBranchId,
+    isLoading: branchesLoading,
+  } = useOperationalBranches();
+
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (selectedBranchId) return;
+    if (defaultBranchId) setSelectedBranchId(defaultBranchId);
+  }, [defaultBranchId, selectedBranchId]);
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        backgroundColor: C.pageBg,
+        fontFamily: "inherit",
+      }}
+    >
+      <PageHeader breadcrumb="Ajustes" title="Ajustes de inventario" />
+
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
+        <AdjustmentsTableContainer
+          branchId={selectedBranchId}
+          branches={branches}
+          branchesLoading={branchesLoading}
+          onBranchChange={setSelectedBranchId}
+          onCreate={() => setIsModalOpen(true)}
+        />
+      </div>
+
+      {isModalOpen && selectedBranchId && (
+        <AdjustmentFormModalContainer
+          defaultBranchId={selectedBranchId}
+          branches={branches}
+          branchesLoading={branchesLoading}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
+    </main>
+  );
+}

@@ -1,0 +1,22 @@
+model AuditLog {
+  id String @id @default(cuid())
+
+  companyId String?
+  branchId  String?
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  Json?
+
+  company Company? @relation(fields: [companyId], references: [id])
+  branch  Branch?  @relation(fields: [branchId], references: [id])
+  user    User?    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([userId])
+  @@index([entity, entityId])
+}

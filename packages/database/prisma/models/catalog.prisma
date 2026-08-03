@@ -1,0 +1,176 @@
+enum NcfType {
+  CONSUMIDOR_FINAL
+  CREDITO_FISCAL
+  GUBERNAMENTAL
+  REGIMEN_ESPECIAL
+  EXPORTACION
+  NOTA_DE_CREDITO
+}
+
+model Category {
+  id String @id @default(cuid())
+
+  companyId   String
+  name        String
+  description String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company   Company    @relation(fields: [companyId], references: [id])
+  products  Product[]
+  discounts Discount[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+model Product {
+  id String @id @default(cuid())
+
+  companyId String
+
+  name        String
+  code        String
+  description String?
+  imageUrl    String?
+  price       Decimal @db.Decimal(10, 2)
+
+  itbisRate   Decimal @default(18) @db.Decimal(5, 2)
+  isTaxExempt Boolean @default(false)
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company    Company    @relation(fields: [companyId], references: [id])
+  categories Category[]
+
+  suppliers          ProductSupplier[]
+  inventories        Inventory[]
+  inventoryMovements InventoryMovement[]
+  reservationItems   ReservationItem[]
+  saleItems          SaleItem[]
+  purchaseItems      PurchaseItem[]
+  returnItems        ReturnItem[]
+  transferItems      TransferItem[]
+  discounts          Discount[]
+  discountExclusions DiscountExcludedProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, code, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+/// Vínculo producto ↔ proveedor (M:N). Solo un registro por producto puede tener isPreferred = true
+/// (índice parcial único PostgreSQL: product_supplier_preferred_idx).
+model ProductSupplier {
+  productId  String
+  supplierId String
+
+  isPreferred Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  lastCost    Decimal? @db.Decimal(10, 2)
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([productId, supplierId])
+  @@index([supplierId])
+}
+
+model Supplier {
+  id String @id @default(cuid())
+
+  companyId String
+  name      String
+
+  contactName String?
+  email       String?
+  phone       String?
+  rnc         String?
+  address     String?
+  notes       String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  products        ProductSupplier[]
+  purchases       Purchase[]
+  accountsPayable AccountPayable[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+model Customer {
+  id String @id @default(cuid())
+
+  companyId String
+
+  firstName String
+  lastName  String
+
+  email   String?
+  phone   String?
+  address String?
+  cedula  String?
+  /// RNC del cliente. Requerido para emitir un Crédito Fiscal (E31/B01),
+  /// donde el comprador debe identificarse con RNC.
+  rnc     String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  sales              Sale[]
+  accountsReceivable AccountReceivable[]
+  reservations       Reservation[]
+  creditNotes        CreditNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, cedula, deletedAt])
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+model NcfSequence {
+  id String @id @default(cuid())
+
+  companyId      String
+  type           NcfType
+  prefix         String
+  currentNumber  Int
+  maxNumber      Int
+  expirationDate DateTime
+
+  isActive Boolean @default(true)
+
+  company     Company      @relation(fields: [companyId], references: [id])
+  sales       Sale[]
+  creditNotes CreditNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, type, prefix])
+  @@index([companyId])
+}

@@ -1,0 +1,160 @@
+# Users API — REST Client (VS Code / Cursor extension "REST Client")
+#
+# Requisitos:
+#   1. API en marcha → pnpm --filter api run dev
+#   2. Primer usuario admin: pnpm db:seed:dev (o usuario con empresa ya creado)
+#   3. Login abajo → @accessToken
+#   4. POST /users crea User + membresía en tu empresa (requiere Bearer)
+#
+# Si GET /users responde 403 → el usuario del token no tiene empresa (ejecuta seed).
+
+@baseUrl = http://localhost:3001
+@userId =cmppmnylw00002k50o2r72pv1
+@email = prueba@ejemplo.com
+@password = NuevaPassword12
+
+@selfUserId = cmpldelqh0000p850yo1xpoz4
+
+### Login (obtener accessToken)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###
+
+@accessToken = {{login.response.body.$.data.accessToken}}
+
+### Verificar contexto JWT + empresa (auth)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Roles disponibles (formularios)
+GET {{baseUrl}}/users/roles
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (requiere empresa asignada)
+GET {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (paginado)
+GET {{baseUrl}}/users?page=1&limit=10
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (filtro por texto)
+GET {{baseUrl}}/users?isActive=false
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (filtro por rol)
+GET {{baseUrl}}/users?role=CASHIER
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Listar usuarios (filtro por estado activo)
+GET {{baseUrl}}/users?isActive=true
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Crear usuario en la empresa (User + UserCompany + rol)
+# @name createUser
+POST {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "email": "nuevo.cajero@ejemplo.com",
+  "password": "{{password}}",
+  "firstName": "María",
+  "lastName": "García",
+  "role": "CASHIER"
+}
+
+###
+
+### Crear usuario (email duplicado — debe responder 409)
+POST {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "email": "nuevo.cajero@ejemplo.com",
+  "password": "{{password}}",
+  "firstName": "Otro",
+  "lastName": "Usuario",
+  "role": "CASHIER"
+}
+
+###
+
+### Obtener usuario por id (misma empresa; 404 si no existe o es de otra empresa)
+GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Desactivar usuario (isActive = false; no es soft delete)
+# Usa el id de otro usuario de tu empresa (no el tuyo → 400).
+PATCH {{baseUrl}}/users/{{userId}}/deactivate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Activar usuario (isActive = true)
+PATCH {{baseUrl}}/users/{{userId}}/activate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Desactivarte a ti mismo — debe responder 400
+PATCH {{baseUrl}}/users/{{selfUserId}}/deactivate
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Sacar usuario de la empresa (revoca membresía; no elimina la cuenta global)
+# Usa el id de otro usuario de tu empresa (no el tuyo → 400).
+DELETE {{baseUrl}}/users/{{userId}}/membership
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Sacarte a ti mismo de la empresa — debe responder 400
+DELETE {{baseUrl}}/users/{{selfUserId}}/membership
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Restaurar usuario expulsado (restore de membresía en la empresa)
+PATCH {{baseUrl}}/users/{{userId}}/restore
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Crear usuario (validación — contraseña corta, debe fallar)
+POST {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "email": "invalido@test.com",
+  "password": "corta",
+  "firstName": "",
+  "lastName": "",
+  "role": "CASHIER"
+}

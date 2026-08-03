@@ -1,0 +1,1 @@
+-- Branch timestamps and isActive already exist from 20260521183557_modelos_para_autenticacion.

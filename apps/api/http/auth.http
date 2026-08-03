@@ -1,0 +1,99 @@
+# Auth API — REST Client (extensión "REST Client" en VS Code / Cursor)
+#
+# Requisitos:
+#   1. PostgreSQL + migraciones: pnpm --filter @repo/db run db:migrate:dev
+#   2. API en marcha: pnpm --filter api run dev
+#   3. apps/api/.env.development con JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, DATABASE_URL
+#      y COOKIE_SAME_SITE=lax (reinicia la API tras cambiar el .env)
+#
+# Flujo: ejecuta las peticiones en orden (1 → 1b → 2 → 3 → …).
+# REST Client reenvía la cookie refreshToken automáticamente tras el login.
+#
+# IMPORTANTE: POST /users solo crea User. Para rutas con @RequireCompany() (GET /users, etc.)
+# ejecuta el seed después del paso 1:
+#   pnpm db:seed:dev
+#
+# Tras el seed también puedes probar:
+#   apps/api/http/categories.http
+#   apps/api/http/products.http
+
+@baseUrl = http://localhost:3001
+@email = prueba@ejemplo.com
+@password = Password123
+
+@requestId = manual-auth-test-{{$timestamp}}
+
+### 1) Bootstrap: usuario admin con empresa (terminal, no REST)
+# Crea roles, empresa-demo y vincula {{email}} como OWNER.
+# pnpm db:seed:dev
+# Opcional: SEED_USER_EMAIL=otro@mail.com pnpm db:seed:dev
+#
+# POST /users ahora requiere JWT + empresa; para más usuarios usa users.http.
+
+###
+
+### 2) Login — devuelve accessToken y cookie refreshToken
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###
+
+@accessToken = {{login.response.body.$.data.accessToken}}
+
+### 3) Refresh — usa la cookie del login (sin body ni headers extra)
+# @name refresh
+POST {{baseUrl}}/auth/refresh
+
+###
+
+@accessToken = {{refresh.response.body.$.data.accessToken}}
+
+### 4) JWT + empresa — contexto auth y company (requiere membership)
+# Respuesta: { success, data: { auth: { userId, companyId, ... }, company: { companyId, branchId, role } } }
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+x-request-id: {{requestId}}
+###
+
+### 6) JWT sin token — debe fallar (401)
+GET {{baseUrl}}/auth/me
+
+###
+
+### 7) Logout — invalida la sesión y borra la cookie
+POST {{baseUrl}}/auth/logout
+
+###
+
+### 8) Refresh tras logout — debe fallar (401)
+POST {{baseUrl}}/auth/refresh
+
+###
+
+### Login con credenciales incorrectas — debe fallar (401)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "PasswordIncorrecta"
+}
+
+###
+
+### Login con body inválido — debe fallar (400 VALIDATION_ERROR)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "no-es-email",
+  "password": "123"
+}
+
+###

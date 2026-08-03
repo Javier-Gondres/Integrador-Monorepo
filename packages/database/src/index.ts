@@ -1,2 +1,28 @@
-export { prisma } from "./client.js";
+export { type ExtendedPrismaClient, prisma } from "./client.js";
 export * from "./generated/prisma/client.js";
+export {
+  activateDataForModel,
+  type ActivateUpdateData,
+  deactivateDataForModel,
+  type DeactivateUpdateData,
+  getSoftDeleteQueryMode,
+  isIncludingDeleted,
+  isSoftDeleteModel,
+  mergeNotDeleted,
+  mergeOnlyDeleted,
+  notDeleted,
+  onlyDeleted,
+  restoreDataForModel,
+  type RestoreUpdateData,
+  runWithDeleted,
+  runWithSoftDeleteQueryMode,
+  SOFT_DELETE_MODELS,
+  SOFT_DELETE_MODELS_WITH_IS_ACTIVE,
+  softDeleteData,
+  softDeleteDataForModel,
+  softDeleteExtension,
+  type SoftDeleteModel,
+  type SoftDeleteQueryMode,
+  type SoftDeleteUpdateData,
+  uniqueWithNotDeleted,
+} from "./soft-delete/index.js";

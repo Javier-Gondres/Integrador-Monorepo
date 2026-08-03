@@ -2,8 +2,13 @@ import './load-env';
 
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './common/errors';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { observabilityMiddleware } from './common/middlewares/observability.middleware';
+import { createGlobalValidationPipe } from './common/pipes/validation.pipe.factory';
 
 function corsOrigin(config: ConfigService) {
   const list = (config.get<string>('CORS_ORIGINS') ?? 'http://localhost:3000')
@@ -40,8 +45,18 @@ function corsOrigin(config: ConfigService) {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+
+  // Express middleware (corre antes que guards/pipes/interceptors de Nest).
+  app.use(cookieParser());
+  app.use(observabilityMiddleware);
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalPipes(createGlobalValidationPipe());
+  app.useGlobalInterceptors(new ResponseInterceptor());
+
   app.enableCors({
     origin: corsOrigin(config),
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });

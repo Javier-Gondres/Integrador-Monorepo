@@ -1,0 +1,186 @@
+enum RoleName {
+  OWNER
+  ADMIN
+  MANAGER
+  CASHIER
+  INVENTORY_ASSISTANT
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum PasswordResetTokenPurpose {
+  RESET_PASSWORD
+  PLATFORM_ACTIVATION
+}
+
+model User {
+  id String @id @default(cuid())
+
+  email        String
+  passwordHash String
+  firstName    String
+  lastName     String
+
+  isActive     Boolean @default(true)
+  isSuperAdmin Boolean @default(false)
+
+  deletedAt DateTime?
+
+  lastLoginAt DateTime?
+  emailVerifiedAt DateTime?
+
+  memberships         UserCompany[]
+  sentInvitations     Invitation[]         @relation("InvitationsSentBy")
+  employee            Employee?
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  auditLogs           AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email, deletedAt])
+  @@index([deletedAt])
+}
+
+model Role {
+  id String @id @default(cuid())
+
+  name        RoleName
+  description String?
+
+  deletedAt DateTime?
+
+  users       UserCompany[]
+  invitations Invitation[]
+  permissions RolePermission[]
+
+  @@unique([name, deletedAt])
+  @@index([deletedAt])
+}
+
+model Permission {
+  id String @id @default(cuid())
+
+  code        String  @unique
+  description String?
+
+  roles RolePermission[]
+
+  createdAt DateTime @default(now())
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@index([roleId])
+}
+
+/// Decisión arquitectónica: un usuario solo puede tener UNA membresía activa a la vez.
+/// La unicidad @@unique([userId, deletedAt]) refleja esta restricción deliberada.
+///
+/// Si en el futuro surge el requisito de que un mismo usuario pertenezca a múltiples
+/// empresas simultáneamente, será necesario:
+///   1. Cambiar la unicidad a @@unique([userId, companyId, deletedAt]).
+///   2. Agregar un mecanismo explícito de "empresa activa" en el JWT
+///      (ej. campo activeCompanyId) y un endpoint para cambiar de empresa.
+///   3. Revisar cómo AuthService selecciona la membresía activa (actualmente memberships[0]).
+model UserCompany {
+  id String @id @default(cuid())
+
+  userId          String
+  companyId       String
+  roleId          String
+  defaultBranchId String?
+
+  deletedAt DateTime?
+
+  user          User    @relation(fields: [userId], references: [id])
+  company       Company @relation(fields: [companyId], references: [id])
+  role          Role    @relation(fields: [roleId], references: [id])
+  defaultBranch Branch? @relation(fields: [defaultBranchId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, deletedAt])
+  @@index([companyId])
+  @@index([defaultBranchId])
+  @@index([deletedAt])
+}
+
+model Invitation {
+  id String @id @default(cuid())
+
+  companyId   String
+  email       String
+  roleId      String
+  invitedById String
+  tokenHash   String @unique
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+  status     InvitationStatus @default(PENDING)
+
+  company   Company @relation(fields: [companyId], references: [id])
+  role      Role    @relation(fields: [roleId], references: [id])
+  invitedBy User    @relation("InvitationsSentBy", fields: [invitedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([email])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model RefreshToken {
+  id String @id @default(cuid())
+
+  userId            String
+  hashedToken       String
+  expiresAt         DateTime
+  revoked           Boolean   @default(false)
+  revokedAt         DateTime?
+  createdByIp       String?
+  revokedByIp       String?
+  userAgent         String?
+  replacedByTokenId String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id String @id @default(cuid())
+
+  userId    String
+  tokenHash String                    @unique
+  purpose   PasswordResetTokenPurpose @default(RESET_PASSWORD)
+  expiresAt DateTime
+  usedAt    DateTime?
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([purpose])
+  @@index([expiresAt])
+}

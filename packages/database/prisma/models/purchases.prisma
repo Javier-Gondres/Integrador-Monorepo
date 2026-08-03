@@ -1,0 +1,48 @@
+/// Compra ya recibida y registrada. No existe flujo de órdenes pendientes ni aprobaciones.
+model Purchase {
+  id String @id @default(cuid())
+
+  branchId   String
+  supplierId String
+
+  invoiceNumber        String?
+  invoiceDate          DateTime?
+  receivedByEmployeeId String?
+
+  subtotal  Decimal @default(0) @db.Decimal(10, 2)
+  taxAmount Decimal @default(0) @db.Decimal(10, 2)
+  total     Decimal @default(0) @db.Decimal(10, 2)
+
+  branch      Branch    @relation(fields: [branchId], references: [id])
+  supplier    Supplier  @relation(fields: [supplierId], references: [id])
+  receivedBy  Employee? @relation(fields: [receivedByEmployeeId], references: [id])
+
+  items              PurchaseItem[]
+  inventoryMovements InventoryMovement[]
+  accountPayable     AccountPayable?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([branchId])
+  @@index([supplierId])
+  @@index([receivedByEmployeeId])
+  @@index([createdAt])
+}
+
+model PurchaseItem {
+  id String @id @default(cuid())
+
+  purchaseId String
+  productId  String
+
+  quantity Decimal @db.Decimal(12, 3)
+  unitCost Decimal @db.Decimal(10, 2)
+  subtotal Decimal @db.Decimal(10, 2)
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@index([purchaseId])
+  @@index([productId])
+}

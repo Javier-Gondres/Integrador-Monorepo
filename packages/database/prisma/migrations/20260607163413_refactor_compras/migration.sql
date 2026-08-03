@@ -1,0 +1,2 @@
+-- No-op: FK renames merged into 20260608120000_purchase_order_to_purchase.
+-- This migration originally ran before Purchase existed (wrong timestamp order).

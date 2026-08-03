@@ -1,0 +1,46 @@
+/// Promoción por porcentaje. Many-to-many con Product y/o Category.
+/// excludedProducts excluye productos de un descuento por categoría.
+model Discount {
+  id String @id @default(cuid())
+
+  companyId String
+
+  name        String
+  description String?
+  percentage  Decimal @db.Decimal(5, 2)
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company          Company                   @relation(fields: [companyId], references: [id])
+  products         Product[]
+  categories       Category[]
+  excludedProducts DiscountExcludedProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([deletedAt])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+/// Productos excluidos de un descuento (típicamente descuentos por categoría).
+model DiscountExcludedProduct {
+  id String @id @default(cuid())
+
+  discountId String
+  productId  String
+
+  discount Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([discountId, productId])
+  @@index([productId])
+}

@@ -1,0 +1,101 @@
+model Company {
+  id   String  @id @default(cuid())
+  name String
+  slug String
+  rnc  String?
+
+  email   String?
+  phone   String?
+  address String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  branches     Branch[]
+  users        UserCompany[]
+  invitations  Invitation[]
+  categories   Category[]
+  products     Product[]
+  employees    Employee[]
+  suppliers    Supplier[]
+  customers    Customer[]
+  ncfSequences NcfSequence[]
+  discounts    Discount[]
+  reservations Reservation[]
+  auditLogs    AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([slug, deletedAt])
+  @@index([deletedAt])
+}
+
+model Branch {
+  id String @id @default(cuid())
+
+  companyId String
+  name      String
+  address   String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  employees            Employee[]
+  inventories          Inventory[]
+  inventoryMovements   InventoryMovement[]
+  reservations         Reservation[]
+  sales                Sale[]
+  purchases            Purchase[]
+  cashRegisters        CashRegister[]
+  transfersFrom        Transfer[]          @relation("TransferFrom")
+  transfersTo          Transfer[]          @relation("TransferTo")
+  returns              Return[]
+  auditLogs            AuditLog[]
+  defaultUserCompanies UserCompany[]
+  accountPayables      AccountPayable[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([deletedAt])
+}
+
+/// Usuario operativo del ERP. Siempre vinculado a User + UserCompany.
+model Employee {
+  id String @id @default(cuid())
+
+  companyId String
+  branchId  String
+  userId    String @unique
+
+  phone           String?
+  position        String?
+  salary          Decimal?  @db.Decimal(10, 2)
+  hireDate        DateTime?
+  terminationDate DateTime?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+  branch  Branch  @relation(fields: [branchId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  sales                       Sale[]
+  cashShifts                  CashShift[]
+  returns                     Return[]
+  purchasesReceived           Purchase[]
+  reservationsCreated         Reservation[]
+  inventoryMovementsPerformed InventoryMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([branchId])
+  @@index([deletedAt])
+}
