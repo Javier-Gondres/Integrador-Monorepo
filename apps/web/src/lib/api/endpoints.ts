@@ -137,6 +137,11 @@ export const ENDPOINTS = {
     byId: (id: string) => `/receivables/${id}`,
     payments: (id: string) => `/receivables/${id}/payments`,
   },
+  payables: {
+    root: "/payables",
+    byId: (id: string) => `/payables/${id}`,
+    payments: (id: string) => `/payables/${id}/payments`,
+  },
   reservations: {
     root: "/reservations",
     byId: (id: string) => `/reservations/${id}`,

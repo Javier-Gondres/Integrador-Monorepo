@@ -253,6 +253,19 @@ Todos los endpoints usan `@RequirePermissions(...)`.
 
 Roles típicos: OWNER/ADMIN/MANAGER tienen `read` + `pay`; CASHIER solo `read` (ver matriz).
 
+### `/payables` (cuentas por pagar)
+
+Todos los endpoints usan `@RequirePermissions(...)`.
+
+| Método | Ruta | Permiso(s) | Descripción |
+| ------ | ---- | ---------- | ----------- |
+| `GET` | `/payables` | `payables.read` | Listado paginado de CxP (filtros sucursal/proveedor/estado/fechas) |
+| `GET` | `/payables/:id` | `payables.read` | Detalle de cuenta + historial de abonos |
+| `POST` | `/payables/:id/payments` | `payables.pay` | Registrar abono a proveedor |
+| `PATCH` | `/payables/:id` | `payables.update` | Actualizar fecha de vencimiento |
+
+Roles típicos: OWNER/ADMIN/MANAGER tienen `read` + `pay` + `update`. En web: `/accounts-payable`, nav Finanzas gated por `payables.read`.
+
 ### `/inventory-movements` (alertas)
 
 | Método | Ruta | Permiso(s) | Descripción |

@@ -58,6 +58,10 @@ export const Permission = {
   RECEIVABLES_READ: "receivables.read",
   RECEIVABLES_PAY: "receivables.pay",
 
+  PAYABLES_READ: "payables.read",
+  PAYABLES_PAY: "payables.pay",
+  PAYABLES_UPDATE: "payables.update",
+
   PURCHASES_CREATE: "purchases.create",
   PURCHASES_READ: "purchases.read",
 
@@ -183,6 +187,16 @@ export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
   {
     code: Permission.RECEIVABLES_PAY,
     description: "Registrar abonos a cuentas por cobrar",
+  },
+
+  { code: Permission.PAYABLES_READ, description: "Ver cuentas por pagar" },
+  {
+    code: Permission.PAYABLES_PAY,
+    description: "Registrar abonos a cuentas por pagar",
+  },
+  {
+    code: Permission.PAYABLES_UPDATE,
+    description: "Actualizar cuentas por pagar (p. ej. fecha de vencimiento)",
   },
 
   { code: Permission.PURCHASES_CREATE, description: "Registrar compras" },

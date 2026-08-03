@@ -15,6 +15,7 @@ import { InventoryModule } from './inventory/inventory.module';
 import { InventoryMovementModule } from './inventory-movement/inventory-movement.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { MeModule } from './me/me.module';
+import { PayablesModule } from './payables/payables.module';
 import { PlatformModule } from './platform/platform.module';
 import { ProductSupplierModule } from './product-supplier/product-supplier.module';
 import { ProductsModule } from './products/products.module';
@@ -59,6 +60,7 @@ const envFilePath =
     SalesModule,
     ReservationsModule,
     ReceivablesModule,
+    PayablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

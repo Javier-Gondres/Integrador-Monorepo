@@ -171,6 +171,12 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
     href: "/accounts-receivable",
     access: { type: "permission", permission: Permission.RECEIVABLES_READ },
   },
+  {
+    label: "Cuentas por Pagar",
+    icon: ReceiptText,
+    href: "/accounts-payable",
+    access: { type: "permission", permission: Permission.PAYABLES_READ },
+  },
   { section: "Compras" },
   {
     label: "Historial de compras",
