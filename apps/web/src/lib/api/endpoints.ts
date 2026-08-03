@@ -18,6 +18,7 @@ export const ENDPOINTS = {
     company: "/me/company",
     branch: "/me/branch",
     switchBranch: "/me/switch-branch",
+    password: "/me/password",
   },
   products: {
     root: "/products",

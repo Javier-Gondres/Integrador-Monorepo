@@ -203,6 +203,7 @@ export default function CategoriesPage() {
 | `/sales-history`           | `(dashboard)/sales-history/page.tsx`           | `SalesHistoryScreen`   |
 | `/accounts-receivable`     | `(dashboard)/accounts-receivable/page.tsx`     | `AccountsReceivableScreen` |
 | `/accounts-payable`        | `(dashboard)/accounts-payable/page.tsx`        | `AccountsPayableScreen` |
+| `/profile`                 | `(dashboard)/profile/page.tsx`                 | `ProfileScreen`        |
 | `/print/sales/[id]`        | `(public)/print/sales/[id]/page.tsx`           | `InvoicePrintScreen`   |
 | `/companies`               | `(dashboard)/companies/page.tsx`               | `CompaniesScreen`      |
 | `/companies/[slug]/branch` | `(dashboard)/companies/[slug]/branch/page.tsx` | `BranchesScreen`       |
@@ -234,6 +235,7 @@ Cada funcionalidad del ERP vive en `src/modules/{dominio}/`.
 | `branches`       | Pantalla legacy migrada (lista + CRUD básico)                         |
 | `auth`           | Scaffold (API hooks, sin UI de login aún)                             |
 | `users`          | **Provisional** — CRUD en `/users`; ver nota §18.1                    |
+| `profile`        | Autoservicio (`/profile`): editar datos propios + cambiar contraseña; sin permiso RBAC (cualquier autenticado) |
 | `platform`       | Admin SaaS — `/platform/*` (Super Admin)                              |
 | `roles`          | Scaffold RBAC                                                         |
 | `permissions`    | Scaffold RBAC                                                         |
