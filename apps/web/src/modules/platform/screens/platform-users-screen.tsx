@@ -623,8 +623,8 @@ export function PlatformUsersScreen() {
   return (
     <main style={{ minHeight: "100vh", backgroundColor: C.pageBg }}>
       <PageHeader breadcrumb="Plataforma / Usuarios" title="Usuarios" />
-      <div style={{ padding: "32px 40px", display: "grid", gap: 20 }}>
-        <div style={{ display: "flex", gap: 8 }}>
+      <div className="grid gap-4 p-4 sm:gap-5 sm:p-6 md:p-8">
+        <div className="flex flex-wrap gap-2">
           {[
             ["users", "Usuarios"],
             ["activations", "Activaciones"],
@@ -637,6 +637,7 @@ export function PlatformUsersScreen() {
                 setActiveTab(key as TabKey);
                 setPage(1);
               }}
+              className="flex-1 justify-center sm:flex-none"
             >
               {label}
             </Button>
@@ -658,7 +659,7 @@ export function PlatformUsersScreen() {
           }}
         />
 
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {activeTab === "users" ? (
             <>
               <Filter label="Estado">
@@ -820,7 +821,7 @@ export function PlatformUsersScreen() {
         >
           <form
             onSubmit={createUser}
-            style={{ padding: 24, display: "grid", gap: 16 }}
+            className="grid gap-4 p-4 sm:p-6"
           >
             <Input
               label="Nombre"
@@ -868,9 +869,7 @@ export function PlatformUsersScreen() {
           maxWidth="900px"
           onClose={() => setSelectedUser(null)}
         >
-          <div
-            style={{ padding: 24, display: "grid", gap: 20, overflowY: "auto" }}
-          >
+          <div className="grid gap-5 p-4 sm:p-6">
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {statusBadge(selectedUser.status)}
               <Badge variant="primary">
@@ -897,11 +896,7 @@ export function PlatformUsersScreen() {
               <h3 style={{ margin: 0, fontSize: 15 }}>Editar usuario</h3>
               <form
                 onSubmit={updateSelectedUser}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr auto",
-                  gap: 12,
-                }}
+                className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
               >
                 <Input
                   label="Nombre"
@@ -923,7 +918,10 @@ export function PlatformUsersScreen() {
                     }))
                   }
                 />
-                <Button type="submit" style={{ alignSelf: "end" }}>
+                <Button
+                  type="submit"
+                  className="w-full justify-center md:w-auto md:self-end"
+                >
                   Guardar
                 </Button>
               </form>
@@ -942,6 +940,7 @@ export function PlatformUsersScreen() {
                     alignItems: "end",
                     flexWrap: "wrap",
                   }}
+                  className="flex-col sm:flex-row sm:items-end"
                 >
                   <Filter label="Rol">
                     <Select
@@ -954,7 +953,12 @@ export function PlatformUsersScreen() {
                       }
                     />
                   </Filter>
-                  <Button type="submit" size="sm" style={{ marginBottom: 1 }}>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="w-full justify-center sm:w-auto"
+                    style={{ marginBottom: 1 }}
+                  >
                     Actualizar rol
                   </Button>
                 </form>
@@ -1034,12 +1038,7 @@ export function PlatformUsersScreen() {
                 <h3 style={{ margin: 0, fontSize: 15 }}>Agregar a empresa</h3>
                 <form
                   onSubmit={assignSelectedUser}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 180px auto",
-                    gap: 12,
-                    alignItems: "end",
-                  }}
+                className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(10rem,12rem)_auto] md:items-end"
                 >
                   <Filter label="Empresa">
                     <CompanySelect
@@ -1058,7 +1057,12 @@ export function PlatformUsersScreen() {
                       }
                     />
                   </Filter>
-                  <Button type="submit">Agregar</Button>
+                  <Button
+                    type="submit"
+                    className="w-full justify-center md:w-auto"
+                  >
+                    Agregar
+                  </Button>
                 </form>
               </section>
             ) : null}
@@ -1077,7 +1081,10 @@ function Filter({
   children: React.ReactNode;
 }) {
   return (
-    <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 600 }}>
+    <label
+      className="min-w-0 [&>select]:w-full"
+      style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 600 }}
+    >
       {label}
       {children}
     </label>
@@ -1101,7 +1108,8 @@ function CompanySelect({
       onChange={(event) => onChange(event.target.value)}
       style={{
         height: "32px",
-        minWidth: 180,
+        width: "100%",
+        minWidth: 0,
         padding: "0 8px",
         border: `1px solid ${C.inputBorder}`,
         borderRadius: 6,
@@ -1123,10 +1131,9 @@ function InfoGrid({ items }: { items: Array<[string, string]> }) {
   return (
     <dl
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
         gap: 12,
       }}
+      className="grid grid-cols-1 sm:grid-cols-2"
     >
       {items.map(([label, value]) => (
         <div

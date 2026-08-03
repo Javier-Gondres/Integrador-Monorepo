@@ -47,9 +47,8 @@ export function PlatformCompanyForm({
           display: "flex",
           flexDirection: "column",
           gap: "16px",
-          padding: "24px",
-          overflowY: "auto",
         }}
+        className="p-4 sm:p-6"
       >
         <Input
           label="Nombre de la empresa"
@@ -105,16 +104,25 @@ export function PlatformCompanyForm({
         <div
           style={{
             display: "flex",
-            justifyContent: "flex-end",
             gap: "10px",
             paddingTop: "8px",
             borderTop: `1px solid ${C.divider}`,
           }}
+          className="flex-col sm:flex-row sm:justify-end"
         >
-          <Button type="button" variant="secondary" onClick={onClose}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            className="w-full justify-center sm:w-auto"
+          >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full justify-center sm:w-auto"
+          >
             {isSubmitting ? "Creando..." : "Crear empresa"}
           </Button>
         </div>

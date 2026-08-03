@@ -178,8 +178,8 @@ export function PlatformPermissionsScreen() {
     <main style={{ minHeight: "100vh", backgroundColor: C.pageBg }}>
       <PageHeader breadcrumb="Plataforma / Permisos" title="Permisos" />
 
-      <div style={{ padding: "32px 40px", display: "grid", gap: 20 }}>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div className="grid gap-4 p-4 sm:gap-5 sm:p-6 md:p-8">
+        <div className="flex flex-wrap gap-2">
           {[
             ["by-role", "Por rol"],
             ["catalog", "Catálogo completo"],
@@ -188,6 +188,7 @@ export function PlatformPermissionsScreen() {
               key={key}
               variant={activeView === key ? "primary" : "secondary"}
               onClick={() => setActiveView(key as ViewTab)}
+              className="flex-1 justify-center sm:flex-none"
             >
               {label}
             </Button>
@@ -209,18 +210,15 @@ export function PlatformPermissionsScreen() {
         />
 
         {activeView === "by-role" ? (
-          <section style={cardStyle}>
+          <section className="min-w-0" style={cardStyle}>
             <div style={{ display: "grid", gap: 16 }}>
               <div>
                 <h2 style={titleStyle}>Permisos por rol</h2>
               </div>
 
               <div
+                className="flex flex-wrap gap-2 overflow-x-auto pb-2"
                 style={{
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  paddingBottom: 4,
                   borderBottom: `1px solid ${C.divider}`,
                 }}
               >
@@ -240,6 +238,7 @@ export function PlatformPermissionsScreen() {
                       size="sm"
                       variant={isSelected ? "primary" : "secondary"}
                       onClick={() => setSelectedRole(group.role)}
+                      className="shrink-0"
                     >
                       <span
                         style={{
@@ -289,12 +288,12 @@ export function PlatformPermissionsScreen() {
                   </div>
 
                   {filteredRolePermissions.length > 0 ? (
-                    <div style={{ display: "grid", gap: 20 }}>
+                    <div className="grid min-w-0 gap-5">
                       {rolePermissionGroups.map(
                         ([permissionModule, permissions]) => (
                           <div
                             key={permissionModule}
-                            style={{ display: "grid", gap: 10 }}
+                            className="grid min-w-0 gap-2.5"
                           >
                             <h4 style={moduleTitleStyle}>
                               {humanizeModule(permissionModule)}
@@ -305,7 +304,7 @@ export function PlatformPermissionsScreen() {
                                 ({permissions.length})
                               </span>
                             </h4>
-                            <div style={{ display: "grid", gap: 8 }}>
+                            <div className="grid min-w-0 gap-2">
                               {permissions.map((permission) => (
                                 <PermissionRow
                                   key={permission.code}
@@ -327,7 +326,7 @@ export function PlatformPermissionsScreen() {
             </div>
           </section>
         ) : (
-          <section style={cardStyle}>
+          <section className="min-w-0" style={cardStyle}>
             <div style={{ display: "grid", gap: 16 }}>
               <div>
                 <h2 style={titleStyle}>Catálogo de permisos</h2>
@@ -337,11 +336,11 @@ export function PlatformPermissionsScreen() {
               </div>
 
               {filteredCatalogPermissions.length > 0 ? (
-                <div style={{ display: "grid", gap: 20 }}>
+                <div className="grid min-w-0 gap-5">
                   {catalogByModule.map(([permissionModule, permissions]) => (
                     <div
                       key={permissionModule}
-                      style={{ display: "grid", gap: 10 }}
+                      className="grid min-w-0 gap-2.5"
                     >
                       <h4 style={moduleTitleStyle}>
                         {humanizeModule(permissionModule)}
@@ -350,7 +349,7 @@ export function PlatformPermissionsScreen() {
                           ({permissions.length})
                         </span>
                       </h4>
-                      <div style={{ display: "grid", gap: 8 }}>
+                      <div className="grid min-w-0 gap-2">
                         {permissions.map((permission) => (
                           <PermissionRow
                             key={permission.code}
@@ -374,9 +373,10 @@ export function PlatformPermissionsScreen() {
 
 function PermissionRow({ permission }: { permission: PermissionInfo }) {
   return (
-    <div style={permissionRowStyle}>
-      <div>
+    <div className="min-w-0" style={permissionRowStyle}>
+      <div className="min-w-0">
         <div
+          className="min-w-0"
           style={{
             display: "flex",
             gap: 8,
@@ -384,10 +384,13 @@ function PermissionRow({ permission }: { permission: PermissionInfo }) {
             alignItems: "center",
           }}
         >
-          <strong>{permission.name}</strong>
+          <strong className="min-w-0 wrap-break-word">{permission.name}</strong>
           <Badge variant="muted">{permission.code}</Badge>
         </div>
-        <p style={{ margin: "4px 0 0", color: C.mutedText, fontSize: 13 }}>
+        <p
+          className="wrap-break-word"
+          style={{ margin: "4px 0 0", color: C.mutedText, fontSize: 13 }}
+        >
           {permission.description ?? "Sin descripción"}
         </p>
       </div>
@@ -417,7 +420,7 @@ const cardStyle: React.CSSProperties = {
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 12,
   boxShadow: C.cardShadow,
-  padding: 24,
+  padding: "clamp(16px, 4vw, 24px)",
 };
 
 const titleStyle: React.CSSProperties = {
@@ -443,7 +446,7 @@ const permissionRowStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   gap: 12,
-  padding: 12,
+  padding: "12px",
   border: `1px solid ${C.divider}`,
   borderRadius: 8,
 };

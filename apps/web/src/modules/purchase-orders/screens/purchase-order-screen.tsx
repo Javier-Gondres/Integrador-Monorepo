@@ -29,7 +29,7 @@ export function PurchaseOrderScreen() {
 
   return (
     <main className="min-h-screen bg-page">
-      <div className="border-b border-card-border bg-card px-10 py-5">
+      <div className="border-b border-card-border bg-card px-4 py-4 sm:px-6 sm:py-5 md:px-10">
         <Link
           href="/purchase-history"
           className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-head transition-colors hover:text-primary"
@@ -70,7 +70,7 @@ export function PurchaseOrderScreen() {
         </div>
       </div>
 
-      <div className="px-6 py-6">
+      <div className="p-4 sm:p-6 md:px-6 md:py-6">
         <Can
           permission={Permission.PURCHASES_CREATE}
           fallback={

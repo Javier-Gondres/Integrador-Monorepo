@@ -47,17 +47,7 @@ export function InventoriesScreen() {
     >
       <PageHeader breadcrumb="Inventario" title="Inventario" />
 
-      <div
-        style={{
-          padding: "32px 40px",
-
-          display: "flex",
-
-          flexDirection: "column",
-
-          gap: "20px",
-        }}
-      >
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
         <InventoriesTableContainer
           branchId={selectedBranchId}
           branches={branches}

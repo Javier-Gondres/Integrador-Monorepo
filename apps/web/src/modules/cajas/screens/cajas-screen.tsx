@@ -76,16 +76,9 @@ export function CajasScreen() {
     >
       <PageHeader breadcrumb="Cajas" title="Cajas" />
 
-      <div
-        style={{
-          padding: "32px 40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 28,
-        }}
-      >
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
         {/* ── selector de sucursal ─────────────────────────────────────── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="flex flex-wrap items-center gap-2">
           <span style={{ fontSize: 13, fontWeight: 500, color: C.headText }}>
             Sucursal:
           </span>
@@ -118,13 +111,7 @@ export function CajasScreen() {
         </div>
 
         {/* ── KPI bar ─────────────────────────────────────────────────── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 16,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
               icon: <LayoutGrid size={18} />,
@@ -251,7 +238,7 @@ export function CajasScreen() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
             gap: 20,
           }}
         >
