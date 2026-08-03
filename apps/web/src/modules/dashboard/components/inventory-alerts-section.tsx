@@ -3,6 +3,7 @@
 import { format, isValid, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { AlertTriangle, PackageSearch } from "lucide-react";
+import type { ReactNode } from "react";
 
 import type { DataTableColumn } from "@/shared/data-table";
 import { DataTable } from "@/shared/data-table";
@@ -30,7 +31,7 @@ function renderAlertDescription(alert: InventoryAlert) {
     const periodDays = alert.periodDays ?? 7;
 
     return (
-      <span className="text-sm text-slate-600">
+      <span className="wrap-break-word text-sm text-slate-600">
         Se registraron{" "}
         <span className="font-semibold text-slate-900">{wasteCount}</span>{" "}
         mermas en los últimos{" "}
@@ -49,7 +50,7 @@ function renderAlertDescription(alert: InventoryAlert) {
     const minimumStock = alert.minimumStock ?? "—";
 
     return (
-      <span className="text-sm text-slate-600">
+      <span className="wrap-break-word text-sm text-slate-600">
         Stock actual:{" "}
         <span className="font-semibold text-slate-900">{currentStock}</span>.
         Mínimo requerido:{" "}
@@ -59,6 +60,46 @@ function renderAlertDescription(alert: InventoryAlert) {
   }
 
   return null;
+}
+
+interface AlertSummaryCardProps {
+  icon: ReactNode;
+  label: string;
+  count: number | string;
+  description: string;
+  accent: string;
+}
+
+function AlertSummaryCard({
+  icon,
+  label,
+  count,
+  description,
+  accent,
+}: AlertSummaryCardProps) {
+  return (
+    <div className="min-w-0 rounded-[18px] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:p-5">
+      <div className="flex min-w-0 items-center gap-3">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white sm:h-10.5 sm:w-10.5"
+          style={{ background: accent }}
+        >
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <div className="wrap-break-word text-xs font-bold uppercase tracking-[0.08em] text-primary">
+            {label}
+          </div>
+          <div className="my-1 text-2xl font-bold text-slate-900 sm:text-[32px]">
+            {count}
+          </div>
+          <div className="wrap-break-word text-[13px] text-slate-500">
+            {description}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function InventoryAlertsSection() {
@@ -80,14 +121,8 @@ export function InventoryAlertsSection() {
         if (row.type === "RECURRING_WASTE") {
           return (
             <Badge variant="warning">
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }}
-              >
-                <AlertTriangle size={12} /> Merma recurrente
+              <span className="inline-flex min-w-0 items-center gap-1.5">
+                <AlertTriangle className="h-3 w-3 shrink-0" /> Merma recurrente
               </span>
             </Badge>
           );
@@ -95,14 +130,8 @@ export function InventoryAlertsSection() {
 
         return (
           <Badge variant="error">
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <PackageSearch size={12} /> Stock mínimo
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+              <PackageSearch className="h-3 w-3 shrink-0" /> Stock mínimo
             </span>
           </Badge>
         );
@@ -113,9 +142,11 @@ export function InventoryAlertsSection() {
       header: "Producto",
       align: "left",
       cell: (row) => (
-        <div>
-          <div style={{ fontWeight: 600 }}>{row.product.name}</div>
-          <div style={{ fontSize: "12px", color: "#667085" }}>
+        <div className="min-w-0">
+          <div className="wrap-break-word font-semibold text-slate-900">
+            {row.product.name}
+          </div>
+          <div className="wrap-break-word text-xs text-slate-500">
             {row.product.code}
           </div>
         </div>
@@ -148,99 +179,22 @@ export function InventoryAlertsSection() {
   ];
 
   return (
-    <section style={{ marginBottom: "20px" }}>
-      <div className="mb-4 flex flex-wrap gap-4">
-        <div className="w-fit rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                width: "42px",
-                height: "42px",
-                borderRadius: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
-                color: "#fff",
-              }}
-            >
-              <AlertTriangle size={18} />
-            </div>
-            <div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "#3c50e0",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                Merma recurrente
-              </div>
-              <div
-                style={{
-                  fontSize: "32px",
-                  fontWeight: 700,
-                  color: "#101828",
-                  textAlign: "center",
-                  margin: "8px 0",
-                }}
-              >
-                {isLoading ? "…" : recurringWasteAlerts.length}
-              </div>
-              <div style={{ fontSize: "13px", color: "#667085" }}>
-                Productos con mermas recurrentes
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="w-fit rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                width: "42px",
-                height: "42px",
-                borderRadius: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "linear-gradient(135deg, #ef4444, #f87171)",
-                color: "#fff",
-              }}
-            >
-              <PackageSearch size={18} />
-            </div>
-            <div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "#2563eb",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                Inventario mínimo
-              </div>
-              <div
-                style={{
-                  fontSize: "32px",
-                  fontWeight: 700,
-                  color: "#101828",
-                  textAlign: "center",
-                  margin: "8px 0",
-                }}
-              >
-                {isLoading ? "…" : lowStockAlerts.length}
-              </div>
-              <div style={{ fontSize: "13px", color: "#667085" }}>
-                Productos con inventario bajo al mínimo
-              </div>
-            </div>
-          </div>
-        </div>
+    <section className="mb-5 min-w-0">
+      <div className="mb-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(2,minmax(0,280px))]">
+        <AlertSummaryCard
+          icon={<AlertTriangle className="h-4.5 w-4.5" />}
+          label="Merma recurrente"
+          count={isLoading ? "…" : recurringWasteAlerts.length}
+          description="Productos con mermas recurrentes"
+          accent="linear-gradient(135deg, #f59e0b, #fbbf24)"
+        />
+        <AlertSummaryCard
+          icon={<PackageSearch className="h-4.5 w-4.5" />}
+          label="Inventario mínimo"
+          count={isLoading ? "…" : lowStockAlerts.length}
+          description="Productos con inventario bajo al mínimo"
+          accent="linear-gradient(135deg, #ef4444, #f87171)"
+        />
       </div>
 
       <DataTable
