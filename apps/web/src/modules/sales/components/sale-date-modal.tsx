@@ -7,7 +7,6 @@ import { Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
 
 import { localToday } from "../utils/format";
-
 interface SaleDateModalProps {
   /** Día actualmente seleccionado (`YYYY-MM-DD`) o `null`. */
   value: string | null;
@@ -38,7 +37,7 @@ export function SaleDateModal({
       onClose={onClose}
       maxWidth="420px"
     >
-      <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4 p-4 sm:p-6">
         <Input
           type="date"
           label="Fecha"
@@ -47,7 +46,7 @@ export function SaleDateModal({
           onChange={(e) => setDay(e.target.value)}
         />
 
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           {value ? (
             <Button
               variant="ghost"
@@ -62,13 +61,18 @@ export function SaleDateModal({
             <span />
           )}
 
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={onClose}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button
+              variant="secondary"
+              onClick={onClose}
+              className="w-full justify-center sm:w-auto"
+            >
               Cancelar
             </Button>
             <Button
               variant="primary"
               disabled={invalid}
+              className="w-full justify-center sm:w-auto"
               onClick={() => {
                 if (invalid) return;
                 onConfirm(day);
