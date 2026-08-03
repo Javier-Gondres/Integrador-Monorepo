@@ -9,6 +9,12 @@ export const Permission = {
   USERS_ACTIVATE: "users.activate",
   USERS_DEACTIVATE: "users.deactivate",
   USERS_DELETE: "users.delete",
+  USERS_REMOVE_MEMBERSHIP: "users.removeMembership",
+
+  INVITATIONS_CREATE: "invitations.create",
+  INVITATIONS_READ: "invitations.read",
+  INVITATIONS_RESEND: "invitations.resend",
+  INVITATIONS_REVOKE: "invitations.revoke",
 
   EMPLOYEES_CREATE: "employees.create",
   EMPLOYEES_READ: "employees.read",
@@ -47,6 +53,14 @@ export const Permission = {
   SALES_CREATE: "sales.create",
   SALES_READ: "sales.read",
   SALES_CANCEL: "sales.cancel",
+  SALES_BACKDATE: "sales.backdate",
+
+  RECEIVABLES_READ: "receivables.read",
+  RECEIVABLES_PAY: "receivables.pay",
+
+  PAYABLES_READ: "payables.read",
+  PAYABLES_PAY: "payables.pay",
+  PAYABLES_UPDATE: "payables.update",
 
   PURCHASES_CREATE: "purchases.create",
   PURCHASES_READ: "purchases.read",
@@ -102,6 +116,27 @@ export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
     code: Permission.USERS_DELETE,
     description: "Eliminar usuarios de la empresa",
   },
+  {
+    code: Permission.USERS_REMOVE_MEMBERSHIP,
+    description:
+      "Expulsar usuarios de la empresa sin eliminar su identidad global",
+  },
+  {
+    code: Permission.INVITATIONS_CREATE,
+    description: "Invitar usuarios a la empresa",
+  },
+  {
+    code: Permission.INVITATIONS_READ,
+    description: "Ver invitaciones de la empresa",
+  },
+  {
+    code: Permission.INVITATIONS_RESEND,
+    description: "Reenviar invitaciones de la empresa",
+  },
+  {
+    code: Permission.INVITATIONS_REVOKE,
+    description: "Revocar invitaciones de la empresa",
+  },
 
   { code: Permission.EMPLOYEES_CREATE, description: "Registrar empleados" },
   { code: Permission.EMPLOYEES_READ, description: "Ver empleados" },
@@ -143,6 +178,26 @@ export const ALL_PERMISSIONS: readonly PermissionDefinition[] = [
   { code: Permission.SALES_CREATE, description: "Registrar ventas" },
   { code: Permission.SALES_READ, description: "Ver ventas" },
   { code: Permission.SALES_CANCEL, description: "Cancelar ventas" },
+  {
+    code: Permission.SALES_BACKDATE,
+    description: "Registrar ventas con fecha pasada",
+  },
+
+  { code: Permission.RECEIVABLES_READ, description: "Ver cuentas por cobrar" },
+  {
+    code: Permission.RECEIVABLES_PAY,
+    description: "Registrar abonos a cuentas por cobrar",
+  },
+
+  { code: Permission.PAYABLES_READ, description: "Ver cuentas por pagar" },
+  {
+    code: Permission.PAYABLES_PAY,
+    description: "Registrar abonos a cuentas por pagar",
+  },
+  {
+    code: Permission.PAYABLES_UPDATE,
+    description: "Actualizar cuentas por pagar (p. ej. fecha de vencimiento)",
+  },
 
   { code: Permission.PURCHASES_CREATE, description: "Registrar compras" },
   { code: Permission.PURCHASES_READ, description: "Ver compras" },

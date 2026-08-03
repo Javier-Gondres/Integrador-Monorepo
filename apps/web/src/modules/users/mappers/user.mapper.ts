@@ -12,9 +12,12 @@ export function mapUserDtoToUi(dto: UserDto): User {
     lastName: dto.lastName,
     fullName: `${dto.firstName} ${dto.lastName}`.trim(),
     roleName,
+    roleId: dto.membership?.role.id ?? "",
     roleLabel: getRoleLabel(roleName),
     isActive: dto.isActive,
     lastLoginAt: dto.lastLoginAt,
+    defaultBranchId: dto.membership?.defaultBranchId ?? null,
+    joinedAt: dto.membership?.createdAt ?? null,
   };
 }
 

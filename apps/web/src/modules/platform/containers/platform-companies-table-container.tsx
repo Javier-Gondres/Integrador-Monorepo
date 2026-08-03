@@ -67,7 +67,7 @@ export function PlatformCompaniesTableContainer() {
         onCreate={() => setIsModalOpen(true)}
       />
 
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
         <span style={{ fontSize: "13px", fontWeight: 600 }}>Estado</span>
         <Select
           options={["Todos", "Activas", "Inactivas"]}
@@ -76,7 +76,8 @@ export function PlatformCompaniesTableContainer() {
             setStatusFilter(e.target.value as StatusFilter);
             setCurrentPage(1);
           }}
-          style={{ minWidth: "160px" }}
+          className="w-full sm:w-auto"
+          style={{ minWidth: "min(100%, 160px)" }}
         />
       </div>
 

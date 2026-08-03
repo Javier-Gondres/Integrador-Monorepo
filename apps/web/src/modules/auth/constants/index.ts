@@ -7,6 +7,7 @@ export const DEV_TEST_USER = {
 export const AUTH_ROUTES = {
   login: "/",
   dashboard: "/dashboard",
+  onboardingCompany: "/onboarding/company",
   platformDashboard: "/platform/dashboard",
   platformCompanies: "/platform/companies",
   forbidden: "/forbidden",

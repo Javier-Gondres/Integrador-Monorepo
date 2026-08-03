@@ -51,7 +51,7 @@ export function PermissionGuard({ children }: PermissionGuardProps) {
     }
 
     if (!user.companyId) {
-      router.replace(`${AUTH_ROUTES.forbidden}?reason=no-tenant`);
+      router.replace(AUTH_ROUTES.onboardingCompany);
       return;
     }
 

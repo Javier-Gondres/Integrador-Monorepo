@@ -1,5 +1,6 @@
-import { Package } from "lucide-react";
+import { Package, Printer } from "lucide-react";
 
+import { printInvoiceReceipt } from "@/modules/invoice-print/utils/print-invoice";
 import { money } from "@/modules/purchase-orders/utils/format";
 import type { SaleDetailDto } from "@/modules/sales/types/sale.types";
 import { Modal } from "@/shared/ui";
@@ -95,8 +96,16 @@ export function SaleDetailModal({
       </div>
 
       {sale && (
-        <div className="border-t border-divider p-5">
-          <div className="ml-auto max-w-xs space-y-1.5 text-sm">
+        <div className="flex items-end justify-between gap-4 border-t border-divider p-5">
+          <button
+            type="button"
+            onClick={() => printInvoiceReceipt(sale.id)}
+            className="inline-flex items-center gap-2 rounded-lg border border-card-border px-4 py-2 text-sm font-semibold text-body transition hover:bg-table-head"
+          >
+            <Printer className="h-4 w-4" />
+            Imprimir
+          </button>
+          <div className="max-w-xs space-y-1.5 text-sm">
             <div className="flex items-center justify-between text-head">
               <span>Subtotal</span>
               <b className="tabular-nums text-body">{money(sale.subtotal)}</b>

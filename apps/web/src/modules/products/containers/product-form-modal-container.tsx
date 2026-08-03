@@ -1,5 +1,11 @@
 "use client";
 
+import { useState } from "react";
+
+import { Permission, usePermissions } from "@/modules/auth";
+import { CategoryFormModalContainer } from "@/modules/categories/containers/category-form-modal-container";
+import type { Category } from "@/modules/categories/types/category.types";
+
 import { ProductForm } from "../components/product-form";
 import { useCreateProduct } from "../hooks/use-create-product";
 import { useUpdateProduct } from "../hooks/use-update-product";
@@ -21,10 +27,15 @@ export function ProductFormModalContainer({
   onClose,
 }: ProductFormModalContainerProps) {
   const isEditing = Boolean(product);
+  const { can } = usePermissions();
+  const canCreateCategory = can(Permission.CATEGORIES_CREATE);
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
+  const [newlyCreatedCategory, setNewlyCreatedCategory] =
+    useState<Category | null>(null);
 
   const handleSubmit = async (values: ProductFormSchema) => {
     const dto = mapFormValuesToDto(values);
@@ -44,8 +55,27 @@ export function ProductFormModalContainer({
       onSubmit={handleSubmit}
       onClose={onClose}
       renderCategoryCombobox={({ value, onChange }) => (
-        <CategoryComboboxContainer selectedIds={value} onChange={onChange} />
+        <CategoryComboboxContainer
+          selectedIds={value}
+          onChange={onChange}
+          onCreateClick={
+            canCreateCategory ? () => setCreateCategoryOpen(true) : undefined
+          }
+          newlyCreatedCategory={newlyCreatedCategory}
+        />
       )}
+      renderAuxiliaryModal={() =>
+        canCreateCategory && createCategoryOpen ? (
+          <CategoryFormModalContainer
+            category={null}
+            onClose={() => setCreateCategoryOpen(false)}
+            onCreated={(category) => {
+              setNewlyCreatedCategory(category);
+              setCreateCategoryOpen(false);
+            }}
+          />
+        ) : null
+      }
     />
   );
 }

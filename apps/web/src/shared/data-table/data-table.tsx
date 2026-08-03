@@ -28,32 +28,25 @@ export function DataTable<T>({
         overflow: "hidden",
       }}
     >
+      {/* Título + contador */}
       <div
-        style={{
-          padding: "16px 24px",
-          borderBottom: `1px solid ${C.divider}`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4"
+        style={{ borderBottom: `1px solid ${C.divider}` }}
       >
         <h3
-          style={{
-            margin: 0,
-            fontSize: "16px",
-            fontWeight: 600,
-            color: C.bodyText,
-          }}
+          className="text-sm sm:text-base font-semibold"
+          style={{ margin: 0, color: C.bodyText }}
         >
           {title}
         </h3>
-        <span style={{ fontSize: "13px", color: C.mutedText }}>
+        <span className="text-[13px]" style={{ color: C.mutedText }}>
           {total} {total === 1 ? "resultado" : "resultados"}
         </span>
       </div>
 
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      {/* ── Desktop: tabla normal ── */}
+      <div className="hidden overflow-x-auto lg:block">
+        <table style={{ minWidth: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ backgroundColor: C.tableHead }}>
               {columns.map((col) => (
@@ -123,6 +116,7 @@ export function DataTable<T>({
                         fontSize: "14px",
                         color: C.bodyText,
                       }}
+                      className="max-w-[18rem] wrap-break-word align-middle"
                     >
                       {col.cell(row, i)}
                     </td>
@@ -132,6 +126,74 @@ export function DataTable<T>({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* ── Mobile: tarjetas ── */}
+      <div className="block p-3 lg:hidden">
+        {loading ? (
+          <div
+            className="text-center py-8 text-sm"
+            style={{ color: C.mutedText }}
+          >
+            {loadingMessage}
+          </div>
+        ) : data.length === 0 ? (
+          <div
+            className="text-center py-8 text-sm"
+            style={{ color: C.mutedText }}
+          >
+            {emptyMessage}
+          </div>
+        ) : (
+          <div className="flex min-w-0 flex-col gap-3">
+            {data.map((row, index) => {
+              const actionsCol = columns.find((c) => c.id === "actions");
+              const contentCols = columns.filter((c) => c.id !== "actions");
+
+              return (
+                <div
+                  key={getRowKey(row)}
+                  style={{
+                    backgroundColor: "#fff",
+                    borderRadius: "10px",
+                    border: `1px solid ${C.cardBorder}`,
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+                  }}
+                  className="min-w-0 p-3"
+                >
+                  {contentCols.map((col) => (
+                    <div
+                      key={col.id}
+                      className="grid grid-cols-1 gap-1 py-2 sm:grid-cols-[minmax(5.5rem,40%)_minmax(0,1fr)] sm:gap-3"
+                      style={{
+                        borderBottom: `1px solid ${C.divider}`,
+                      }}
+                    >
+                      <span
+                        className="text-[11px] font-semibold uppercase leading-5"
+                        style={{ color: C.headText }}
+                      >
+                        {col.header}
+                      </span>
+                      <div
+                        className="min-w-0 wrap-break-word text-left text-[13px] leading-5 sm:text-right"
+                        style={{ color: C.bodyText }}
+                      >
+                        {col.cell(row, index)}
+                      </div>
+                    </div>
+                  ))}
+
+                  {actionsCol && (
+                    <div className="mt-1 flex flex-wrap justify-stretch gap-2 pt-2 sm:justify-end [&_button]:min-w-0 [&_button]:flex-1 sm:[&_button]:flex-none">
+                      {actionsCol.cell(row, index)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <DataTablePagination

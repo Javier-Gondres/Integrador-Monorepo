@@ -1,7 +1,12 @@
+import { Permission } from "@repo/shared";
+
+import { Can } from "@/shared/ui/can";
+
 import {
   DashboardHeroActions,
   DashboardQuickLinksSection,
 } from "../components/dashboard-quick-links";
+import { InventoryAlertsSection } from "../components/inventory-alerts-section";
 import styles from "./dashboard-screen.module.css";
 
 export function DashboardScreen() {
@@ -20,6 +25,9 @@ export function DashboardScreen() {
         </div>
       </section>
 
+      <Can permission={Permission.INVENTORY_READ}>
+        <InventoryAlertsSection />
+      </Can>
       <DashboardQuickLinksSection />
     </main>
   );

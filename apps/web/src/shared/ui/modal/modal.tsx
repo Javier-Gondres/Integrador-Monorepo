@@ -27,8 +27,8 @@ export function Modal({
         alignItems: "center",
         justifyContent: "center",
         zIndex: 50,
-        padding: "16px",
       }}
+      className="overflow-y-auto overscroll-contain p-3 sm:p-4"
     >
       <div
         style={{
@@ -40,32 +40,36 @@ export function Modal({
           boxShadow: "0 20px 60px rgba(0,0,0,.15)",
           display: "flex",
           flexDirection: "column",
-          maxHeight: "90vh",
+          maxHeight: "calc(100dvh - 24px)",
           overflow: "hidden",
         }}
+        className="mx-auto my-auto"
       >
         <div
           style={{
-            padding: "20px 24px",
             borderBottom: `1px solid ${C.divider}`,
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
             flexShrink: 0,
           }}
+          className="gap-3 px-4 py-4 sm:px-6 sm:py-5"
         >
-          <div>
+          <div className="min-w-0">
             <h3
               style={{
                 margin: "0 0 4px",
-                fontSize: "17px",
                 fontWeight: 700,
                 color: C.bodyText,
               }}
+              className="text-base sm:text-[17px]"
             >
               {title}
             </h3>
-            <p style={{ margin: 0, fontSize: "13px", color: C.headText }}>
+            <p
+              style={{ margin: 0, color: C.headText }}
+              className="text-xs sm:text-[13px]"
+            >
               {description}
             </p>
           </div>
@@ -88,7 +92,7 @@ export function Modal({
             <X style={{ width: "16px", height: "16px" }} />
           </button>
         </div>
-        {children}
+        <div className="min-h-0 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

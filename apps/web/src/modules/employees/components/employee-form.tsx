@@ -1,9 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import {
+  type Control,
+  Controller,
+  type FieldPath,
+  type FieldValues,
+  useForm,
+} from "react-hook-form";
 
 import { ERP_COLORS as C } from "@/constants/theme";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
@@ -35,7 +42,17 @@ interface EmployeeFormEditProps {
   isSubmitting: boolean;
   branches: BranchOption[];
   branchesLoading: boolean;
+  roles: RoleOption[];
+  rolesLoading: boolean;
   userEmail: string;
+  memberRoleLabel: string;
+  requiresLaborProfile: boolean;
+  canChangeRole: boolean;
+  isTargetOwner: boolean;
+  joinDateLabel: string;
+  canTransferOwnership: boolean;
+  isTransferring: boolean;
+  onTransferOwnership: () => void;
   onSubmit: (values: EmployeeUpdateFormSchema) => void | Promise<void>;
   onClose: () => void;
 }
@@ -181,13 +198,6 @@ function EmployeeCreateForm({
           />
         </div>
 
-        <Input
-          label="Fecha de contratación"
-          type="date"
-          error={errors.hireDate?.message}
-          {...register("hireDate")}
-        />
-
         <FormActions
           isSubmitting={isSubmitting}
           onClose={onClose}
@@ -203,7 +213,17 @@ function EmployeeEditForm({
   isSubmitting,
   branches,
   branchesLoading,
+  roles,
+  rolesLoading,
   userEmail,
+  memberRoleLabel,
+  requiresLaborProfile,
+  canChangeRole,
+  isTargetOwner,
+  joinDateLabel,
+  canTransferOwnership,
+  isTransferring,
+  onTransferOwnership,
   onSubmit,
   onClose,
 }: EmployeeFormEditProps) {
@@ -219,8 +239,8 @@ function EmployeeEditForm({
 
   return (
     <Modal
-      title="Editar Empleado"
-      description="Actualiza los datos laborales. El acceso al sistema se gestiona por email."
+      title="Editar miembro"
+      description="Actualiza el rol y los datos del miembro en la empresa."
       onClose={onClose}
     >
       <form
@@ -256,55 +276,104 @@ function EmployeeEditForm({
           />
         </div>
 
-        <Controller
-          name="branchId"
-          control={control}
-          render={({ field }) => (
-            <BranchSelectField
-              required
-              value={field.value}
-              onChange={field.onChange}
-              branches={branches}
-              loading={branchesLoading}
-              error={errors.branchId?.message}
+        {isTargetOwner ? (
+          <div style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.bodyText }}>
+              Rol
+            </span>
+            <Badge variant="primary">{memberRoleLabel}</Badge>
+            <span style={{ color: C.mutedText, fontSize: 12 }}>
+              El rol OWNER solo puede cambiarse mediante transferencia de
+              propiedad.
+            </span>
+          </div>
+        ) : canChangeRole ? (
+          <RoleSelectField
+            control={control}
+            roles={roles}
+            rolesLoading={rolesLoading}
+            error={errors.roleId?.message}
+          />
+        ) : (
+          <div style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.bodyText }}>
+              Rol
+            </span>
+            <Badge variant="primary">{memberRoleLabel}</Badge>
+          </div>
+        )}
+
+        {requiresLaborProfile ? (
+          <>
+            <Controller
+              name="branchId"
+              control={control}
+              render={({ field }) => (
+                <BranchSelectField
+                  required
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  branches={branches}
+                  loading={branchesLoading}
+                  error={errors.branchId?.message}
+                />
+              )}
             />
-          )}
-        />
+
+            <Input
+              label="Puesto"
+              error={errors.position?.message}
+              {...register("position")}
+            />
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "14px",
+              }}
+            >
+              <Input
+                label="Teléfono"
+                error={errors.phone?.message}
+                {...register("phone")}
+              />
+              <Input
+                label="Salario"
+                type="number"
+                step="0.01"
+                min={0}
+                error={errors.salary?.message}
+                {...register("salary")}
+              />
+            </div>
+          </>
+        ) : null}
 
         <Input
-          label="Puesto"
-          error={errors.position?.message}
-          {...register("position")}
+          label="Fecha de ingreso a la empresa"
+          value={joinDateLabel}
+          disabled
         />
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "14px",
-          }}
-        >
-          <Input
-            label="Teléfono"
-            error={errors.phone?.message}
-            {...register("phone")}
-          />
-          <Input
-            label="Salario"
-            type="number"
-            step="0.01"
-            min={0}
-            error={errors.salary?.message}
-            {...register("salary")}
-          />
-        </div>
-
-        <Input
-          label="Fecha de contratación"
-          type="date"
-          error={errors.hireDate?.message}
-          {...register("hireDate")}
-        />
+        {canTransferOwnership ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.bodyText }}>
+              Transferencia de propiedad
+            </span>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onTransferOwnership}
+              disabled={isTransferring}
+              style={{ justifySelf: "start" }}
+            >
+              {isTransferring
+                ? "Transfiriendo..."
+                : "Transferir propiedad a este usuario"}
+            </Button>
+          </div>
+        ) : null}
 
         <FormActions
           isSubmitting={isSubmitting}
@@ -316,16 +385,18 @@ function EmployeeEditForm({
   );
 }
 
-function RoleSelectField({
+function RoleSelectField<T extends FieldValues>({
   control,
   roles,
   rolesLoading,
   error,
+  name = "roleId" as FieldPath<T>,
 }: {
-  control: ReturnType<typeof useForm<EmployeeFormSchema>>["control"];
+  control: Control<T>;
   roles: RoleOption[];
   rolesLoading: boolean;
   error?: string;
+  name?: FieldPath<T>;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -333,7 +404,7 @@ function RoleSelectField({
         Rol <span style={{ color: C.danger }}>*</span>
       </label>
       <Controller
-        name="roleId"
+        name={name}
         control={control}
         render={({ field }) => (
           <select

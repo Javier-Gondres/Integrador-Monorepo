@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { NcfType, PaymentMethod } from '@repo/db';
+import { Permission } from '@repo/shared';
+import { isAfter, isValid, parseISO, startOfDay, startOfToday } from 'date-fns';
+import type { AuthContext } from 'src/auth/auth.types';
 import type { CompanyContext } from 'src/common/company';
 import { BusinessException, ErrorCodes } from 'src/common/errors';
 import { DiscountsService } from 'src/discounts/discounts.service';
@@ -132,7 +135,8 @@ export class SalesService {
     };
   }
 
-  async create(dto: CreateSaleDto, company: CompanyContext, userId: string) {
+  async create(dto: CreateSaleDto, company: CompanyContext, auth: AuthContext) {
+    const userId = auth.userId;
     const branchId = this.resolveBranchId(company, dto.branchId);
     const customerId = dto.customerId?.trim() || null;
     if (!customerId) {
@@ -140,6 +144,8 @@ export class SalesService {
     }
     const creditNoteIds = dto.creditNoteIds ?? [];
     const payments = dto.payments ?? [];
+
+    const soldAt = this.resolveSoldAt(dto.soldAt, auth);
 
     const productIds = dto.items.map((item) => item.productId);
     if (new Set(productIds).size !== productIds.length) {
@@ -207,9 +213,32 @@ export class SalesService {
         amount: payment.amount,
       })),
       creditNoteIds,
+      soldAt,
     });
 
     return mapSaleDetail(record);
+  }
+
+  private resolveSoldAt(
+    soldAt: string | undefined,
+    auth: AuthContext,
+  ): Date | null {
+    if (!soldAt) {
+      return null;
+    }
+    if (!auth.permissions.includes(Permission.SALES_BACKDATE)) {
+      throw SalesException.backdateForbidden();
+    }
+    const parsed = parseISO(soldAt);
+    if (!isValid(parsed)) {
+      throw SalesException.backdateInvalid();
+    }
+    // Comparar por día calendario: el cliente envía mediodía local del día
+    // elegido, que por la mañana aún sería "futuro" frente a Date.now().
+    if (isAfter(startOfDay(parsed), startOfToday())) {
+      throw SalesException.backdateInvalid();
+    }
+    return parsed;
   }
 
   private resolveBranchId(company: CompanyContext, branchId?: string): string {
@@ -326,8 +355,27 @@ function mapSaleDetail(record: SaleDetailRecord) {
     total: Number(record.total),
     createdAt: record.createdAt,
     reservationId: record.reservationId,
-    branch: record.branch,
+    company: {
+      name: record.branch.company.name,
+      rnc: record.branch.company.rnc,
+      address: record.branch.company.address,
+      phone: record.branch.company.phone,
+    },
+    branch: {
+      id: record.branch.id,
+      name: record.branch.name,
+      address: record.branch.address,
+    },
     customerName: customerName(record.customer),
+    customer: record.customer
+      ? {
+          name: `${record.customer.firstName} ${record.customer.lastName}`,
+          rnc: record.customer.rnc,
+          cedula: record.customer.cedula,
+          address: record.customer.address,
+          phone: record.customer.phone,
+        }
+      : null,
     cashierName: cashierUser
       ? `${cashierUser.firstName} ${cashierUser.lastName}`
       : null,

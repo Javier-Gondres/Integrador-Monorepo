@@ -8,5 +8,9 @@ export function getPostLoginRoute(user: AuthUser | null | undefined): string {
     return AUTH_ROUTES.platformDashboard;
   }
 
+  if (!user?.companyId) {
+    return AUTH_ROUTES.onboardingCompany;
+  }
+
   return AUTH_ROUTES.dashboard;
 }

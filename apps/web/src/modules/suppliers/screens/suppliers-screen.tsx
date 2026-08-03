@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
+import { ProductFormModalContainer } from "@/modules/products/containers/product-form-modal-container";
+import type { Product } from "@/modules/products/types/product.types";
 import { PageHeader } from "@/shared/ui";
 
 import { SupplierFormModalContainer } from "../containers/supplier-form-modal-container";
@@ -14,6 +16,10 @@ export function SuppliersScreen() {
     Supplier | null | undefined
   >(undefined);
 
+  const [modalProduct, setModalProduct] = useState<Product | null | undefined>(
+    undefined,
+  );
+
   return (
     <main
       style={{
@@ -24,17 +30,11 @@ export function SuppliersScreen() {
     >
       <PageHeader breadcrumb="Proveedores" title="Proveedores" />
 
-      <div
-        style={{
-          padding: "32px 40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-        }}
-      >
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
         <SuppliersTableContainer
           onEdit={setModalSupplier}
           onCreate={() => setModalSupplier(null)}
+          onCreateProduct={() => setModalProduct(null)}
         />
       </div>
 
@@ -42,6 +42,13 @@ export function SuppliersScreen() {
         <SupplierFormModalContainer
           supplier={modalSupplier}
           onClose={() => setModalSupplier(undefined)}
+        />
+      )}
+
+      {modalProduct !== undefined && (
+        <ProductFormModalContainer
+          product={modalProduct}
+          onClose={() => setModalProduct(undefined)}
         />
       )}
     </main>

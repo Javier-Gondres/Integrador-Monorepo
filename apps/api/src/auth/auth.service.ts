@@ -1,8 +1,9 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { PasswordResetTokenPurpose } from '@repo/db';
 import type { PermissionCode } from '@repo/shared';
 import * as bcrypt from 'bcrypt';
 import { AuthException } from 'src/common/errors';
@@ -22,6 +23,8 @@ import { REFRESH_TOKEN_MAX_AGE_MS } from './refresh-token.cookie';
 const ACCESS_TOKEN_DURATION = '15m' as const;
 const REFRESH_TOKEN_DURATION = '7d' as const;
 const PASSWORD_HASH_ROUNDS = 10;
+const PASSWORD_RESET_TOKEN_BYTES = 32;
+const PASSWORD_RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 @Injectable()
 export class AuthService {
@@ -144,6 +147,39 @@ export class AuthService {
     await this.authRepository.revokeAllRefreshTokensForUser(userId);
   }
 
+  async createPasswordResetToken(
+    userId: string,
+    purpose: PasswordResetTokenPurpose = PasswordResetTokenPurpose.RESET_PASSWORD,
+  ): Promise<string> {
+    const token = randomBytes(PASSWORD_RESET_TOKEN_BYTES).toString('base64url');
+    await this.authRepository.createPasswordResetToken({
+      userId,
+      tokenHash: this.hashOpaqueToken(token),
+      expiresAt: new Date(Date.now() + PASSWORD_RESET_TOKEN_TTL_MS),
+      purpose,
+    });
+    return token;
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const resetToken = await this.authRepository.findPasswordResetToken(
+      this.hashOpaqueToken(token),
+    );
+
+    if (!resetToken?.user.isActive) {
+      throw AuthException.invalidCredentials();
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, PASSWORD_HASH_ROUNDS);
+    await this.authRepository.resetPasswordWithToken({
+      resetTokenId: resetToken.id,
+      userId: resetToken.userId,
+      passwordHash,
+    });
+
+    return { message: 'Contraseña actualizada correctamente' };
+  }
+
   /**
    * Emite un nuevo access token con el contexto actual de BD (sin rotar refresh token).
    * Usado tras cambios que afectan claims del JWT, p. ej. switchBranch.
@@ -193,6 +229,10 @@ export class AuthService {
 
   private hashTokenForStorage(plainToken: string): Promise<string> {
     return bcrypt.hash(plainToken, PASSWORD_HASH_ROUNDS);
+  }
+
+  private hashOpaqueToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
   }
 
   private getRefreshTokenExpiryDate(): Date {

@@ -16,7 +16,7 @@ export function PlatformDashboardScreen() {
     >
       <PageHeader breadcrumb="Plataforma" title="Administración SaaS" />
 
-      <div style={{ padding: "32px 40px" }}>
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
         <PlatformOverviewCards />
       </div>
     </main>

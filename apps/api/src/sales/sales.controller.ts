@@ -73,6 +73,6 @@ export class SalesController {
     @Company() company: CompanyContext,
     @Auth() auth: AuthContext,
   ) {
-    return this.salesService.create(createSaleDto, company, auth.userId);
+    return this.salesService.create(createSaleDto, company, auth);
   }
 }

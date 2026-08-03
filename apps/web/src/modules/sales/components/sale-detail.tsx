@@ -1,9 +1,10 @@
 "use client";
 
-import { Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { CalendarDays, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 
 import type { SaleLine } from "../hooks/use-sale";
 import type { CreditNoteDto } from "../types/sale.types";
+import { formatSaleDay } from "../utils/format";
 import { CreditNotesPanel } from "./credit-notes-panel";
 import { SaleCart } from "./sale-cart";
 import { SaleTotals } from "./sale-totals";
@@ -15,6 +16,13 @@ interface SaleDetailProps {
   onRemove: (productId: string) => void;
   onClear: () => void;
   onAddProduct: () => void;
+
+  /** Solo OWNER/ADMIN: permite registrar una venta con fecha pasada. */
+  canBackdate: boolean;
+  /** Día (`YYYY-MM-DD`) elegido para una venta pasada, o `null`. */
+  saleDate: string | null;
+  onOpenDateModal: () => void;
+  onClearDate: () => void;
 
   subtotal: number;
   itbis: number;
@@ -47,6 +55,10 @@ export function SaleDetail({
   onRemove,
   onClear,
   onAddProduct,
+  canBackdate,
+  saleDate,
+  onOpenDateModal,
+  onClearDate,
   subtotal,
   itbis,
   total,
@@ -76,6 +88,36 @@ export function SaleDetail({
           </span>
         </span>
         <span className="grow" />
+        {canBackdate &&
+          (saleDate ? (
+            <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/5 px-3 text-sm font-semibold text-primary">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <button
+                type="button"
+                onClick={onOpenDateModal}
+                className="transition-colors hover:underline"
+              >
+                {formatSaleDay(saleDate)}
+              </button>
+              <button
+                type="button"
+                onClick={onClearDate}
+                aria-label="Quitar fecha de venta"
+                className="transition-colors hover:text-danger"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenDateModal}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border px-3 text-sm font-semibold text-head transition-colors hover:text-primary"
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              Fecha de venta
+            </button>
+          ))}
         {!empty && (
           <button
             type="button"

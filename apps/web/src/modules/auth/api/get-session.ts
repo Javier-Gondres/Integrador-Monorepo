@@ -35,9 +35,12 @@ async function fetchCompanySlug(
     return undefined;
   }
 
-  const company = await apiFetch<MyCompanyResponse>(ENDPOINTS.me.company);
-
-  return company.slug;
+  try {
+    const company = await apiFetch<MyCompanyResponse>(ENDPOINTS.me.company);
+    return company.slug;
+  } catch {
+    return undefined;
+  }
 }
 
 export async function getSession(): Promise<AuthSession> {

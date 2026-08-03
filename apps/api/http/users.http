@@ -127,21 +127,20 @@ Authorization: Bearer {{accessToken}}
 
 ###
 
-### Eliminar usuario (softDelete / softDeleteMany — transacción interactiva)
+### Sacar usuario de la empresa (revoca membresía; no elimina la cuenta global)
 # Usa el id de otro usuario de tu empresa (no el tuyo → 400).
-DELETE {{baseUrl}}/users/{{userId}}
+DELETE {{baseUrl}}/users/{{userId}}/membership
 Authorization: Bearer {{accessToken}}
 
 ###
 
-### Eliminar usuario (no puedes eliminarte a ti mismo — debe responder 400)
-DELETE {{baseUrl}}/users/{{selfUserId}}
+### Sacarte a ti mismo de la empresa — debe responder 400
+DELETE {{baseUrl}}/users/{{selfUserId}}/membership
 Authorization: Bearer {{accessToken}}
 
 ###
 
-### Restaurar usuario eliminado (restore + restoreMany)
-# Ejecutar después de DELETE sobre @userId.
+### Restaurar usuario expulsado (restore de membresía en la empresa)
 PATCH {{baseUrl}}/users/{{userId}}/restore
 Authorization: Bearer {{accessToken}}
 

@@ -8,7 +8,7 @@ export class SalesException extends BusinessException {
   static noOpenCashShift(): SalesException {
     return new SalesException(
       ErrorCodes.NO_OPEN_CASH_SHIFT,
-      'No hay un turno de caja abierto para registrar la venta',
+      'No hay un turno de caja abierto en esta sucursal para registrar la venta',
       HttpStatus.CONFLICT,
     );
   }
@@ -61,6 +61,22 @@ export class SalesException extends BusinessException {
       ErrorCodes.RESERVATION_NOT_ACTIVE,
       'La reserva indicada no está activa',
       HttpStatus.CONFLICT,
+    );
+  }
+
+  static backdateForbidden(): SalesException {
+    return new SalesException(
+      ErrorCodes.SALE_BACKDATE_FORBIDDEN,
+      'No tiene permiso para registrar ventas con una fecha pasada',
+      HttpStatus.FORBIDDEN,
+    );
+  }
+
+  static backdateInvalid(): SalesException {
+    return new SalesException(
+      ErrorCodes.SALE_BACKDATE_INVALID,
+      'La fecha de la venta no es válida o está en el futuro',
+      HttpStatus.BAD_REQUEST,
     );
   }
 }

@@ -11,7 +11,7 @@ import { PurchaseHistoryTableContainer } from "../containers/purchase-history-ta
 export function PurchaseHistoryScreen() {
   return (
     <main className="min-h-screen bg-page">
-      <div className="border-b border-card-border bg-card px-10 py-5">
+      <div className="border-b border-card-border bg-card px-4 py-4 sm:px-6 sm:py-5 md:px-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-1 text-[13px] text-muted">
@@ -36,7 +36,7 @@ export function PurchaseHistoryScreen() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 px-10 py-8">
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
         <PurchaseHistoryTableContainer />
       </div>
     </main>

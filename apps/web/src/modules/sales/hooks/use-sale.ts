@@ -54,6 +54,9 @@ export function useSale() {
   const [selectedCreditNoteIds, setSelectedCreditNoteIds] = useState<string[]>(
     [],
   );
+  // Fecha (día local `YYYY-MM-DD`) de una venta pasada; `null` = venta con fecha
+  // actual. Solo la usan OWNER/ADMIN.
+  const [saleDate, setSaleDate] = useState<string | null>(null);
 
   const add = useCallback((product: SaleProductDto) => {
     setLines((prev) => {
@@ -107,11 +110,14 @@ export function useSale() {
     );
   }, []);
 
+  const clearSaleDate = useCallback(() => setSaleDate(null), []);
+
   const reset = useCallback(() => {
     setLines({});
     setCustomerState(null);
     setPaymentOption("contado");
     setSelectedCreditNoteIds([]);
+    setSaleDate(null);
   }, []);
 
   const totals = useMemo(() => {
@@ -143,6 +149,9 @@ export function useSale() {
     setPaymentOption,
     selectedCreditNoteIds,
     toggleCreditNote,
+    saleDate,
+    setSaleDate,
+    clearSaleDate,
     reset,
     ...totals,
   };

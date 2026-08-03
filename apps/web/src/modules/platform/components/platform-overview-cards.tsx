@@ -39,23 +39,22 @@ export function PlatformOverviewCards() {
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-        gap: "16px",
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
       }}
+      className="grid min-w-0 gap-4"
     >
       {cards.map((card) => (
-        <div key={card.label} style={cardStyle}>
+        <div key={card.label} className="min-w-0" style={cardStyle}>
           <p style={{ margin: 0, fontSize: "13px", color: C.mutedText }}>
             {card.label}
           </p>
           <p
             style={{
               margin: "8px 0 0",
-              fontSize: "32px",
               fontWeight: 700,
               color: card.tone,
             }}
+            className="text-2xl sm:text-[32px]"
           >
             {isLoading ? "…" : card.value}
           </p>
@@ -63,6 +62,7 @@ export function PlatformOverviewCards() {
       ))}
 
       <div
+        className="min-w-0"
         style={{
           ...cardStyle,
           display: "flex",

@@ -14,6 +14,7 @@ import { AuthContext, RefreshGuardRequestUser } from './auth.types';
 import { Auth } from './decorators/auth.decorator';
 import { JwtAuth } from './decorators/jwt-auth.decorator';
 import { LoginDto } from './dto/login.dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import {
   clearRefreshTokenCookie,
@@ -64,6 +65,11 @@ export class AuthController {
     await this.authService.logoutSession(req.user.refreshTokenPayload);
     clearRefreshTokenCookie(res);
     return { message: 'Sesión cerrada' };
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.newPassword);
   }
 
   /**

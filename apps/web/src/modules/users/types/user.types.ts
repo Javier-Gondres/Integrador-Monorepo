@@ -11,6 +11,7 @@ export interface UserMembershipDto {
   companyId: string;
   roleId: string;
   defaultBranchId: string | null;
+  createdAt: string;
   role: UserRoleDto;
 }
 
@@ -25,6 +26,16 @@ export interface UserDto {
   membership: UserMembershipDto | null;
 }
 
+export interface PermissionInfo {
+  code: string;
+  name: string;
+  description: string | null;
+}
+
+export interface UserDetailDto extends UserDto {
+  permissions: PermissionInfo[];
+}
+
 export interface User {
   id: string;
   email: string;
@@ -32,9 +43,12 @@ export interface User {
   lastName: string;
   fullName: string;
   roleName: string;
+  roleId: string;
   roleLabel: string;
   isActive: boolean;
   lastLoginAt: string | null;
+  defaultBranchId: string | null;
+  joinedAt: string | null;
 }
 
 export interface UserFilters extends BaseListFilters {

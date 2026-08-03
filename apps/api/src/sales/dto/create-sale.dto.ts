@@ -4,6 +4,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsEnum,
+  IsISO8601,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -69,4 +70,8 @@ export class CreateSaleDto {
   @IsArray({ message: 'Las notas de crédito deben ser una lista' })
   @IsString({ each: true, message: 'Cada nota de crédito debe ser texto' })
   creditNoteIds?: string[];
+
+  @IsOptional()
+  @IsISO8601({}, { message: 'La fecha de la venta no es válida' })
+  soldAt?: string;
 }

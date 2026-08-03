@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { Permission, type PermissionCode } from '@repo/shared';
 
+import { BranchAccessService } from '../branch/branch-access.service';
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { EmployeesRepository } from '../employees/employees.repository';
 import { assertEmployeeForBranchOperation } from '../employees/policies/employee-branch.policy';
@@ -13,6 +15,7 @@ export class CashRegistersService {
   constructor(
     private readonly cashRegistersRepository: CashRegistersRepository,
     private readonly employeesRepository: EmployeesRepository,
+    private readonly branchAccessService: BranchAccessService,
   ) {}
 
   async findAllByBranch(branchId: string) {
@@ -104,19 +107,12 @@ export class CashRegistersService {
 
   async openShift(
     id: string,
-    branchId: string,
     companyId: string,
     userId: string,
+    permissions: PermissionCode[],
     dto: OpenShiftDto,
   ) {
-    const register = await this.cashRegistersRepository.findById(id);
-
-    if (!register || register.branchId !== branchId) {
-      throw BusinessException.notFound(
-        ErrorCodes.RECORD_NOT_FOUND,
-        'Caja no encontrada',
-      );
-    }
+    const register = await this.requireRegisterInCompany(id, companyId);
 
     if (register.shifts.length > 0) {
       throw new BusinessException(
@@ -130,8 +126,11 @@ export class CashRegistersService {
 
     const employee = assertEmployeeForBranchOperation(
       employeeContext,
-      branchId,
+      register.branchId,
       companyId,
+      {
+        allowCrossBranch: permissions.includes(Permission.BRANCHES_READ),
+      },
     );
 
     await this.cashRegistersRepository.openShift(
@@ -145,18 +144,11 @@ export class CashRegistersService {
 
   async closeShift(
     id: string,
-    branchId: string,
+    companyId: string,
     shiftId: string,
     dto: CloseShiftDto,
   ) {
-    const register = await this.cashRegistersRepository.findById(id);
-
-    if (!register || register.branchId !== branchId) {
-      throw BusinessException.notFound(
-        ErrorCodes.RECORD_NOT_FOUND,
-        'Caja no encontrada',
-      );
-    }
+    const register = await this.requireRegisterInCompany(id, companyId);
 
     const activeShift = register.shifts[0];
     if (!activeShift || activeShift.id !== shiftId) {
@@ -171,14 +163,8 @@ export class CashRegistersService {
     return { message: 'Turno cerrado correctamente' };
   }
 
-  async getShiftsHistory(id: string, branchId: string, query: QueryShiftsDto) {
-    const cashRegister = await this.cashRegistersRepository.findById(id);
-    if (!cashRegister || cashRegister.branchId !== branchId) {
-      throw new BusinessException(
-        ErrorCodes.RECORD_NOT_FOUND,
-        'Caja no encontrada',
-      );
-    }
+  async getShiftsHistory(id: string, companyId: string, query: QueryShiftsDto) {
+    await this.requireRegisterInCompany(id, companyId);
 
     const page = query.page ?? 1;
     const take = query.take ?? 10;
@@ -245,5 +231,27 @@ export class CashRegistersService {
         totalPages: Math.ceil(total / take) || 0,
       },
     };
+  }
+
+  /**
+   * La caja se identifica por ID; la sucursal operativa es la de la caja,
+   * no la sucursal activa del JWT (permite a supervisores cerrar/abrir en
+   * otras sucursales que ya listaron con `?branchId=`).
+   */
+  private async requireRegisterInCompany(id: string, companyId: string) {
+    const register = await this.cashRegistersRepository.findById(id);
+    if (!register) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'Caja no encontrada',
+      );
+    }
+
+    await this.branchAccessService.assertBranchInCompany(
+      register.branchId,
+      companyId,
+    );
+
+    return register;
   }
 }
