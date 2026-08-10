@@ -39,7 +39,7 @@ export class DashboardService {
         startDate = startOfMonth(parsedDate);
         endDate = endOfMonth(parsedDate);
         isMonthFilter = true;
-      } catch (e) {
+      } catch (_e) {
         startDate = startOfDay(subDays(today, 7));
         endDate = todayEnd;
       }
