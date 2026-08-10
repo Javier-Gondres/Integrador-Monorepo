@@ -1,32 +1,5 @@
 import { z } from "zod";
 
-const optionalPhone = z.preprocess(
-  (value) => {
-    if (typeof value !== "string") return value;
-    const digits = value.replace(/\D/g, "");
-    return digits === "" ? undefined : digits;
-  },
-  z
-    .string()
-    .regex(/^[0-9]{10}$/, "El teléfono debe tener 10 dígitos (ej: 8091234567)")
-    .optional(),
-);
-
-const optionalRnc = z.preprocess(
-  (value) => {
-    if (typeof value !== "string") return value;
-    const digits = value.replace(/\D/g, "");
-    return digits === "" ? undefined : digits;
-  },
-  z
-    .string()
-    .regex(
-      /^[0-9]{9}$|^[0-9]{11}$/,
-      "El RNC debe tener 9 dígitos (jurídico) u 11 dígitos (físico/cédula)",
-    )
-    .optional(),
-);
-
 export const supplierFormSchema = z.object({
   name: z
     .string()
@@ -42,8 +15,22 @@ export const supplierFormSchema = z.object({
     .max(100, "El email debe tener máximo 100 caracteres")
     .optional()
     .or(z.literal("")),
-  phone: optionalPhone,
-  rnc: optionalRnc,
+  // El Controller del formulario ya normaliza a solo dígitos antes de guardar en el form state
+  phone: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || /^[0-9]{10}$/.test(val),
+      "El teléfono debe tener 10 dígitos (ej: 8091234567)",
+    ),
+  // RNC jurídico: 9 dígitos | RNC físico/cédula: 11 dígitos
+  rnc: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || /^[0-9]{9}$/.test(val) || /^[0-9]{11}$/.test(val),
+      "El RNC debe tener 9 dígitos (jurídico) u 11 dígitos (físico/cédula)",
+    ),
   address: z
     .string()
     .max(250, "La dirección debe tener máximo 250 caracteres")
