@@ -39,7 +39,7 @@ export function DashboardScreen() {
   } = useDashboardSummary(
     selectedBranch,
     filterMode === "days" ? selectedDays : 7,
-    filterMode === "month" ? selectedMonth : undefined
+    filterMode === "month" ? selectedMonth : undefined,
   );
 
   return (

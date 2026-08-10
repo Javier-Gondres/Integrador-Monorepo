@@ -319,7 +319,9 @@ export class DashboardService {
         ? prisma.accountPayable.findMany({
             where: {
               supplier: { companyId: company.companyId },
-              purchase: targetBranchId ? { branchId: targetBranchId } : undefined,
+              purchase: targetBranchId
+                ? { branchId: targetBranchId }
+                : undefined,
               createdAt: { lte: endDate },
             },
             include: {
@@ -385,7 +387,10 @@ export class DashboardService {
     > = {};
 
     if (isMonthFilter) {
-      const daysInMonth = eachDayOfInterval({ start: startDate!, end: endDate });
+      const daysInMonth = eachDayOfInterval({
+        start: startDate!,
+        end: endDate,
+      });
       daysInMonth.forEach((d) => {
         const dateStr = format(d, 'yyyy-MM-dd');
         dailyMap[dateStr] = {
@@ -445,7 +450,10 @@ export class DashboardService {
     let receivablesBalance = 0;
     if (isMonthFilter && receivablesList) {
       receivablesList.forEach((r) => {
-        const paidAmount = r.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+        const paidAmount = r.payments.reduce(
+          (sum, p) => sum + Number(p.amount),
+          0,
+        );
         const balanceAsOfDate = Number(r.originalAmount) - paidAmount;
         if (balanceAsOfDate > 0) {
           receivablesBalance += balanceAsOfDate;
@@ -459,7 +467,10 @@ export class DashboardService {
     let payablesBalance = 0;
     if (isMonthFilter && payablesList) {
       payablesList.forEach((p) => {
-        const paidAmount = p.payments.reduce((sum, pay) => sum + Number(pay.amount), 0);
+        const paidAmount = p.payments.reduce(
+          (sum, pay) => sum + Number(pay.amount),
+          0,
+        );
         const balanceAsOfDate = Number(p.originalAmount) - paidAmount;
         if (balanceAsOfDate > 0) {
           payablesBalance += balanceAsOfDate;

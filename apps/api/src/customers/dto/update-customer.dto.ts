@@ -42,7 +42,9 @@ export class UpdateCustomerDto {
   @IsOptional()
   @IsString({ message: 'El apellido debe ser texto' })
   @MinLength(1, { message: 'El apellido no puede estar vacío' })
-  @MaxLength(100, { message: 'El apellido no puede tener más de 100 caracteres' })
+  @MaxLength(100, {
+    message: 'El apellido no puede tener más de 100 caracteres',
+  })
   @Matches(namePattern, {
     message: 'El apellido solo puede contener letras y espacios',
   })
@@ -64,7 +66,9 @@ export class UpdateCustomerDto {
   @IsOptional()
   @Transform(({ value }) => normalizeOptionalString(value))
   @IsString({ message: 'La dirección debe ser texto' })
-  @MaxLength(250, { message: 'La dirección no puede tener más de 250 caracteres' })
+  @MaxLength(250, {
+    message: 'La dirección no puede tener más de 250 caracteres',
+  })
   address?: string;
 
   @IsOptional()

@@ -43,7 +43,8 @@ export class CreateSupplierDto {
   @Transform(({ value }) => normalizeOptionalDigits(value))
   @IsString({ message: 'rnc debe ser texto' })
   @Matches(/^[0-9]{9}$|^[0-9]{11}$/, {
-    message: 'El RNC debe tener 9 dígitos (jurídico) u 11 dígitos (físico/cédula)',
+    message:
+      'El RNC debe tener 9 dígitos (jurídico) u 11 dígitos (físico/cédula)',
   })
   rnc?: string;
 

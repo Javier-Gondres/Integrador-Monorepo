@@ -11,7 +11,10 @@ export const employeeFormSchema = z.object({
     .string()
     .min(1, "El apellido es requerido")
     .max(100, "El apellido debe tener máximo 100 caracteres"),
-  phone: z.string().max(20, "El teléfono debe tener máximo 20 caracteres").optional(),
+  phone: z
+    .string()
+    .max(20, "El teléfono debe tener máximo 20 caracteres")
+    .optional(),
   email: z
     .string()
     .email("Email no válido")
@@ -19,7 +22,10 @@ export const employeeFormSchema = z.object({
   password: z.string().min(8, "Mínimo 8 caracteres"),
   roleId: z.string().min(1, "Selecciona un rol"),
   branchId: z.string().min(1, "La sucursal es requerida"),
-  position: z.string().max(100, "El puesto debe tener máximo 100 caracteres").optional(),
+  position: z
+    .string()
+    .max(100, "El puesto debe tener máximo 100 caracteres")
+    .optional(),
   salary: optionalSalary,
   hireDate: z.string().optional(),
 });
@@ -33,10 +39,16 @@ export const employeeUpdateFormSchema = z.object({
     .string()
     .min(1, "El apellido es requerido")
     .max(100, "El apellido debe tener máximo 100 caracteres"),
-  phone: z.string().max(20, "El teléfono debe tener máximo 20 caracteres").optional(),
+  phone: z
+    .string()
+    .max(20, "El teléfono debe tener máximo 20 caracteres")
+    .optional(),
   branchId: z.string().optional(),
   roleId: z.string().optional(),
-  position: z.string().max(100, "El puesto debe tener máximo 100 caracteres").optional(),
+  position: z
+    .string()
+    .max(100, "El puesto debe tener máximo 100 caracteres")
+    .optional(),
   salary: optionalSalary,
   hireDate: z.string().optional(),
 });
