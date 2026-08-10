@@ -124,6 +124,9 @@
 .railHead {
   padding: 16px;
   border-bottom: 1px solid var(--divider);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .railTitle {
   font-size: 12px;
@@ -275,7 +278,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
+}
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
 }
 
 /* ---- catalogue search (within detail) ---- */
@@ -302,6 +312,36 @@
   width: 240px;
   padding: 0 12px 0 36px;
   outline: none;
+}
+
+/* El buscador se encoge antes de que la barra de acciones desborde. */
+@media (max-width: 1100px) {
+  .prodSearch {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+  .prodSearchInput {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .detailHead {
+    padding: 18px 16px;
+  }
+  .detailToolbar {
+    padding: 14px 16px;
+  }
+  .prodSearch {
+    flex: 1 1 100%;
+  }
+  .toolbarActions {
+    width: 100%;
+  }
+  /* <Can> renderiza un fragment: los hijos directos son los <button>. */
+  .toolbarActions > * {
+    flex: 1;
+  }
 }
 
 /* ---- product table ---- */

@@ -1,5 +1,13 @@
 import { Permission } from "@repo/shared";
-import { IdCard, Mail, Package, Phone, Plus, Search } from "lucide-react";
+import {
+  IdCard,
+  Mail,
+  Package,
+  PackagePlus,
+  Phone,
+  Plus,
+  Search,
+} from "lucide-react";
 
 import type { Supplier } from "@/modules/suppliers/types/supplier.types";
 import { Badge } from "@/shared/ui/badge";
@@ -22,6 +30,7 @@ interface SupplierCatalogDetailProps {
   search: string;
   onSearchChange: (value: string) => void;
   onAssignClick: () => void;
+  onCreateProductClick: () => void;
   onToggleStatus: (product: SupplierProduct) => void;
 }
 
@@ -32,6 +41,7 @@ export function SupplierCatalogDetail({
   search,
   onSearchChange,
   onAssignClick,
+  onCreateProductClick,
   onToggleStatus,
 }: SupplierCatalogDetailProps) {
   const isSearching = search.trim().length > 0;
@@ -81,12 +91,20 @@ export function SupplierCatalogDetail({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
-        <Can permission={Permission.SUPPLIERS_CREATE}>
-          <Button onClick={onAssignClick}>
-            <Plus style={{ width: "16px", height: "16px" }} />
-            Asignar producto
-          </Button>
-        </Can>
+        <div className={styles.toolbarActions}>
+          <Can permission={Permission.SUPPLIERS_CREATE}>
+            <Can permission={Permission.PRODUCTS_CREATE}>
+              <Button variant="secondary" onClick={onCreateProductClick}>
+                <PackagePlus style={{ width: "16px", height: "16px" }} />
+                Nuevo producto
+              </Button>
+            </Can>
+            <Button onClick={onAssignClick}>
+              <Plus style={{ width: "16px", height: "16px" }} />
+              Asignar producto
+            </Button>
+          </Can>
+        </div>
       </div>
 
       {loading ? (
@@ -145,7 +163,7 @@ export function SupplierCatalogDetail({
           <div>
             {isSearching
               ? "Prueba con otro término de búsqueda."
-              : "Usa “Asignar producto” para agregar el primero."}
+              : "Usa “Asignar producto” para vincular uno existente o “Nuevo producto” para crearlo."}
           </div>
         </div>
       )}
