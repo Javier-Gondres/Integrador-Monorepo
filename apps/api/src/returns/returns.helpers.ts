@@ -9,7 +9,7 @@ export type ReturnItemInput = {
   quantity: number;
 };
 
-type SoldEntry = {
+export type SoldEntry = {
   productId: string;
   code: string;
   name: string;
@@ -25,7 +25,7 @@ export function round3(value: number): number {
   return Math.round((value + Number.EPSILON) * 1000) / 1000;
 }
 
-function effectiveUnitPrice(sold: SoldEntry): number {
+export function effectiveUnitPrice(sold: SoldEntry): number {
   if (sold.quantitySold <= 0) {
     return 0;
   }
