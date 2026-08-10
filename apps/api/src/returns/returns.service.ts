@@ -13,6 +13,7 @@ import {
 import {
   buildAlreadyReturned,
   buildSoldByProduct,
+  effectiveUnitPrice,
   round3,
 } from './returns.helpers';
 import { ReturnsRepository } from './returns.repository';
@@ -133,10 +134,13 @@ export class ReturnsService {
     const alreadyReturned = buildAlreadyReturned(sale);
 
     return {
-      id: sale.id,
+      saleId: sale.id,
       ncf: sale.ncf,
+      ncfType: sale.ncfType,
+      createdAt: sale.createdAt,
+      total: Number(sale.total),
       branch: sale.branch,
-      customer: sale.customer,
+      customerName: customerName(sale.customer),
       items: Array.from(soldByProduct.values()).map((sold) => {
         const returnableRaw = round3(
           sold.quantitySold - (alreadyReturned.get(sold.productId) ?? 0),
@@ -145,6 +149,7 @@ export class ReturnsService {
           productId: sold.productId,
           code: sold.code,
           name: sold.name,
+          unitPrice: effectiveUnitPrice(sold),
           quantitySold: sold.quantitySold,
           quantityAlreadyReturned: round3(
             alreadyReturned.get(sold.productId) ?? 0,
