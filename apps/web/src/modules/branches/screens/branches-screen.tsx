@@ -803,6 +803,7 @@ export function BranchesScreen() {
                 <input
                   type="text"
                   required
+                  maxLength={100}
                   placeholder="Ej. Sucursal Centro, Sucursal Norte..."
                   value={formData.name}
                   onChange={(e) =>
@@ -836,6 +837,7 @@ export function BranchesScreen() {
                 </label>
                 <input
                   type="text"
+                  maxLength={250}
                   placeholder="Ej. Av. 27 de Febrero #123, Santo Domingo"
                   value={formData.address}
                   onChange={(e) =>

@@ -50,20 +50,31 @@ const optionalCedula = z.preprocess(
     .optional(),
 );
 
+const optionalAddress = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return trimmed === "" ? undefined : trimmed;
+}, z.string().max(250, "La dirección debe tener máximo 250 caracteres").optional());
+
 export const customerFormSchema = z.object({
   firstName: z
     .string()
     .trim()
     .min(1, "El nombre es requerido")
+    .max(100, "El nombre debe tener máximo 100 caracteres")
     .regex(namePattern, "El nombre solo puede contener letras y espacios"),
   lastName: z
     .string()
     .trim()
     .min(1, "El apellido es requerido")
+    .max(100, "El apellido debe tener máximo 100 caracteres")
     .regex(namePattern, "El apellido solo puede contener letras y espacios"),
   email: optionalEmail,
   phone: optionalPhone,
-  address: optionalTrimmedString,
+  address: optionalAddress,
   cedula: optionalCedula,
   isActive: z.boolean(),
 });

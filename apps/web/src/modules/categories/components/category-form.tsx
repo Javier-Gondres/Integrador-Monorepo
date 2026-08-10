@@ -60,6 +60,7 @@ export function CategoryForm({
         <Input
           label="Nombre"
           required
+          maxLength={100}
           placeholder="Ej. Tecnología, Alimentos..."
           error={errors.name?.message}
           {...register("name")}
@@ -67,6 +68,7 @@ export function CategoryForm({
 
         <Textarea
           label="Descripción"
+          maxLength={500}
           placeholder="Breve descripción de los elementos de esta categoría..."
           error={errors.description?.message}
           {...register("description")}
