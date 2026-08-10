@@ -2,15 +2,6 @@ import { z } from "zod";
 
 const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
 
-const optionalTrimmedString = z.preprocess((value) => {
-  if (typeof value !== "string") {
-    return value;
-  }
-
-  const trimmed = value.trim();
-  return trimmed === "" ? undefined : trimmed;
-}, z.string().optional());
-
 const optionalEmail = z.preprocess((value) => {
   if (typeof value !== "string") {
     return value;
