@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
@@ -31,6 +32,7 @@ function normalizeOptionalNumeric(value: unknown): string | undefined {
 export class CreateCustomerDto {
   @IsString({ message: 'El nombre debe ser texto' })
   @MinLength(1, { message: 'El nombre es requerido' })
+  @MaxLength(100, { message: 'El nombre no puede tener más de 100 caracteres' })
   @Matches(namePattern, {
     message: 'El nombre solo puede contener letras y espacios',
   })
@@ -38,6 +40,9 @@ export class CreateCustomerDto {
 
   @IsString({ message: 'El apellido debe ser texto' })
   @MinLength(1, { message: 'El apellido es requerido' })
+  @MaxLength(100, {
+    message: 'El apellido no puede tener más de 100 caracteres',
+  })
   @Matches(namePattern, {
     message: 'El apellido solo puede contener letras y espacios',
   })
@@ -59,6 +64,9 @@ export class CreateCustomerDto {
   @IsOptional()
   @Transform(({ value }) => normalizeOptionalString(value))
   @IsString({ message: 'La dirección debe ser texto' })
+  @MaxLength(250, {
+    message: 'La dirección no puede tener más de 250 caracteres',
+  })
   address?: string;
 
   @IsOptional()

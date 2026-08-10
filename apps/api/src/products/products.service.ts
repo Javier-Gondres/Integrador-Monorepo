@@ -73,6 +73,18 @@ export class ProductsService {
   }
 
   async create(companyId: string, dto: CreateProductDto) {
+    const codeTrimmed = dto.code.trim();
+    const existingCode = await this.productsRepository.findByCodeWithDeleted(
+      codeTrimmed,
+      companyId,
+    );
+    if (existingCode) {
+      throw new BusinessException(
+        ErrorCodes.PRODUCT_CODE_EXISTS,
+        'El código de producto ya ha sido registrado en esta empresa',
+      );
+    }
+
     if (dto.categoryIds?.length) {
       await this.categoriesService.assertAllExistInCompany(
         dto.categoryIds,
@@ -82,7 +94,7 @@ export class ProductsService {
 
     const product = await this.productsRepository.create(companyId, {
       name: dto.name.trim(),
-      code: dto.code.trim(),
+      code: codeTrimmed,
       description: dto.description?.trim() || null,
       imageUrl: dto.imageUrl?.trim() || null,
       price: dto.price,
@@ -102,7 +114,18 @@ export class ProductsService {
       data.name = data.name.trim();
     }
     if (data.code !== undefined) {
-      data.code = data.code.trim();
+      const codeTrimmed = data.code.trim();
+      const existingCode = await this.productsRepository.findByCodeWithDeleted(
+        codeTrimmed,
+        companyId,
+      );
+      if (existingCode && existingCode.id !== id) {
+        throw new BusinessException(
+          ErrorCodes.PRODUCT_CODE_EXISTS,
+          'El código de producto ya ha sido registrado en esta empresa',
+        );
+      }
+      data.code = codeTrimmed;
     }
 
     const updateData: Prisma.ProductUpdateInput = { ...data };

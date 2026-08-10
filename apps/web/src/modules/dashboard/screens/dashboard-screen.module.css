@@ -348,3 +348,71 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Dashboard Analytics Section Styles */
+.filterSection {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.selectWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 10px;
+}
+
+.selectLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.select {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  outline: none;
+  cursor: pointer;
+}
+
+.syncing {
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b82f6;
+  animation: pulse 1.5s infinite;
+}
+
+.analyticsSection {
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+
+.quickLinksSection {
+  margin-top: 32px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 24px;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

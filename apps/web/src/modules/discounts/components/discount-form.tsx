@@ -94,6 +94,7 @@ export function DiscountForm({
         <Input
           label="Nombre"
           required
+          maxLength={100}
           placeholder="Ej. 10% en Bebidas"
           error={errors.name?.message}
           {...register("name")}
@@ -101,6 +102,7 @@ export function DiscountForm({
 
         <Textarea
           label="Descripción"
+          maxLength={500}
           placeholder="Describe la promoción o las condiciones del descuento..."
           error={errors.description?.message}
           {...register("description")}
