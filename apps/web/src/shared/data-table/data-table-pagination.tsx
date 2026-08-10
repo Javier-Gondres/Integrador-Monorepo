@@ -25,37 +25,28 @@ export function DataTablePagination({
 
   return (
     <div
-      style={{
-        padding: "14px 24px",
-        borderTop: `1px solid ${C.divider}`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "12px",
-        flexWrap: "wrap",
-      }}
+      className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6"
+      style={{ borderTop: `1px solid ${C.divider}` }}
     >
+      {/* Filas por página */}
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          fontSize: "13px",
-          color: C.headText,
-        }}
+        className="flex w-full items-center justify-between gap-2 text-[13px] sm:w-auto sm:justify-start"
+        style={{ color: C.headText }}
       >
-        <span>Filas por página:</span>
+        <span className="hidden sm:inline">Filas por página:</span>
+        <span className="sm:hidden text-xs">Filas:</span>
         <PageSizeSelect
           value={rowsPerPage}
           onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
         />
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <span style={{ fontSize: "13px", color: C.headText }}>
+      {/* Rango + navegación */}
+      <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
+        <span className="text-[13px]" style={{ color: C.headText }}>
           {total === 0 ? "0–0" : `${startIdx}–${endIdx}`} de {total}
         </span>
-        <div style={{ display: "flex", gap: "6px" }}>
+        <div className="flex gap-1.5">
           {[
             {
               onClick: () => onPageChange(Math.max(currentPage - 1, 1)),

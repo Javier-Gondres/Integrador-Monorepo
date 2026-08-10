@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/api/errors";
+import { userKeys } from "@/modules/users/query-keys";
 
 import { updateEmployee } from "../api/update-employee";
 import { employeeKeys } from "../query-keys";
@@ -19,7 +20,8 @@ export function useUpdateEmployee() {
     }) => updateEmployee(id, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: employeeKeys.all });
-      toast.success("Empleado actualizado correctamente");
+      void queryClient.invalidateQueries({ queryKey: userKeys.all });
+      toast.success("Miembro actualizado correctamente");
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "No se pudo actualizar el empleado"));

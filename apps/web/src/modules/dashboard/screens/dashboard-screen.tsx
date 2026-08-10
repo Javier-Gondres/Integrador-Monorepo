@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import { Permission } from "@repo/shared";
 
 import { useBranches } from "@/modules/branches/hooks/use-branches";
+import { Can } from "@/shared/ui/can";
 
 import { DashboardCharts } from "../components/dashboard-charts";
-import { FinancialStatements } from "../components/financial-statements";
 import { KPIGrid } from "../components/dashboard-kpis";
 import { DashboardQuickLinksSection } from "../components/dashboard-quick-links";
+import { FinancialStatements } from "../components/financial-statements";
+import { InventoryAlertsSection } from "../components/inventory-alerts-section";
 import { RecentMovementsList } from "../components/recent-movements";
 import { useDashboardSummary } from "../hooks/use-dashboard";
 import styles from "./dashboard-screen.module.css";
@@ -76,7 +79,9 @@ export function DashboardScreen() {
               <span className="text-slate-500 font-semibold">Período:</span>
               <select
                 value={filterMode}
-                onChange={(e) => setFilterMode(e.target.value as "days" | "month")}
+                onChange={(e) =>
+                  setFilterMode(e.target.value as "days" | "month")
+                }
                 className="bg-transparent font-bold text-slate-700 focus:outline-none cursor-pointer"
               >
                 <option value="days">Días recientes</option>
@@ -122,6 +127,11 @@ export function DashboardScreen() {
 
         {/* KPI Grid */}
         <KPIGrid data={summaryData?.kpis} isLoading={isLoading} />
+
+        {/* Inventory Alerts (Protegido por permisos) */}
+        <Can permission={Permission.INVENTORY_READ}>
+          <InventoryAlertsSection />
+        </Can>
 
         {/* Charts Section */}
         <DashboardCharts

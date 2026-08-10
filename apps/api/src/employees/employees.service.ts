@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, RoleName } from '@repo/db';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { Prisma, prisma, RoleName } from '@repo/db';
 import * as bcrypt from 'bcrypt';
 
 import { AuthContext } from '../auth/auth.types';
 import { BranchAccessService } from '../branch/branch-access.service';
+import { ensureEmployeeForUserRole } from '../common/employees/employee-provisioning';
 import { BusinessException, ErrorCodes } from '../common/errors';
 import { getDefinedData } from '../common/helpers/object.utils';
-import { assertAssignableRole } from '../users/helpers/assert-assignable-role';
+import {
+  assertAssignableRole,
+  assertCanManageUser,
+} from '../users/helpers/assert-assignable-role';
 import { UsersRepository } from '../users/users.repository';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import {
@@ -16,10 +20,7 @@ import {
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeesRepository } from './employees.repository';
 import type { EmployeeRecord } from './employees.selects';
-import {
-  assertCanDeleteEmployee,
-  assertCanUpdateEmployee,
-} from './policies/employee-management.policy';
+import { assertCanUpdateEmployee } from './policies/employee-management.policy';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -102,7 +103,7 @@ export class EmployeesService {
       phone: dto.phone?.trim() || null,
       position: dto.position?.trim() || null,
       salary: this.toDecimalOrNull(dto.salary),
-      hireDate: dto.hireDate ? new Date(dto.hireDate) : null,
+      hireDate: new Date(),
     });
 
     if (result.status === 'role_not_found') {
@@ -153,9 +154,6 @@ export class EmployeesService {
     if (dto.salary !== undefined) {
       updateData.salary = this.toDecimalOrNull(dto.salary);
     }
-    if (dto.hireDate !== undefined) {
-      updateData.hireDate = dto.hireDate ? new Date(dto.hireDate) : null;
-    }
     if (dto.terminationDate !== undefined) {
       updateData.terminationDate = dto.terminationDate
         ? new Date(dto.terminationDate)
@@ -167,26 +165,30 @@ export class EmployeesService {
       updateData.branch = { connect: { id: branchId } };
     }
 
-    if (Object.keys(updateData).length === 0) {
+    if (dto.roleId !== undefined) {
+      await this.applyRoleUpdate(companyId, dto.roleId.trim(), auth, employee);
+    }
+
+    if (Object.keys(updateData).length === 0 && dto.roleId === undefined) {
       throw new BusinessException(
         ErrorCodes.VALIDATION_ERROR,
         'Debe enviar al menos un campo para actualizar',
       );
     }
 
-    return this.sanitizeEmployeeRecord(
-      await this.employeesRepository.update(id, updateData),
-      companyId,
-    );
+    if (Object.keys(updateData).length > 0) {
+      await this.employeesRepository.update(id, updateData);
+    }
+
+    return this.findByIdInCompany(id, companyId);
   }
 
-  async remove(id: string, companyId: string, auth: AuthContext) {
-    const employee = await this.findByIdInCompany(id, companyId);
-    this.assertCanDeleteEmployeeRecord(auth, employee);
-
-    await this.employeesRepository.softDelete(id);
-
-    return { message: 'Empleado eliminado correctamente' };
+  remove(_id: string, _companyId: string, _auth: AuthContext) {
+    throw new BusinessException(
+      ErrorCodes.UNAUTHORIZED_COMPANY_ACCESS,
+      'No se puede eliminar empleados. Usa sacar de la empresa para revocar el acceso.',
+      HttpStatus.FORBIDDEN,
+    );
   }
 
   async restore(id: string, companyId: string, auth: AuthContext) {
@@ -225,6 +227,163 @@ export class EmployeesService {
     return employee;
   }
 
+  async upsertLaborProfileForUser(
+    userId: string,
+    companyId: string,
+    dto: UpdateEmployeeDto,
+    auth: AuthContext,
+  ) {
+    const user = await this.usersRepository.findPublicByIdInCompany(
+      userId,
+      companyId,
+    );
+
+    if (!user?.membership) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El usuario no pertenece a esta empresa',
+      );
+    }
+
+    const membership = user.membership;
+    const roleName = membership.role.name;
+
+    if (auth.userId !== userId) {
+      assertCanManageUser(auth.role, roleName);
+    }
+
+    const branchId = dto.branchId?.trim();
+    if (!branchId) {
+      throw new BusinessException(
+        ErrorCodes.VALIDATION_ERROR,
+        'La sucursal es requerida',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.branchAccessService.assertBranchInCompany(branchId, companyId);
+
+    const userUpdate = getDefinedData({
+      firstName: dto.firstName?.trim(),
+      lastName: dto.lastName?.trim(),
+    });
+
+    if (Object.keys(userUpdate).length > 0) {
+      await this.usersRepository.applyUserUpdate(userId, companyId, userUpdate);
+    }
+
+    if (dto.roleId !== undefined) {
+      const role = await this.usersRepository.findRoleById(dto.roleId.trim());
+      if (!role) {
+        throw BusinessException.notFound(
+          ErrorCodes.RECORD_NOT_FOUND,
+          'El rol no existe',
+        );
+      }
+
+      if (auth.userId === userId) {
+        throw new BusinessException(
+          ErrorCodes.VALIDATION_ERROR,
+          'No puedes cambiar tu propio rol',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      assertAssignableRole(auth.role, role.name);
+      assertCanManageUser(auth.role, roleName);
+
+      const result = await this.usersRepository.applyUserUpdate(
+        userId,
+        companyId,
+        {},
+        role.name,
+      );
+
+      if (result.status === 'owner_requires_transfer') {
+        throw BusinessException.conflict(
+          ErrorCodes.VALIDATION_ERROR,
+          'El rol OWNER solo puede cambiarse mediante transferencia de propiedad',
+        );
+      }
+      if (result.status === 'membership_not_found') {
+        throw BusinessException.notFound(
+          ErrorCodes.RECORD_NOT_FOUND,
+          'La membresía del usuario no existe',
+        );
+      }
+      if (result.status === 'role_not_found') {
+        throw BusinessException.notFound(
+          ErrorCodes.RECORD_NOT_FOUND,
+          'El rol no existe',
+        );
+      }
+    }
+
+    let effectiveRoleName: RoleName = roleName;
+    if (dto.roleId !== undefined) {
+      const nextRole = await this.usersRepository.findRoleById(
+        dto.roleId.trim(),
+      );
+      if (nextRole) {
+        effectiveRoleName = nextRole.name;
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await ensureEmployeeForUserRole(tx, {
+        userId,
+        companyId,
+        branchId,
+        roleName: effectiveRoleName,
+        joinedAt: membership.createdAt,
+      });
+
+      const employee = await tx.employee.findFirst({
+        where: { userId, companyId },
+        select: { id: true },
+      });
+
+      if (!employee) {
+        throw new BusinessException(
+          ErrorCodes.RECORD_NOT_FOUND,
+          'No se pudo crear el perfil laboral del miembro',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      const laborUpdate: Prisma.EmployeeUpdateInput = {
+        branch: { connect: { id: branchId } },
+        position: dto.position?.trim() || effectiveRoleName,
+      };
+
+      if (dto.phone !== undefined) {
+        laborUpdate.phone = dto.phone?.trim() || null;
+      }
+      if (dto.salary !== undefined) {
+        laborUpdate.salary = this.toDecimalOrNull(dto.salary);
+      }
+
+      await tx.employee.update({
+        where: { id: employee.id },
+        data: laborUpdate,
+      });
+    });
+
+    const employee = await this.employeesRepository.findIdByUserId(
+      userId,
+      companyId,
+    );
+
+    if (!employee) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El perfil laboral no existe',
+      );
+    }
+
+    return this.findByIdInCompany(employee.id, companyId);
+  }
+
   private sanitizeEmployeeRecord(
     employee: EmployeeRecord,
     companyId: string,
@@ -253,17 +412,59 @@ export class EmployeesService {
     );
   }
 
-  private assertCanDeleteEmployeeRecord(
+  private async applyRoleUpdate(
+    companyId: string,
+    roleId: string,
     auth: AuthContext,
     employee: EmployeeRecord,
-  ): void {
-    assertCanDeleteEmployee(
-      { userId: auth.userId, role: auth.role },
-      {
-        userId: employee.userId,
-        role: this.resolveEmployeeRole(employee, employee.companyId),
-      },
+  ): Promise<void> {
+    const role = await this.usersRepository.findRoleById(roleId);
+
+    if (!role) {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El rol no existe',
+      );
+    }
+
+    const targetRole = this.resolveEmployeeRole(employee, companyId);
+
+    if (auth.userId === employee.userId) {
+      throw new BusinessException(
+        ErrorCodes.UNAUTHORIZED_COMPANY_ACCESS,
+        'No puedes cambiar tu propio rol',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    assertCanManageUser(auth.role, targetRole);
+    assertAssignableRole(auth.role, role.name);
+
+    const result = await this.usersRepository.applyUserUpdate(
+      employee.userId,
+      companyId,
+      {},
+      role.name,
     );
+
+    if (result.status === 'owner_requires_transfer') {
+      throw BusinessException.conflict(
+        ErrorCodes.VALIDATION_ERROR,
+        'El rol OWNER solo puede cambiarse mediante transferencia de propiedad',
+      );
+    }
+    if (result.status === 'role_not_found') {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El rol no existe',
+      );
+    }
+    if (result.status === 'membership_not_found') {
+      throw BusinessException.notFound(
+        ErrorCodes.RECORD_NOT_FOUND,
+        'El empleado no tiene membresía en esta empresa',
+      );
+    }
   }
 
   private resolveEmployeeRole(

@@ -34,7 +34,7 @@ export function SalesScreen() {
 
   return (
     <main className="flex min-h-screen flex-col bg-page lg:h-screen lg:min-h-0 lg:overflow-hidden">
-      <div className="flex-none border-b border-card-border bg-card px-8 py-5">
+      <div className="flex-none border-b border-card-border bg-card px-4 py-4 sm:px-6 sm:py-5 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-1 text-[13px] text-muted">
@@ -91,7 +91,7 @@ export function SalesScreen() {
           ))}
       </div>
 
-      <div className="flex flex-1 flex-col px-6 py-6 lg:min-h-0">
+      <div className="flex flex-1 flex-col p-4 sm:p-6 lg:min-h-0">
         <Can
           permission={Permission.SALES_CREATE}
           fallback={

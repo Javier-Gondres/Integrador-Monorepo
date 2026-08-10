@@ -60,12 +60,11 @@ export class CashRegistersController {
     @Company() company: CompanyContext,
     @Auth() auth: AuthContext,
   ) {
-    const branchId = await this.resolveBranchId(company);
     return this.cashRegistersService.openShift(
       id,
-      branchId,
       company.companyId,
       auth.userId,
+      auth.permissions,
       dto,
     );
   }
@@ -78,8 +77,12 @@ export class CashRegistersController {
     @Body() dto: CloseShiftDto,
     @Company() company: CompanyContext,
   ) {
-    const branchId = await this.resolveBranchId(company);
-    return this.cashRegistersService.closeShift(id, branchId, shiftId, dto);
+    return this.cashRegistersService.closeShift(
+      id,
+      company.companyId,
+      shiftId,
+      dto,
+    );
   }
 
   @RequirePermissions(Permission.CASH_READ)
@@ -89,7 +92,10 @@ export class CashRegistersController {
     @Company() company: CompanyContext,
     @Query() query: QueryShiftsDto,
   ) {
-    const branchId = await this.resolveBranchId(company);
-    return this.cashRegistersService.getShiftsHistory(id, branchId, query);
+    return this.cashRegistersService.getShiftsHistory(
+      id,
+      company.companyId,
+      query,
+    );
   }
 }

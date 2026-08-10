@@ -1,9 +1,10 @@
 "use client";
 
-import { Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { CalendarDays, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 
 import type { SaleLine } from "../hooks/use-sale";
 import type { CreditNoteDto } from "../types/sale.types";
+import { formatSaleDay } from "../utils/format";
 import { CreditNotesPanel } from "./credit-notes-panel";
 import { SaleCart } from "./sale-cart";
 import { SaleTotals } from "./sale-totals";
@@ -15,6 +16,13 @@ interface SaleDetailProps {
   onRemove: (productId: string) => void;
   onClear: () => void;
   onAddProduct: () => void;
+
+  /** Solo OWNER/ADMIN: permite registrar una venta con fecha pasada. */
+  canBackdate: boolean;
+  /** Día (`YYYY-MM-DD`) elegido para una venta pasada, o `null`. */
+  saleDate: string | null;
+  onOpenDateModal: () => void;
+  onClearDate: () => void;
 
   subtotal: number;
   itbis: number;
@@ -47,6 +55,10 @@ export function SaleDetail({
   onRemove,
   onClear,
   onAddProduct,
+  canBackdate,
+  saleDate,
+  onOpenDateModal,
+  onClearDate,
   subtotal,
   itbis,
   total,
@@ -67,33 +79,64 @@ export function SaleDetail({
 
   return (
     <section className="flex min-h-0 flex-col rounded-xl border border-card-border bg-card shadow-sm">
-      <div className="flex flex-none items-center gap-2 border-b border-card-border p-4">
-        <span className="flex items-center gap-2 text-sm font-semibold text-body">
+      <div className="flex flex-none flex-col gap-3 border-b border-card-border p-4 sm:flex-row sm:items-center">
+        <span className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-semibold text-body">
           <ShoppingCart className="h-4 w-4 text-primary" />
           Detalle de la Venta
           <span className="text-muted">
             ({qtyTotal} {qtyTotal === 1 ? "artículo" : "artículos"})
           </span>
         </span>
-        <span className="grow" />
-        {!empty && (
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
+          {canBackdate &&
+            (saleDate ? (
+              <span className="inline-flex h-9 min-w-0 basis-full items-center justify-center gap-1.5 rounded-lg border border-primary/40 bg-primary/5 px-3 text-sm font-semibold text-primary min-[480px]:basis-auto min-[480px]:flex-1 sm:flex-none">
+                <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                <button
+                  type="button"
+                  onClick={onOpenDateModal}
+                  className="min-w-0 truncate transition-colors hover:underline"
+                >
+                  {formatSaleDay(saleDate)}
+                </button>
+                <button
+                  type="button"
+                  onClick={onClearDate}
+                  aria-label="Quitar fecha de venta"
+                  className="shrink-0 transition-colors hover:text-danger"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenDateModal}
+                className="inline-flex h-9 min-w-0 basis-full items-center justify-center gap-1.5 rounded-lg border border-card-border px-3 text-sm font-semibold text-head transition-colors hover:text-primary min-[480px]:basis-auto min-[480px]:flex-1 sm:flex-none"
+              >
+                <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Fecha de venta</span>
+              </button>
+            ))}
+          {!empty && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="inline-flex h-9 min-w-0 basis-full items-center justify-center gap-1.5 rounded-lg border border-card-border px-3 text-sm font-semibold text-danger transition-colors hover:bg-danger/5 min-[480px]:basis-auto min-[480px]:flex-1 sm:flex-none"
+            >
+              <Trash2 className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Limpiar todo</span>
+            </button>
+          )}
           <button
             type="button"
-            onClick={onClear}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border px-3 text-sm font-semibold text-danger transition-colors hover:bg-danger/5"
+            onClick={onAddProduct}
+            className="inline-flex h-9 min-w-0 basis-full items-center justify-center gap-1.5 rounded-lg border border-card-border px-3 text-sm font-semibold text-head transition-colors hover:text-primary min-[480px]:basis-auto min-[480px]:flex-1 sm:flex-none"
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            Limpiar todo
+            <Plus className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Agregar Producto</span>
           </button>
-        )}
-        <button
-          type="button"
-          onClick={onAddProduct}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border px-3 text-sm font-semibold text-head transition-colors hover:text-primary"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Agregar Producto
-        </button>
+        </div>
       </div>
 
       {empty ? (
@@ -103,7 +146,7 @@ export function SaleDetail({
             <p className="mt-2 text-sm font-semibold text-body">
               Aún no hay productos
             </p>
-            <p className="mt-1 max-w-[240px] text-xs text-muted">
+            <p className="mt-1 max-w-60 text-xs text-muted">
               Busca y agrega productos para construir la factura.
             </p>
           </div>

@@ -146,7 +146,7 @@ export const softDeleteExtension = Prisma.defineExtension({
         const modelName = context.$name;
         assertSoftDeleteModel(modelName);
 
-        return runWithDeleted(() =>
+        return runWithDeleted(async () =>
           context.update({
             ...args,
             data: restoreDataForModel(modelName),
@@ -164,7 +164,7 @@ export const softDeleteExtension = Prisma.defineExtension({
 
         const typedArgs = args as { where?: Record<string, unknown> };
 
-        return runWithDeleted(() =>
+        return runWithDeleted(async () =>
           context.updateMany({
             ...typedArgs,
             where: mergeOnlyDeleted({ where: typedArgs.where }).where,

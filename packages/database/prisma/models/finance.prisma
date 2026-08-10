@@ -54,7 +54,8 @@ model ReceivablePayment {
 model AccountPayable {
   id String @id @default(cuid())
 
-  supplierId      String
+  supplierId String
+  branchId   String
   purchaseId String @unique
 
   originalAmount Decimal       @db.Decimal(10, 2)
@@ -62,7 +63,8 @@ model AccountPayable {
   dueDate        DateTime
   status         PayableStatus @default(OPEN)
 
-  supplier      Supplier      @relation(fields: [supplierId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  branch   Branch   @relation(fields: [branchId], references: [id])
   purchase Purchase @relation(fields: [purchaseId], references: [id])
 
   payments PayablePayment[]
@@ -71,6 +73,7 @@ model AccountPayable {
   updatedAt DateTime @updatedAt
 
   @@index([supplierId])
+  @@index([branchId])
   @@index([dueDate])
   @@index([status])
 }

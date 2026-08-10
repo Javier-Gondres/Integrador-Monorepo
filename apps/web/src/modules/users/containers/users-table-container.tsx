@@ -9,7 +9,6 @@ import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { Select } from "@/shared/ui";
 
 import { getUsersTableColumns } from "../components/users-table";
-import { useDeleteUser } from "../hooks/use-delete-user";
 import { useToggleUserStatus } from "../hooks/use-toggle-user-status";
 import { useUsers } from "../hooks/use-users";
 import type { User } from "../types/user.types";
@@ -42,7 +41,6 @@ export function UsersTableContainer({
   };
 
   const { data, isLoading, isFetching, refetch } = useUsers(filters);
-  const deleteMutation = useDeleteUser();
   const toggleStatusMutation = useToggleUserStatus();
 
   const users = data?.items ?? [];
@@ -88,7 +86,6 @@ export function UsersTableContainer({
         columns={getUsersTableColumns({
           canManageRow,
           onEdit,
-          onDelete: (id) => void deleteMutation.mutateAsync(id),
           onToggleStatus: (id, isActive) =>
             void toggleStatusMutation.mutateAsync({ id, isActive }),
         })}

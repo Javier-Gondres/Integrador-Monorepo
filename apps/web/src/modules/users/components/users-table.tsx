@@ -3,7 +3,7 @@
 import { Permission } from "@repo/shared";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import type { DataTableColumn } from "@/shared/data-table";
@@ -17,7 +17,6 @@ import type { User } from "../types/user.types";
 interface UserTableActions {
   canManageRow: (user: User) => boolean;
   onEdit: (user: User) => void;
-  onDelete: (id: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
 }
 
@@ -119,17 +118,6 @@ export function getUsersTableColumns(
                 className="hover:border-blue-400 hover:text-blue-600 transition-colors"
               >
                 <Pencil style={{ width: "14px", height: "14px" }} />
-              </Button>
-            </Can>
-            <Can permission={Permission.USERS_DELETE}>
-              <Button
-                variant="icon"
-                onClick={() => actions.onDelete(user.id)}
-                title="Eliminar"
-                style={{ width: "34px", height: "34px", borderRadius: "7px" }}
-                className="hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <Trash2 style={{ width: "14px", height: "14px" }} />
               </Button>
             </Can>
           </div>

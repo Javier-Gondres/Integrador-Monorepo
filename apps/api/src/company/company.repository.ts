@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { prisma, RoleName } from '@repo/db';
 
+import { ensureEmployeeForUserRole } from '../common/employees/employee-provisioning';
 import { assertUserEligibleForTenantMembership } from '../common/platform';
 import {
   type CompanyRecord,
@@ -172,6 +173,13 @@ export class CompanyRepository {
           roleId: ownerRole.id,
           defaultBranchId: defaultBranch.id,
         },
+      });
+
+      await ensureEmployeeForUserRole(tx, {
+        userId: data.userId,
+        companyId: company.id,
+        branchId: defaultBranch.id,
+        roleName: RoleName.OWNER,
       });
 
       return company;

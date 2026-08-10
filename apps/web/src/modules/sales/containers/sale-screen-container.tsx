@@ -1,23 +1,29 @@
 "use client";
 
+import { Permission } from "@repo/shared";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/api/errors";
+import { usePermissions } from "@/modules/auth/hooks/use-permissions";
 import { CustomerFormModalContainer } from "@/modules/customers/containers/customer-form-modal-container";
 import { useCustomers } from "@/modules/customers/hooks/use-customers";
 import type { Customer } from "@/modules/customers/types/customer.types";
+import { printInvoiceReceipt } from "@/modules/invoice-print/utils/print-invoice";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { Modal } from "@/shared/ui/modal";
 
 import { ClientCard } from "../components/client-card";
 import { ProductPicker } from "../components/product-picker";
+import { SaleConfirmModal } from "../components/sale-confirm-modal";
+import { SaleDateModal } from "../components/sale-date-modal";
 import { SaleDetail } from "../components/sale-detail";
 import { useCreateSale } from "../hooks/use-create-sale";
 import { useCustomerCreditNotes } from "../hooks/use-customer-credit-notes";
 import { round2, useSale } from "../hooks/use-sale";
 import { useSaleProducts } from "../hooks/use-sale-products";
 import type { PaymentMethod } from "../types/sale.types";
+import { localToday, saleDayToIso } from "../utils/format";
 
 const PAYMENT_METHOD_MAP: Record<string, PaymentMethod> = {
   contado: "CASH",
@@ -38,12 +44,16 @@ export function SaleScreenContainer({
 }: SaleScreenContainerProps) {
   const order = useSale();
   const createSale = useCreateSale();
+  const { can } = usePermissions();
+  const canBackdate = can(Permission.SALES_BACKDATE);
 
   const [productSearch, setProductSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORIES);
   const [customerSearch, setCustomerSearch] = useState("");
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const debouncedProductSearch = useDebouncedValue(productSearch);
   const debouncedCustomerSearch = useDebouncedValue(customerSearch);
@@ -77,6 +87,8 @@ export function SaleScreenContainer({
     setCustomerSearch("");
     setShowProductPicker(false);
     setShowCustomerForm(false);
+    setShowDateModal(false);
+    setShowConfirm(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [branchId]);
 
@@ -138,12 +150,19 @@ export function SaleScreenContainer({
     setCustomerSearch("");
   }
 
-  async function handleSubmit() {
+  async function handleConfirm(print: boolean) {
     if (!branchId || submitDisabled) return;
 
     const method = PAYMENT_METHOD_MAP[order.paymentOption];
     const payments =
       amountPayable > 0 && method ? [{ method, amount: amountPayable }] : [];
+
+    // Solo OWNER/ADMIN envían fecha pasada. Si el día elegido es hoy, omitimos
+    // soldAt (el backend usa ahora) para no mandar mediodía local "futuro".
+    const soldAt =
+      canBackdate && order.saleDate && order.saleDate !== localToday()
+        ? saleDayToIso(order.saleDate)
+        : undefined;
 
     try {
       const sale = await createSale.mutateAsync({
@@ -157,16 +176,25 @@ export function SaleScreenContainer({
         creditNoteIds: order.selectedCreditNoteIds.length
           ? order.selectedCreditNoteIds
           : undefined,
+        soldAt,
       });
       toast.success(
         sale.ncf
           ? `Factura generada · NCF ${sale.ncf}`
           : "Factura generada correctamente",
       );
+      // Imprime la representación impresa (recibo 58mm) en un iframe oculto,
+      // sin abrir una pestaña nueva, solo si se eligió "Registrar e Imprimir".
+      // Ver modules/invoice-print.
+      if (print) {
+        printInvoiceReceipt(sale.id);
+      }
+      setShowConfirm(false);
       order.reset();
       setCustomerSearch("");
     } catch (error) {
-      // El hook ya notifica; este catch evita un rechazo sin manejar.
+      // El hook ya notifica; este catch evita un rechazo sin manejar. El modal
+      // permanece abierto para que el usuario pueda reintentar.
       void getErrorMessage(error);
     }
   }
@@ -193,6 +221,10 @@ export function SaleScreenContainer({
           onRemove={order.remove}
           onClear={order.clearCart}
           onAddProduct={() => setShowProductPicker(true)}
+          canBackdate={canBackdate}
+          saleDate={order.saleDate}
+          onOpenDateModal={() => setShowDateModal(true)}
+          onClearDate={order.clearSaleDate}
           subtotal={order.subtotal}
           itbis={order.itbis}
           total={order.total}
@@ -201,7 +233,9 @@ export function SaleScreenContainer({
           submitting={createSale.isPending}
           disabled={submitDisabled}
           disabledHint={disabledHint}
-          onSubmit={handleSubmit}
+          onSubmit={() => {
+            if (!submitDisabled) setShowConfirm(true);
+          }}
           onCancel={order.reset}
           showCreditNotes={Boolean(order.customer)}
           creditNotes={creditNotes}
@@ -237,6 +271,30 @@ export function SaleScreenContainer({
           customer={null}
           onClose={() => setShowCustomerForm(false)}
           onCreated={handlePickCustomer}
+        />
+      )}
+
+      {canBackdate && showDateModal && (
+        <SaleDateModal
+          value={order.saleDate}
+          onConfirm={order.setSaleDate}
+          onClear={order.clearSaleDate}
+          onClose={() => setShowDateModal(false)}
+        />
+      )}
+
+      {showConfirm && (
+        <SaleConfirmModal
+          lines={lineList}
+          customerName={order.customer?.name ?? ""}
+          subtotal={order.subtotal}
+          itbis={order.itbis}
+          total={order.total}
+          creditApplied={creditApplied}
+          amountPayable={amountPayable}
+          submitting={createSale.isPending}
+          onConfirm={handleConfirm}
+          onClose={() => setShowConfirm(false)}
         />
       )}
     </div>

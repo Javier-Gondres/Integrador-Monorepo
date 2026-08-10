@@ -34,7 +34,8 @@ export const employeeUpdateFormSchema = z.object({
     .min(1, "El apellido es requerido")
     .max(100, "El apellido debe tener máximo 100 caracteres"),
   phone: z.string().max(20, "El teléfono debe tener máximo 20 caracteres").optional(),
-  branchId: z.string().min(1, "La sucursal es requerida"),
+  branchId: z.string().optional(),
+  roleId: z.string().optional(),
   position: z.string().max(100, "El puesto debe tener máximo 100 caracteres").optional(),
   salary: optionalSalary,
   hireDate: z.string().optional(),

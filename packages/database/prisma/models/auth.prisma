@@ -6,6 +6,18 @@ enum RoleName {
   INVENTORY_ASSISTANT
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum PasswordResetTokenPurpose {
+  RESET_PASSWORD
+  PLATFORM_ACTIVATION
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -20,11 +32,14 @@ model User {
   deletedAt DateTime?
 
   lastLoginAt DateTime?
+  emailVerifiedAt DateTime?
 
-  memberships   UserCompany[]
-  employee      Employee?
-  refreshTokens RefreshToken[]
-  auditLogs     AuditLog[]
+  memberships         UserCompany[]
+  sentInvitations     Invitation[]         @relation("InvitationsSentBy")
+  employee            Employee?
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  auditLogs           AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -42,6 +57,7 @@ model Role {
   deletedAt DateTime?
 
   users       UserCompany[]
+  invitations Invitation[]
   permissions RolePermission[]
 
   @@unique([name, deletedAt])
@@ -103,6 +119,33 @@ model UserCompany {
   @@index([deletedAt])
 }
 
+model Invitation {
+  id String @id @default(cuid())
+
+  companyId   String
+  email       String
+  roleId      String
+  invitedById String
+  tokenHash   String @unique
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+  status     InvitationStatus @default(PENDING)
+
+  company   Company @relation(fields: [companyId], references: [id])
+  role      Role    @relation(fields: [roleId], references: [id])
+  invitedBy User    @relation("InvitationsSentBy", fields: [invitedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([email])
+  @@index([status])
+  @@index([expiresAt])
+}
+
 model RefreshToken {
   id String @id @default(cuid())
 
@@ -121,4 +164,23 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model PasswordResetToken {
+  id String @id @default(cuid())
+
+  userId    String
+  tokenHash String                    @unique
+  purpose   PasswordResetTokenPurpose @default(RESET_PASSWORD)
+  expiresAt DateTime
+  usedAt    DateTime?
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([purpose])
+  @@index([expiresAt])
 }

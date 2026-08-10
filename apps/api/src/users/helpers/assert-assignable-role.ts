@@ -69,6 +69,12 @@ export function assertAssignableRole(
     );
   }
 
+  if (actorRole === RoleName.ADMIN && targetRole === RoleName.ADMIN) {
+    throw AuthException.unauthorizedCompanyAccess(
+      'Un ADMIN no puede asignar el rol ADMIN a otro usuario',
+    );
+  }
+
   const allowed = getAssignableRoles(actorRole);
 
   if (!allowed.includes(targetRole)) {

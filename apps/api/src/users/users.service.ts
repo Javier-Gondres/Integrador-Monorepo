@@ -1,5 +1,6 @@
 import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { RoleName } from '@repo/db';
+import { ALL_PERMISSIONS, type PermissionCode } from '@repo/shared';
 import * as bcrypt from 'bcrypt';
 
 import { AuthService } from '../auth/auth.service';
@@ -58,7 +59,43 @@ export class UsersService {
         'El usuario no existe',
       );
     }
-    return user;
+    return this.mapUserResponse(user);
+  }
+
+  private mapUserResponse(user: PublicUserWithMembership) {
+    const permissionsByCode = new Map(
+      ALL_PERMISSIONS.map((permission) => [permission.code, permission]),
+    );
+    const rolePermissions = user.membership?.role.permissions ?? [];
+
+    return {
+      ...user,
+      permissions: rolePermissions.map(({ permission }) => ({
+        code: permission.code,
+        name: this.humanizePermission(permission.code),
+        description:
+          permission.description ??
+          permissionsByCode.get(permission.code as PermissionCode)
+            ?.description ??
+          null,
+      })),
+      membership: user.membership
+        ? {
+            ...user.membership,
+            role: {
+              ...user.membership.role,
+              permissions: undefined,
+            },
+          }
+        : null,
+    };
+  }
+
+  private humanizePermission(code: string): string {
+    return code
+      .split('.')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' / ');
   }
 
   async listRoles(actorRole: RoleName | null) {
@@ -85,7 +122,7 @@ export class UsersService {
       );
     }
 
-    await this.usersRepository.applyUserUpdate(userId, userData);
+    await this.usersRepository.applyUserUpdate(userId, companyId, userData);
     return this.findByIdInCompany(userId, companyId);
   }
 
@@ -203,6 +240,7 @@ export class UsersService {
 
     const result = await this.usersRepository.applyUserUpdate(
       id,
+      companyIdFromUserAuth,
       userData,
       role,
     );
@@ -217,6 +255,12 @@ export class UsersService {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
         'La membresía del usuario no existe',
+      );
+    }
+    if (result.status === 'owner_requires_transfer') {
+      throw BusinessException.conflict(
+        ErrorCodes.VALIDATION_ERROR,
+        'El rol OWNER solo puede cambiarse mediante transferencia de propiedad',
       );
     }
 
@@ -254,7 +298,7 @@ export class UsersService {
     return this.findByIdInCompany(id, companyId);
   }
 
-  async removeUser(
+  async removeMembership(
     id: string,
     companyId: string,
     requesterUserId: string,
@@ -263,7 +307,7 @@ export class UsersService {
     if (id === requesterUserId) {
       throw new BusinessException(
         ErrorCodes.VALIDATION_ERROR,
-        'No puedes eliminarte a ti mismo',
+        'No puedes expulsarte a ti mismo',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -271,7 +315,7 @@ export class UsersService {
     const target = await this.findByIdInCompany(id, companyId);
     this.assertCanManageTargetUser(actorRole, target);
 
-    const result = await this.usersRepository.softDeleteInCompany(
+    const result = await this.usersRepository.removeMembershipInCompany(
       id,
       companyId,
     );
@@ -279,14 +323,60 @@ export class UsersService {
     if (result.status === 'membership_not_found') {
       throw BusinessException.notFound(
         ErrorCodes.RECORD_NOT_FOUND,
-        'El usuario no existe',
+        'La membresía del usuario no existe',
+      );
+    }
+    if (result.status === 'owner_requires_transfer') {
+      throw BusinessException.conflict(
+        ErrorCodes.VALIDATION_ERROR,
+        'No se puede expulsar al OWNER. Primero transfiere la propiedad a otro usuario.',
       );
     }
 
     return {
-      message: 'Usuario eliminado correctamente',
+      message: 'Usuario expulsado de la empresa correctamente',
       user: result.user,
     };
+  }
+
+  async transferOwnership(
+    companyId: string,
+    newOwnerUserId: string,
+    actorUserId: string,
+    actorRole: RoleName | null,
+  ) {
+    if (actorRole !== RoleName.OWNER) {
+      throw BusinessException.forbidden(
+        ErrorCodes.UNAUTHORIZED_COMPANY_ACCESS,
+        'Solo el OWNER puede transferir la propiedad',
+      );
+    }
+
+    const result = await this.usersRepository.transferOwnershipInCompany(
+      companyId,
+      newOwnerUserId,
+      actorUserId,
+    );
+
+    switch (result.status) {
+      case 'ok':
+        return { message: 'Propiedad transferida correctamente' };
+      case 'target_not_member':
+        throw BusinessException.notFound(
+          ErrorCodes.RECORD_NOT_FOUND,
+          'El nuevo OWNER debe pertenecer a esta empresa',
+        );
+      case 'owner_not_found':
+        throw BusinessException.conflict(
+          ErrorCodes.VALIDATION_ERROR,
+          'La empresa no tiene OWNER actual para transferir la propiedad',
+        );
+      case 'role_not_found':
+        throw BusinessException.notFound(
+          ErrorCodes.RECORD_NOT_FOUND,
+          'Los roles OWNER/ADMIN no están configurados',
+        );
+    }
   }
 
   private assertCanManageTargetUser(

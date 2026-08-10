@@ -1,9 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { ERP_COLORS as C } from "@/constants/theme";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Modal } from "@/shared/ui/modal";
@@ -14,7 +16,7 @@ import {
   type UserUpdateFormSchema,
   userUpdateFormSchema,
 } from "../schemas/user.schema";
-import type { RoleOption } from "../types/user.types";
+import type { PermissionInfo, RoleOption } from "../types/user.types";
 import { getRoleLabel } from "../utils/role-labels";
 
 interface UserFormCreateProps {
@@ -34,6 +36,12 @@ interface UserFormEditProps {
   userEmail: string;
   roles: RoleOption[];
   rolesLoading: boolean;
+  permissions: PermissionInfo[];
+  permissionsLoading: boolean;
+  isTargetOwner: boolean;
+  canTransferOwnership: boolean;
+  isTransferring: boolean;
+  onTransferOwnership: () => void;
   onSubmit: (values: UserUpdateFormSchema) => void | Promise<void>;
   onClose: () => void;
 }
@@ -47,18 +55,84 @@ export function UserForm(props: UserFormProps) {
   return <UserCreateForm {...props} />;
 }
 
+function PermissionsPanel({
+  permissions,
+  loading,
+}: {
+  permissions: PermissionInfo[];
+  loading: boolean;
+}) {
+  const [showPermissions, setShowPermissions] = useState(false);
+
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={() => setShowPermissions((current) => !current)}
+        style={{ justifySelf: "start" }}
+      >
+        {showPermissions ? "Ocultar permisos" : "Mostrar permisos del usuario"}
+      </Button>
+      {showPermissions ? (
+        <div style={{ display: "grid", gap: 8 }}>
+          {loading ? (
+            <span style={{ color: C.mutedText, fontSize: 13 }}>
+              Cargando permisos...
+            </span>
+          ) : permissions.length > 0 ? (
+            permissions.map((permission) => (
+              <div
+                key={permission.code}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 16,
+                  padding: 12,
+                  border: `1px solid ${C.divider}`,
+                  borderRadius: 8,
+                }}
+              >
+                <div>
+                  <strong style={{ fontSize: 14 }}>{permission.name}</strong>
+                  <p
+                    style={{
+                      margin: "4px 0 0",
+                      color: C.mutedText,
+                      fontSize: 13,
+                    }}
+                  >
+                    {permission.description ?? "Sin descripción"}
+                  </p>
+                </div>
+                <Badge variant="muted">{permission.code}</Badge>
+              </div>
+            ))
+          ) : (
+            <span style={{ color: C.mutedText, fontSize: 13 }}>
+              Sin permisos asignados.
+            </span>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function RoleSelectField({
   roles,
   rolesLoading,
   value,
   onChange,
   error,
+  disabled = false,
 }: {
   roles: RoleOption[];
   rolesLoading: boolean;
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  disabled?: boolean;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -72,7 +146,7 @@ function RoleSelectField({
         id="user-role"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        disabled={rolesLoading || roles.length === 0}
+        disabled={disabled || rolesLoading || roles.length === 0}
         style={{
           height: "42px",
           padding: "0 14px",
@@ -207,6 +281,12 @@ function UserEditForm({
   userEmail,
   roles,
   rolesLoading,
+  permissions,
+  permissionsLoading,
+  isTargetOwner,
+  canTransferOwnership,
+  isTransferring,
+  onTransferOwnership,
   onSubmit,
   onClose,
 }: UserFormEditProps) {
@@ -261,13 +341,52 @@ function UserEditForm({
           />
         </div>
 
-        <RoleSelectField
-          roles={roles}
-          rolesLoading={rolesLoading}
-          value={selectedRole}
-          onChange={(role) => setValue("role", role, { shouldValidate: true })}
-          error={errors.role?.message}
+        {isTargetOwner ? (
+          <div style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.bodyText }}>
+              Rol
+            </span>
+            <Badge variant="primary">{getRoleLabel(selectedRole)}</Badge>
+            <span style={{ color: C.mutedText, fontSize: 12 }}>
+              El rol OWNER solo puede cambiarse mediante transferencia de
+              propiedad.
+            </span>
+          </div>
+        ) : (
+          <RoleSelectField
+            roles={roles}
+            rolesLoading={rolesLoading}
+            value={selectedRole}
+            onChange={(role) =>
+              setValue("role", role, { shouldValidate: true })
+            }
+            error={errors.role?.message}
+          />
+        )}
+
+        <PermissionsPanel
+          permissions={permissions}
+          loading={permissionsLoading}
         />
+
+        {canTransferOwnership ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.bodyText }}>
+              Transferencia de propiedad
+            </span>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onTransferOwnership}
+              disabled={isTransferring}
+              style={{ justifySelf: "start" }}
+            >
+              {isTransferring
+                ? "Transfiriendo..."
+                : "Transferir propiedad a este usuario"}
+            </Button>
+          </div>
+        ) : null}
 
         <div
           style={{

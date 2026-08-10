@@ -164,6 +164,19 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
     href: "/returns",
     access: { type: "permission", permission: Permission.SALES_READ },
   },
+  { section: "Finanzas" },
+  {
+    label: "Cuentas por Cobrar",
+    icon: ReceiptText,
+    href: "/accounts-receivable",
+    access: { type: "permission", permission: Permission.RECEIVABLES_READ },
+  },
+  {
+    label: "Cuentas por Pagar",
+    icon: ReceiptText,
+    href: "/accounts-payable",
+    access: { type: "permission", permission: Permission.PAYABLES_READ },
+  },
   { section: "Compras" },
   {
     label: "Historial de compras",
@@ -198,10 +211,10 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   },
   { section: "Administración" },
   {
-    label: "Usuarios",
+    label: "Equipo",
     icon: UserCog,
-    href: "/users",
-    access: { type: "permission", permission: Permission.USERS_READ },
+    href: "/settings/team",
+    access: { type: "permission", permission: Permission.INVITATIONS_READ },
   },
   {
     label: "Empresa",

@@ -20,6 +20,7 @@ export function SaleCart({ lines, onSetQuantity, onRemove }: SaleCartProps) {
         <tr>
           <th className="px-4 py-2.5 text-left font-semibold">Descripción</th>
           <th className="px-2 py-2.5 text-center font-semibold">Cantidad</th>
+          <th className="px-2 py-2.5 text-center font-semibold">Stock</th>
           <th className="px-2 py-2.5 text-right font-semibold">Precio Unit.</th>
           <th className="px-2 py-2.5 text-right font-semibold">Total</th>
           <th className="px-4 py-2.5" />
@@ -41,6 +42,9 @@ export function SaleCart({ lines, onSetQuantity, onRemove }: SaleCartProps) {
                 max={line.product.available}
                 onChange={(value) => onSetQuantity(line.product.id, value)}
               />
+            </td>
+            <td className="px-2 py-3 text-center tabular-nums text-body">
+              {line.product.available}
             </td>
             <td className="px-2 py-3 text-right tabular-nums text-body">
               {money(line.product.finalPrice)}

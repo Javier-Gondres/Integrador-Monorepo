@@ -1,5 +1,5 @@
-import { UsersScreen } from "@/modules/users/screens/users-screen";
+import { redirect } from "next/navigation";
 
 export default function UsersPage() {
-  return <UsersScreen />;
+  redirect("/employees");
 }

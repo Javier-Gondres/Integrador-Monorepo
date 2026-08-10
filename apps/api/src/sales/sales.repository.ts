@@ -57,6 +57,8 @@ export type CreateSaleData = {
   lines: CreateSaleLine[];
   payments: CreateSalePaymentData[];
   creditNoteIds: string[];
+  /** Fecha en que ocurrió la venta (venta pasada). `null` = fecha actual. */
+  soldAt: Date | null;
 };
 
 @Injectable()
@@ -77,14 +79,26 @@ export class SalesRepository {
    */
   async createSale(data: CreateSaleData): Promise<SaleDetailRecord> {
     return prisma.$transaction(async (tx) => {
-      const shift = await tx.cashShift.findFirst({
-        where: {
-          closedAt: null,
-          cashierId: data.employeeId,
-          cashRegister: { branchId: data.branchId },
-        },
-        select: { id: true },
-      });
+      // Preferir el turno del empleado autenticado; si no tiene, usar
+      // cualquier turno abierto de la sucursal (ADMIN/MANAGER facturando
+      // sobre la caja que abrió el cajero).
+      const shift =
+        (await tx.cashShift.findFirst({
+          where: {
+            closedAt: null,
+            cashierId: data.employeeId,
+            cashRegister: { branchId: data.branchId },
+          },
+          select: { id: true },
+        })) ??
+        (await tx.cashShift.findFirst({
+          where: {
+            closedAt: null,
+            cashRegister: { branchId: data.branchId },
+          },
+          orderBy: { openedAt: 'desc' },
+          select: { id: true },
+        }));
       if (!shift) {
         throw SalesException.noOpenCashShift();
       }
@@ -173,7 +187,11 @@ export class SalesRepository {
           subtotal: new Prisma.Decimal(data.subtotal),
           taxAmount: new Prisma.Decimal(data.taxAmount),
           total: new Prisma.Decimal(data.total),
-          status: SaleStatus.COMPLETED,
+          // Una venta con porción a crédito queda PENDING hasta que la cuenta
+          // por cobrar se salde; el módulo de receivables la marca COMPLETED al
+          // liquidar el saldo. Las ventas totalmente al contado quedan COMPLETED.
+          status: creditPortion > 0 ? SaleStatus.PENDING : SaleStatus.COMPLETED,
+          ...(data.soldAt && { createdAt: data.soldAt }),
           ...(generated && {
             ncf: generated.ncf,
             ncfType: generated.ncfType,
@@ -229,12 +247,13 @@ export class SalesRepository {
             saleId: sale.id,
             performedByEmployeeId: data.employeeId,
             notes: 'Venta registrada',
+            ...(data.soldAt && { createdAt: data.soldAt }),
           },
         });
       }
 
       if (creditPortion > 0 && data.customerId) {
-        const dueDate = new Date();
+        const dueDate = new Date(data.soldAt ?? Date.now());
         dueDate.setDate(dueDate.getDate() + CREDIT_DUE_DAYS);
 
         await tx.accountReceivable.create({
@@ -245,6 +264,7 @@ export class SalesRepository {
             balance: new Prisma.Decimal(creditPortion),
             dueDate,
             status: ReceivableStatus.OPEN,
+            ...(data.soldAt && { createdAt: data.soldAt }),
           },
         });
       }
@@ -321,19 +341,38 @@ export class SalesRepository {
     });
   }
 
-  findCurrentShift(employeeId: string, branchId: string) {
-    return prisma.cashShift.findFirst({
+  /**
+   * Turno usable para facturar en la sucursal.
+   * 1) Turno abierto del empleado autenticado.
+   * 2) Si no tiene, cualquier turno abierto de la sucursal.
+   */
+  async findCurrentShift(employeeId: string, branchId: string) {
+    const select = {
+      id: true,
+      openingAmount: true,
+      openedAt: true,
+      cashRegister: { select: { id: true, name: true } },
+    } as const;
+
+    const own = await prisma.cashShift.findFirst({
       where: {
         closedAt: null,
         cashierId: employeeId,
         cashRegister: { branchId },
       },
-      select: {
-        id: true,
-        openingAmount: true,
-        openedAt: true,
-        cashRegister: { select: { id: true, name: true } },
+      select,
+    });
+    if (own) {
+      return own;
+    }
+
+    return prisma.cashShift.findFirst({
+      where: {
+        closedAt: null,
+        cashRegister: { branchId },
       },
+      orderBy: { openedAt: 'desc' },
+      select,
     });
   }
 

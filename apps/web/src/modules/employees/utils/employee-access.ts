@@ -1,4 +1,4 @@
-import { TenantRole, type TenantRoleName } from "@repo/shared";
+import { type TenantRoleName } from "@repo/shared";
 
 import { canManageTargetRole } from "@/shared/auth/role-hierarchy";
 
@@ -21,23 +21,44 @@ export function canEditEmployee(
   return canManageTargetRole(actorRole, employee.roleName);
 }
 
-export function canDeleteEmployee(
+export function canEditMember(
   actorUserId: string | undefined,
   actorRole: string | undefined | null,
-  employee: Employee,
+  member: { userId: string; roleName: string | null },
 ): boolean {
-  if (!actorUserId || !actorRole || !employee.roleName) {
+  if (!actorUserId || !actorRole || !member.roleName) {
     return false;
   }
 
-  if (
-    actorUserId === employee.userId &&
-    (actorRole === TenantRole.OWNER || actorRole === TenantRole.ADMIN)
-  ) {
+  if (actorUserId === member.userId) {
+    return true;
+  }
+
+  return canManageTargetRole(actorRole, member.roleName);
+}
+
+export function canRemoveMemberFromCompany(
+  actorUserId: string | undefined,
+  actorRole: string | undefined | null,
+  member: { userId: string; roleName: string | null },
+): boolean {
+  if (!actorUserId || !actorRole || !member.roleName) {
     return false;
   }
 
-  return canManageTargetRole(actorRole, employee.roleName);
+  if (actorUserId === member.userId) {
+    return false;
+  }
+
+  return canManageTargetRole(actorRole, member.roleName);
+}
+
+export function resolveEmployeeRoleId(
+  companyId: string,
+  memberships: Array<{ companyId: string; role: { id: string; name: string } }>,
+): string | null {
+  const membership = memberships.find((item) => item.companyId === companyId);
+  return membership?.role.id ?? null;
 }
 
 export function resolveEmployeeRoleName(

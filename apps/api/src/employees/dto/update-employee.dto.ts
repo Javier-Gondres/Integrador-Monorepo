@@ -55,4 +55,9 @@ export class UpdateEmployeeDto {
   @IsString({ message: 'branchId debe ser texto' })
   @MinLength(1, { message: 'branchId no puede estar vacío' })
   branchId?: string;
+
+  @IsOptional()
+  @IsString({ message: 'roleId debe ser texto' })
+  @MinLength(1, { message: 'roleId no puede estar vacío' })
+  roleId?: string;
 }

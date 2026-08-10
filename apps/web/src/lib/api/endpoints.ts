@@ -11,12 +11,14 @@ export const ENDPOINTS = {
     refresh: "/auth/refresh",
     session: "/auth/session",
     profile: "/auth/profile",
+    resetPassword: "/auth/reset-password",
   },
   me: {
     profile: "/me",
     company: "/me/company",
     branch: "/me/branch",
     switchBranch: "/me/switch-branch",
+    password: "/me/password",
   },
   products: {
     root: "/products",
@@ -57,6 +59,8 @@ export const ENDPOINTS = {
   employees: {
     root: "/employees",
     byId: (id: string) => `/employees/${id}`,
+    laborProfileByUserId: (userId: string) =>
+      `/employees/by-user/${userId}/labor-profile`,
     restore: (id: string) => `/employees/${id}/restore`,
   },
   branches: {
@@ -74,13 +78,42 @@ export const ENDPOINTS = {
     activate: (id: string) => `/users/${id}/activate`,
     deactivate: (id: string) => `/users/${id}/deactivate`,
     restore: (id: string) => `/users/${id}/restore`,
+    removeMembership: (id: string) => `/users/${id}/membership`,
+    transferOwnership: "/users/transfer-ownership",
+  },
+  invitations: {
+    root: "/invitations",
+    byToken: (token: string) => `/invitations/${token}`,
+    accept: (token: string) => `/invitations/${token}/accept`,
+    register: (token: string) => `/invitations/${token}/register`,
+    resend: (id: string) => `/invitations/${id}/resend`,
+    revoke: (id: string) => `/invitations/${id}/revoke`,
   },
   platform: {
     overview: "/platform/overview",
+    permissions: "/platform/permissions",
     companies: "/platform/companies",
     companyById: (id: string) => `/platform/companies/${id}`,
+    transferCompanyOwnership: (id: string) =>
+      `/platform/companies/${id}/transfer-ownership`,
     activateCompany: (id: string) => `/platform/companies/${id}/activate`,
     deactivateCompany: (id: string) => `/platform/companies/${id}/deactivate`,
+    users: "/platform/users",
+    userById: (id: string) => `/platform/users/${id}`,
+    updateUserStatus: (id: string) => `/platform/users/${id}/status`,
+    resetUserPassword: (id: string) => `/platform/users/${id}/reset-password`,
+    forceLogoutUser: (id: string) => `/platform/users/${id}/force-logout`,
+    verifyUserEmail: (id: string) => `/platform/users/${id}/verify-email`,
+    restoreUser: (id: string) => `/platform/users/${id}/restore`,
+    userMembership: (id: string) => `/platform/users/${id}/membership`,
+    updateUserMembershipRole: (id: string) =>
+      `/platform/users/${id}/membership/role`,
+    activations: "/platform/activations",
+    resendActivation: (id: string) => `/platform/activations/${id}/resend`,
+    cancelActivation: (id: string) => `/platform/activations/${id}/cancel`,
+    invitations: "/platform/invitations",
+    resendInvitation: (id: string) => `/platform/invitations/${id}/resend`,
+    revokeInvitation: (id: string) => `/platform/invitations/${id}/revoke`,
   },
   purchases: {
     root: "/purchases",
@@ -97,6 +130,17 @@ export const ENDPOINTS = {
     products: "/sales/products",
     currentShift: "/sales/current-shift",
     creditNotes: "/sales/credit-notes",
+  },
+  receivables: {
+    root: "/receivables",
+    byCustomer: (customerId: string) => `/receivables/customers/${customerId}`,
+    byId: (id: string) => `/receivables/${id}`,
+    payments: (id: string) => `/receivables/${id}/payments`,
+  },
+  payables: {
+    root: "/payables",
+    byId: (id: string) => `/payables/${id}`,
+    payments: (id: string) => `/payables/${id}/payments`,
   },
   reservations: {
     root: "/reservations",
@@ -121,6 +165,7 @@ export const ENDPOINTS = {
     root: "/inventory-movements",
     adjustments: "/inventory-movements/adjustments",
     waste: "/inventory-movements/waste",
+    wasteAlerts: "/inventory-movements/waste/alerts",
   },
   transfers: {
     root: "/transfers",

@@ -98,6 +98,24 @@
   grid-template-columns: 322px 1fr;
   min-height: 560px;
 }
+
+@media (max-width: 768px) {
+  .top {
+    padding: 16px 16px 18px;
+  }
+  .body {
+    padding: 16px;
+  }
+  .split {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .rail {
+    border-right: none;
+    border-bottom: 1px solid var(--cardBorder);
+    max-height: 280px;
+  }
+}
 .rail {
   border-right: 1px solid var(--cardBorder);
   display: flex;

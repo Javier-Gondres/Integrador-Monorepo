@@ -17,6 +17,7 @@ import { InventoryMovementRepository } from './inventory-movement.repository';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
+const RECURRING_WASTE_THRESHOLD = 2;
 
 @Injectable()
 export class InventoryMovementService {
@@ -54,6 +55,25 @@ export class InventoryMovementService {
         totalPages: Math.ceil(total / normalized.take) || 0,
       },
     };
+  }
+
+  async getRecurringWasteAlerts(company: CompanyContext, branchId?: string) {
+    // Sin branchId en query: alertas de toda la empresa (dashboard).
+    // Con branchId: solo esa sucursal (validada). No se usa el JWT como fallback
+    // porque Mermas permite registrar en otra sucursal sin switch-branch.
+    const resolvedBranchId = branchId?.trim()
+      ? await this.branchAccessService.resolveBranchId(
+          company.companyId,
+          branchId,
+          null,
+        )
+      : undefined;
+
+    return this.inventoryMovementRepository.findRecurringWasteAlerts(
+      company.companyId,
+      resolvedBranchId,
+      RECURRING_WASTE_THRESHOLD,
+    );
   }
 
   async createAdjustment(

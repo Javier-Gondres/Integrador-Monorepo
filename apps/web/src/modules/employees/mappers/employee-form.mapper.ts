@@ -2,7 +2,12 @@ import type {
   EmployeeFormSchema,
   EmployeeUpdateFormSchema,
 } from "../schemas/employee.schema";
-import type { Employee, EmployeeFormValues } from "../types/employee.types";
+import type { CompanyMember } from "../types/company-member.types";
+import type {
+  BranchOption,
+  Employee,
+  EmployeeFormValues,
+} from "../types/employee.types";
 
 function parseOptionalSalary(value?: string): number | undefined {
   if (!value?.trim()) {
@@ -12,7 +17,16 @@ function parseOptionalSalary(value?: string): number | undefined {
   return Number.isNaN(num) ? undefined : num;
 }
 
-export function mapEmployeeToCreateFormValues(): EmployeeFormSchema {
+function resolveDefaultBranchId(
+  member: CompanyMember,
+  branches: BranchOption[] = [],
+): string {
+  return member.branchId ?? member.defaultBranchId ?? branches[0]?.id ?? "";
+}
+
+export function mapEmployeeToCreateFormValues(
+  branches: BranchOption[] = [],
+): EmployeeFormSchema {
   return {
     firstName: "",
     lastName: "",
@@ -20,10 +34,25 @@ export function mapEmployeeToCreateFormValues(): EmployeeFormSchema {
     email: "",
     password: "",
     roleId: "",
-    branchId: "",
+    branchId: branches[0]?.id ?? "",
     position: "",
     salary: "",
     hireDate: "",
+  };
+}
+
+export function mapMemberToUpdateFormValues(
+  member: CompanyMember,
+  branches: BranchOption[] = [],
+): EmployeeUpdateFormSchema {
+  return {
+    firstName: member.firstName,
+    lastName: member.lastName,
+    phone: member.phone ?? "",
+    position: member.position ?? "",
+    salary: member.salary !== null ? String(member.salary) : "",
+    branchId: resolveDefaultBranchId(member, branches),
+    roleId: member.roleId,
   };
 }
 
@@ -36,8 +65,8 @@ export function mapEmployeeToUpdateFormValues(
     phone: employee?.phone ?? "",
     position: employee?.position ?? "",
     salary: employee && employee.salary !== null ? String(employee.salary) : "",
-    hireDate: employee?.hireDate?.slice(0, 10) ?? "",
     branchId: employee?.branchId ?? "",
+    roleId: employee?.roleId ?? "",
   };
 }
 
@@ -54,7 +83,6 @@ export function mapCreateFormValuesToDto(
     branchId: values.branchId,
     position: values.position || undefined,
     salary: parseOptionalSalary(values.salary),
-    hireDate: values.hireDate || undefined,
   };
 }
 
@@ -65,7 +93,21 @@ export function mapUpdateFormValuesToDto(values: EmployeeUpdateFormSchema) {
     phone: values.phone || undefined,
     position: values.position || undefined,
     salary: parseOptionalSalary(values.salary),
-    hireDate: values.hireDate || undefined,
-    branchId: values.branchId,
+    ...(values.branchId ? { branchId: values.branchId } : {}),
+    ...(values.roleId ? { roleId: values.roleId } : {}),
   };
+}
+
+export function resolveMemberJoinDate(member: CompanyMember): string | null {
+  return member.hireDate ?? member.joinedAt;
+}
+
+export function formatMemberJoinDate(value: string | null | undefined): string {
+  if (!value) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("es-DO", { dateStyle: "medium" }).format(
+    new Date(value),
+  );
 }

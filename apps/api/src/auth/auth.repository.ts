@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { prisma } from '@repo/db';
+import { PasswordResetTokenPurpose, prisma } from '@repo/db';
 
 import {
   membershipRelationSelect,
@@ -23,6 +23,13 @@ export type RotateRefreshTokenData = {
   newToken: CreateRefreshTokenData;
 };
 
+export type CreatePasswordResetTokenData = {
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  purpose?: PasswordResetTokenPurpose;
+};
+
 @Injectable()
 export class AuthRepository {
   async findAuthContextRow(userId: string) {
@@ -34,6 +41,7 @@ export class AuthRepository {
         isActive: true,
         isSuperAdmin: true,
         memberships: {
+          where: { deletedAt: null },
           select: membershipRelationSelect,
           take: 1,
         },
@@ -69,7 +77,11 @@ export class AuthRepository {
       select: {
         ...publicUserSelect,
         passwordHash: true,
-        memberships: { select: membershipRelationSelectFull, take: 1 },
+        memberships: {
+          where: { deletedAt: null },
+          select: membershipRelationSelectFull,
+          take: 1,
+        },
       },
     });
     return user ? (withMembership(user) as UserWithPasswordHash) : null;
@@ -141,6 +153,68 @@ export class AuthRepository {
           hashedToken: newToken.hashedToken,
           expiresAt: newToken.expiresAt,
         },
+      }),
+    ]);
+  }
+
+  createPasswordResetToken(data: CreatePasswordResetTokenData) {
+    return prisma.passwordResetToken.create({
+      data: {
+        userId: data.userId,
+        tokenHash: data.tokenHash,
+        expiresAt: data.expiresAt,
+        purpose: data.purpose ?? PasswordResetTokenPurpose.RESET_PASSWORD,
+      },
+      select: { id: true },
+    });
+  }
+
+  findPasswordResetToken(tokenHash: string) {
+    return prisma.passwordResetToken.findFirst({
+      where: {
+        tokenHash,
+        usedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: {
+        id: true,
+        userId: true,
+        user: { select: { id: true, isActive: true } },
+      },
+    });
+  }
+
+  revokePasswordResetToken(id: string) {
+    return prisma.passwordResetToken.update({
+      where: { id },
+      data: { revokedAt: new Date() },
+      select: { id: true },
+    });
+  }
+
+  resetPasswordWithToken(params: {
+    resetTokenId: string;
+    userId: string;
+    passwordHash: string;
+  }) {
+    return prisma.$transaction([
+      prisma.user.update({
+        where: { id: params.userId },
+        data: {
+          passwordHash: params.passwordHash,
+          emailVerifiedAt: new Date(),
+        },
+        select: { id: true },
+      }),
+      prisma.passwordResetToken.update({
+        where: { id: params.resetTokenId },
+        data: { usedAt: new Date() },
+        select: { id: true },
+      }),
+      prisma.refreshToken.updateMany({
+        where: { userId: params.userId, revoked: false },
+        data: { revoked: true, revokedAt: new Date() },
       }),
     ]);
   }

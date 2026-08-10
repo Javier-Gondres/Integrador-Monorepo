@@ -185,13 +185,7 @@ export function CompaniesScreen() {
       }}
     >
       {/* Header de la pagina */}
-      <div
-        style={{
-          backgroundColor: C.cardBg,
-          borderBottom: `1px solid ${C.cardBorder}`,
-          padding: "20px 40px",
-        }}
-      >
+      <div className="bg-card border-b border-card-border px-4 py-4 sm:px-6 sm:py-5 md:px-10">
         <p
           style={{ fontSize: "13px", color: C.mutedText, marginBottom: "4px" }}
         >
@@ -210,14 +204,7 @@ export function CompaniesScreen() {
       </div>
 
       {/* Body  */}
-      <div
-        style={{
-          padding: "32px 40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-        }}
-      >
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
         {/*Toolbar */}
         <div
           style={{
@@ -228,7 +215,7 @@ export function CompaniesScreen() {
           }}
         >
           {/* Buscador y filtro de estado */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="toolbar-filters">
             <input
               type="text"
               placeholder="Buscar empresa..."
@@ -356,8 +343,8 @@ export function CompaniesScreen() {
             </span>
           </div>
 
-          {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          {/* Desktop Table */}
+          <div className="hidden lg:block" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ backgroundColor: C.tableHead }}>
@@ -564,6 +551,80 @@ export function CompaniesScreen() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="block p-3 lg:hidden">
+            {loading ? (
+              <div
+                className="text-center py-8 text-sm"
+                style={{ color: C.mutedText }}
+              >
+                Cargando empresas...
+              </div>
+            ) : rows.length === 0 ? (
+              <div
+                className="text-center py-8 text-sm"
+                style={{ color: C.mutedText }}
+              >
+                No se encontraron empresas.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {rows.map((company) => (
+                  <div
+                    key={company.id}
+                    className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold text-sm text-slate-800">
+                          {company.name}
+                        </h4>
+                        <span className="text-xs text-slate-500">
+                          RNC: {company.rnc ?? "Sin RNC"}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "2px 8px",
+                          borderRadius: "9999px",
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          border: `1px solid ${company.isActive ? C.greenBorder : C.grayBorder}`,
+                          backgroundColor: company.isActive
+                            ? C.greenBg
+                            : C.grayBg,
+                          color: company.isActive ? C.greenText : C.grayText,
+                        }}
+                      >
+                        {company.isActive ? "Activo" : "Inactivo"}
+                      </span>
+                    </div>
+
+                    {canManageCompany && (
+                      <div className="mt-1 flex flex-wrap justify-stretch gap-2 border-t border-slate-100 pt-2 sm:justify-end">
+                        <button
+                          onClick={() => openEditModal(company)}
+                          className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 sm:flex-none"
+                        >
+                          <Pencil size={12} /> Editar
+                        </button>
+                        <button
+                          onClick={() => borradoLogico(company.id)}
+                          className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 sm:flex-none"
+                        >
+                          <Trash2 size={12} /> Eliminar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Footer de paginacion */}

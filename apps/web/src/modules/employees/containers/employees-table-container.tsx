@@ -1,21 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/theme";
 import { Permission, usePermissions } from "@/modules/auth";
 import { useAuthStore } from "@/modules/auth/store/auth-store";
+import { useUsers } from "@/modules/users/hooks/use-users";
 import { DataTable, DataTableToolbar } from "@/shared/data-table";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 
 import { getEmployeesTableColumns } from "../components/employees-table";
-import { useDeleteEmployee } from "../hooks/use-delete-employee";
 import { useEmployees } from "../hooks/use-employees";
-import type { Employee } from "../types/employee.types";
-import { canDeleteEmployee, canEditEmployee } from "../utils/employee-access";
+import { useRemoveMemberFromCompany } from "../hooks/use-remove-member";
+import { mapUsersAndEmployeesToMembers } from "../mappers/company-member.mapper";
+import type { CompanyMember } from "../types/company-member.types";
+import {
+  canEditMember,
+  canRemoveMemberFromCompany,
+} from "../utils/employee-access";
 
 interface EmployeesTableContainerProps {
-  onEdit: (employee: Employee) => void;
+  onEdit: (member: CompanyMember) => void;
   onCreate: () => void;
 }
 
@@ -36,17 +41,35 @@ export function EmployeesTableContainer({
     ...(debouncedSearch && { search: debouncedSearch }),
   };
 
-  const { data, isLoading, isFetching, refetch } = useEmployees(filters);
-  const deleteMutation = useDeleteEmployee();
+  const { data: usersData, isLoading, isFetching, refetch } = useUsers(filters);
+  const { data: employeesData } = useEmployees({ page: 1, take: 500 });
+  const removeMutation = useRemoveMemberFromCompany();
 
-  const employees = data?.items ?? [];
-  const total = data?.meta.total ?? 0;
-  const totalPages = data?.meta.totalPages ?? 1;
+  const members = useMemo(
+    () =>
+      mapUsersAndEmployeesToMembers(
+        usersData?.items ?? [],
+        employeesData?.items ?? [],
+      ),
+    [usersData?.items, employeesData?.items],
+  );
+
+  const total = usersData?.meta.total ?? 0;
+  const totalPages = usersData?.meta.totalPages ?? 1;
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
+
+  async function handleRemove(userId: string) {
+    if (
+      !confirm("¿Sacar este usuario de la empresa? No se eliminará su cuenta.")
+    ) {
+      return;
+    }
+    await removeMutation.mutateAsync(userId);
+  }
 
   return (
     <>
@@ -56,27 +79,26 @@ export function EmployeesTableContainer({
         onSearchChange={handleSearchChange}
         onRefresh={() => void refetch()}
         refreshing={isFetching}
-        createLabel="Nuevo Empleado"
+        createLabel="Nuevo miembro"
         onCreate={onCreate}
         createPermission={Permission.EMPLOYEES_CREATE}
       />
 
       <DataTable
-        title="Lista de Empleados"
+        title="Miembros de la empresa"
         columns={getEmployeesTableColumns({
-          canEdit: (employee) =>
-            canEditEmployee(actorUserId, roleName, employee),
-          canDelete: (employee) =>
-            canDeleteEmployee(actorUserId, roleName, employee),
+          canEdit: (member) => canEditMember(actorUserId, roleName, member),
+          canRemove: (member) =>
+            canRemoveMemberFromCompany(actorUserId, roleName, member),
           onEdit,
-          onDelete: (id) => void deleteMutation.mutateAsync(id),
+          onRemove: (userId) => void handleRemove(userId),
         })}
-        data={employees}
+        data={members}
         loading={isLoading}
-        loadingMessage="Cargando empleados..."
-        emptyMessage="No se encontraron empleados."
+        loadingMessage="Cargando miembros..."
+        emptyMessage="No se encontraron miembros."
         total={total}
-        getRowKey={(row) => row.id}
+        getRowKey={(row) => row.userId}
         pagination={{
           total,
           currentPage,

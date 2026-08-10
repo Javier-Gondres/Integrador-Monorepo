@@ -23,6 +23,7 @@ interface ProductFormProps {
     value: string[];
     onChange: (ids: string[]) => void;
   }) => React.ReactNode;
+  renderAuxiliaryModal?: () => React.ReactNode;
 }
 
 export function ProductForm({
@@ -32,6 +33,7 @@ export function ProductForm({
   onSubmit,
   onClose,
   renderCategoryCombobox,
+  renderAuxiliaryModal,
 }: ProductFormProps) {
   const {
     register,
@@ -172,6 +174,7 @@ export function ProductForm({
           </Button>
         </div>
       </form>
+      {renderAuxiliaryModal?.()}
     </Modal>
   );
 }

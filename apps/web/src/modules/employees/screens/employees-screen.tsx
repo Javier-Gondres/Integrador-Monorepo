@@ -7,11 +7,11 @@ import { PageHeader } from "@/shared/ui";
 
 import { EmployeeFormModalContainer } from "../containers/employee-form-modal-container";
 import { EmployeesTableContainer } from "../containers/employees-table-container";
-import type { Employee } from "../types/employee.types";
+import type { CompanyMember } from "../types/company-member.types";
 
 export function EmployeesScreen() {
-  const [modalEmployee, setModalEmployee] = useState<
-    Employee | null | undefined
+  const [modalMember, setModalMember] = useState<
+    CompanyMember | null | undefined
   >(undefined);
 
   return (
@@ -24,24 +24,17 @@ export function EmployeesScreen() {
     >
       <PageHeader breadcrumb="Empleados" title="Empleados" />
 
-      <div
-        style={{
-          padding: "32px 40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-        }}
-      >
+      <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 md:p-8 md:gap-6">
         <EmployeesTableContainer
-          onEdit={setModalEmployee}
-          onCreate={() => setModalEmployee(null)}
+          onEdit={setModalMember}
+          onCreate={() => setModalMember(null)}
         />
       </div>
 
-      {modalEmployee !== undefined && (
+      {modalMember !== undefined && (
         <EmployeeFormModalContainer
-          employee={modalEmployee}
-          onClose={() => setModalEmployee(undefined)}
+          member={modalMember}
+          onClose={() => setModalMember(undefined)}
         />
       )}
     </main>

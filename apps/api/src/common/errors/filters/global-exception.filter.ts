@@ -187,7 +187,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }
 
     return {
-      message: 'Ya existe un registro con esos datos',
+      message:
+        fields.length > 0
+          ? `Ya existe un registro con esos datos (${fields.join(', ')})`
+          : 'Ya existe un registro con esos datos',
       error: ErrorCodes.DUPLICATE_RECORD,
     };
   }
