@@ -15,8 +15,11 @@ const dateFormatter = new Intl.DateTimeFormat("es-DO", {
   day: "2-digit",
 });
 
-export function formatDate(iso: string): string {
-  return dateFormatter.format(new Date(iso));
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return dateFormatter.format(date);
 }
 
 /** Convierte una fecha `YYYY-MM-DD` al instante ISO del inicio de ese día. */
