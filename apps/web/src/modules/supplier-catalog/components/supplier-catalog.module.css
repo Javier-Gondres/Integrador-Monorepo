@@ -345,8 +345,17 @@
 }
 
 /* ---- product table ---- */
+/* Envoltorio con scroll horizontal: en anchos reducidos la tabla se desplaza
+   en vez de recortarse. */
+.tableWrap {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .table {
   width: 100%;
+  min-width: 620px;
   border-collapse: collapse;
 }
 .table thead th {
@@ -386,6 +395,7 @@
   color: var(--mutedText);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
+  white-space: nowrap;
 }
 .tName {
   font-weight: 600;
@@ -398,6 +408,7 @@
   font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .tProd {
   display: flex;
@@ -417,6 +428,16 @@
 .tDot svg {
   width: 15px;
   height: 15px;
+}
+
+/* Menos padding lateral en móvil: reduce cuánto hay que desplazar la tabla.
+   Va después de las reglas base para que gane por orden. */
+@media (max-width: 640px) {
+  .table thead th,
+  .table tbody td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 }
 
 /* ---- states ---- */

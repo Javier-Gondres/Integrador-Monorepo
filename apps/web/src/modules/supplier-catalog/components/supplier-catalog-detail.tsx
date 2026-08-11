@@ -110,49 +110,51 @@ export function SupplierCatalogDetail({
       {loading ? (
         <div className={styles.loading}>Cargando catálogo…</div>
       ) : products.length > 0 ? (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Producto</th>
-              <th className={styles.right}>Último costo</th>
-              <th className={styles.center}>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.productId}>
-                <td className={styles.tCode}>{product.code}</td>
-                <td>
-                  <div className={styles.tProd}>
-                    <span className={styles.tDot}>
-                      <Package />
-                    </span>
-                    <div>
-                      <div className={styles.tName}>{product.name}</div>
-                      <div className={styles.tDesc}>
-                        {product.description ?? "Sin descripción"}
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th className={styles.right}>Último costo</th>
+                <th className={styles.center}>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.productId}>
+                  <td className={styles.tCode}>{product.code}</td>
+                  <td>
+                    <div className={styles.tProd}>
+                      <span className={styles.tDot}>
+                        <Package />
+                      </span>
+                      <div>
+                        <div className={styles.tName}>{product.name}</div>
+                        <div className={styles.tDesc}>
+                          {product.description ?? "Sin descripción"}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className={`${styles.right} ${styles.tPrice}`}>
-                  {product.lastCost !== null
-                    ? formatCurrency(product.lastCost)
-                    : "—"}
-                </td>
-                <td className={styles.center}>
-                  <Can permission={Permission.SUPPLIERS_UPDATE}>
-                    <StatusToggle
-                      isActive={product.isActive}
-                      onToggle={() => onToggleStatus(product)}
-                    />
-                  </Can>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                  <td className={`${styles.right} ${styles.tPrice}`}>
+                    {product.lastCost !== null
+                      ? formatCurrency(product.lastCost)
+                      : "—"}
+                  </td>
+                  <td className={styles.center}>
+                    <Can permission={Permission.SUPPLIERS_UPDATE}>
+                      <StatusToggle
+                        isActive={product.isActive}
+                        onToggle={() => onToggleStatus(product)}
+                      />
+                    </Can>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className={styles.empty}>
           <div className={styles.emptyBig}>
