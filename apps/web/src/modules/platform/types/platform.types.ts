@@ -46,6 +46,11 @@ export interface CreatePlatformCompanyPayload {
   };
 }
 
+export interface UpdatePlatformCompanyPayload {
+  name?: string;
+  rnc?: string;
+}
+
 export interface PlatformCompaniesApiPage {
   items: PlatformCompanyDto[];
   meta: {

@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 
 function normalizeOptionalDigits(value: unknown): string | undefined {
-  if (typeof value !== 'string') return undefined;
+  if (typeof value !== 'string') {return undefined;}
   const digits = value.replace(/\D/g, '');
   return digits === '' ? undefined : digits;
 }

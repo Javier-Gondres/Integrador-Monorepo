@@ -1,14 +1,18 @@
 "use client";
 
+import { Pencil } from "lucide-react";
+
 import { ERP_COLORS as C } from "@/constants/theme";
 import type { DataTableColumn } from "@/shared/data-table";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { StatusToggle } from "@/shared/ui/status-toggle";
 
 import type { PlatformCompany } from "../types/platform.types";
 
 interface PlatformCompaniesTableActions {
   onToggleStatus: (id: string, isActive: boolean) => void;
+  onEdit: (company: PlatformCompany) => void;
 }
 
 export function getPlatformCompaniesTableColumns(
@@ -63,6 +67,29 @@ export function getPlatformCompaniesTableColumns(
         <Badge variant={row.isActive ? "success" : "muted"}>
           {row.isActive ? "Operativa" : "Suspendida"}
         </Badge>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Acciones",
+      cell: (row) => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="icon"
+            onClick={() => actions.onEdit(row)}
+            title="Editar"
+            style={{ width: "34px", height: "34px", borderRadius: "7px" }}
+            className="hover:border-blue-400 hover:text-blue-600 transition-colors"
+          >
+            <Pencil style={{ width: "14px", height: "14px" }} />
+          </Button>
+        </div>
       ),
     },
   ];

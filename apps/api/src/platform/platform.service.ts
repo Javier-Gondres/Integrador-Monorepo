@@ -36,6 +36,7 @@ import {
   QueryPlatformUsersDto,
 } from './dto/query-platform-users.dto';
 import { TransferCompanyOwnershipDto } from './dto/transfer-company-ownership.dto';
+import { UpdatePlatformCompanyDto } from './dto/update-platform-company.dto';
 import { UpdatePlatformUserDto } from './dto/update-platform-user.dto';
 import { UpdatePlatformUserRoleDto } from './dto/update-platform-user-role.dto';
 import {
@@ -243,6 +244,53 @@ export class PlatformService {
     }
 
     return result.company;
+  }
+
+  async updateCompany(
+    id: string,
+    dto: UpdatePlatformCompanyDto,
+    actor: AuthContext,
+  ) {
+    await this.findCompanyById(id);
+
+    const updateData: { name?: string; rnc?: string | null } = {};
+
+    if (dto.name !== undefined) {
+      const name = dto.name.trim();
+      if (!name) {
+        throw new BusinessException(
+          ErrorCodes.VALIDATION_ERROR,
+          'El nombre de la empresa no puede estar vacío',
+        );
+      }
+      updateData.name = name;
+    }
+
+    if (dto.rnc !== undefined) {
+      updateData.rnc = dto.rnc?.trim() || null;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      throw new BusinessException(
+        ErrorCodes.VALIDATION_ERROR,
+        'Debe enviar al menos un campo para actualizar',
+      );
+    }
+
+    if (updateData.rnc) {
+      const duplicateRnc = await this.platformRepository.findDuplicateRnc(
+        updateData.rnc,
+        id,
+      );
+      if (duplicateRnc) {
+        throw BusinessException.conflict(
+          ErrorCodes.DUPLICATE_RECORD,
+          'Ya existe una empresa con ese RNC',
+        );
+      }
+    }
+
+    return this.platformRepository.updateCompany(id, updateData, actor.userId);
   }
 
   async activateCompany(id: string) {

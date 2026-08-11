@@ -12,3 +12,12 @@ export const platformCompanyFormSchema = z.object({
 export type PlatformCompanyFormSchema = z.infer<
   typeof platformCompanyFormSchema
 >;
+
+export const updatePlatformCompanyFormSchema = z.object({
+  name: z.string().min(1, "El nombre de la empresa es requerido"),
+  rnc: z.string().optional(),
+});
+
+export type UpdatePlatformCompanyFormSchema = z.infer<
+  typeof updatePlatformCompanyFormSchema
+>;
