@@ -313,6 +313,14 @@ function customerName(
 }
 
 function mapSaleListItem(record: SaleListRecord) {
+  const total = Number(record.total);
+  const creditApplied = round2(
+    record.redeemedCreditNotes.reduce(
+      (sum, note) => sum + Number(note.amount),
+      0,
+    ),
+  );
+
   return {
     id: record.id,
     ncf: record.ncf,
@@ -320,7 +328,9 @@ function mapSaleListItem(record: SaleListRecord) {
     status: record.status,
     subtotal: Number(record.subtotal),
     taxAmount: Number(record.taxAmount),
-    total: Number(record.total),
+    total,
+    creditApplied,
+    amountPayable: Math.max(0, round2(total - creditApplied)),
     createdAt: record.createdAt,
     branchName: record.branch.name,
     customerName: customerName(record.customer),
@@ -344,6 +354,13 @@ function mapCreditNote(record: CreditNoteForSaleRecord) {
 
 function mapSaleDetail(record: SaleDetailRecord) {
   const cashierUser = record.cashier?.user ?? null;
+  const total = Number(record.total);
+  const creditApplied = round2(
+    record.redeemedCreditNotes.reduce(
+      (sum, note) => sum + Number(note.amount),
+      0,
+    ),
+  );
 
   return {
     id: record.id,
@@ -352,7 +369,9 @@ function mapSaleDetail(record: SaleDetailRecord) {
     status: record.status,
     subtotal: Number(record.subtotal),
     taxAmount: Number(record.taxAmount),
-    total: Number(record.total),
+    total,
+    creditApplied,
+    amountPayable: Math.max(0, round2(total - creditApplied)),
     createdAt: record.createdAt,
     reservationId: record.reservationId,
     company: {
