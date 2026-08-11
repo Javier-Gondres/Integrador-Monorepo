@@ -181,4 +181,7 @@ export const ENDPOINTS = {
     deactivate: (id: string) => `/customers/${id}/deactivate`,
     checkUniqueness: "/customers/check-uniqueness",
   },
+  dashboard: {
+    summary: "/dashboard/summary",
+  },
 } as const;

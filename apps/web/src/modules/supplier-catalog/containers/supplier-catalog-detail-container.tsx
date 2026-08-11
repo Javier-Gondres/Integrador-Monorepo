@@ -11,6 +11,7 @@ import { useSupplierProducts } from "../hooks/use-supplier-products";
 import { useToggleSupplierProductStatus } from "../hooks/use-toggle-supplier-product-status";
 import type { SupplierProduct } from "../types/supplier-product.types";
 import { AssignProductDialogContainer } from "./assign-product-dialog-container";
+import { CreateSupplierProductContainer } from "./create-supplier-product-container";
 
 interface SupplierCatalogDetailContainerProps {
   supplier: Supplier;
@@ -22,6 +23,7 @@ export function SupplierCatalogDetailContainer({
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 450);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [createProductOpen, setCreateProductOpen] = useState(false);
 
   const { data, isLoading } = useSupplierProducts(supplier.id, {
     search: debouncedSearch || undefined,
@@ -47,6 +49,7 @@ export function SupplierCatalogDetailContainer({
         search={search}
         onSearchChange={setSearch}
         onAssignClick={() => setAssignOpen(true)}
+        onCreateProductClick={() => setCreateProductOpen(true)}
         onToggleStatus={handleToggle}
       />
       {assignOpen && (
@@ -54,6 +57,13 @@ export function SupplierCatalogDetailContainer({
           supplierId={supplier.id}
           supplierName={supplier.name}
           onClose={() => setAssignOpen(false)}
+        />
+      )}
+      {createProductOpen && (
+        <CreateSupplierProductContainer
+          supplierId={supplier.id}
+          supplierName={supplier.name}
+          onClose={() => setCreateProductOpen(false)}
         />
       )}
     </>

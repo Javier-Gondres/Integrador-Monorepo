@@ -1,9 +1,13 @@
-import type { PlatformCompanyFormSchema } from "../schemas/platform-company.schema";
+import type {
+  PlatformCompanyFormSchema,
+  UpdatePlatformCompanyFormSchema,
+} from "../schemas/platform-company.schema";
 import type {
   CreatePlatformCompanyPayload,
   PlatformCompaniesApiPage,
   PlatformCompany,
   PlatformCompanyDto,
+  UpdatePlatformCompanyPayload,
 } from "../types/platform.types";
 
 export function mapPlatformCompanyDtoToUi(
@@ -57,5 +61,23 @@ export function mapPlatformCompanyFormDefaults(): PlatformCompanyFormSchema {
     ownerPassword: "",
     ownerFirstName: "",
     ownerLastName: "",
+  };
+}
+
+export function mapPlatformCompanyToEditFormDefaults(
+  company: PlatformCompany,
+): UpdatePlatformCompanyFormSchema {
+  return {
+    name: company.name,
+    rnc: company.rnc ?? "",
+  };
+}
+
+export function mapUpdatePlatformCompanyFormToPayload(
+  values: UpdatePlatformCompanyFormSchema,
+): UpdatePlatformCompanyPayload {
+  return {
+    name: values.name.trim(),
+    rnc: values.rnc?.trim() ?? "",
   };
 }

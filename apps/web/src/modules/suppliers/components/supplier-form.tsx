@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { ERP_COLORS as C } from "@/constants/theme";
 import { Button } from "@/shared/ui/button";
@@ -12,6 +12,12 @@ import {
   type SupplierFormSchema,
   supplierFormSchema,
 } from "../schemas/supplier.schema";
+import {
+  formatPhoneMaskRD,
+  formatRncMaskRD,
+  normalizePhoneValueRD,
+  normalizeRncValueRD,
+} from "../utils/supplier-formatters";
 
 interface SupplierFormProps {
   isEditing: boolean;
@@ -20,6 +26,30 @@ interface SupplierFormProps {
   onSubmit: (values: SupplierFormSchema) => void | Promise<void>;
   onClose: () => void;
 }
+
+const allowDigits = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const allowedKeys = [
+    "Backspace",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown",
+    "Delete",
+    "Tab",
+    "Home",
+    "End",
+  ];
+
+  if (allowedKeys.includes(event.key)) {
+    return;
+  }
+
+  if (/^[0-9]$/.test(event.key)) {
+    return;
+  }
+
+  event.preventDefault();
+};
 
 export function SupplierForm({
   isEditing,
@@ -30,6 +60,7 @@ export function SupplierForm({
 }: SupplierFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<SupplierFormSchema>({
@@ -60,6 +91,7 @@ export function SupplierForm({
         <Input
           label="Nombre"
           required
+          maxLength={100}
           placeholder="Ej. Distribuidora Norte"
           error={errors.name?.message}
           {...register("name")}
@@ -67,6 +99,7 @@ export function SupplierForm({
 
         <Input
           label="Persona de contacto"
+          maxLength={100}
           placeholder="Nombre del contacto"
           error={errors.contactName?.message}
           {...register("contactName")}
@@ -82,15 +115,36 @@ export function SupplierForm({
           <Input
             label="Email"
             type="email"
+            maxLength={100}
             placeholder="correo@proveedor.com"
             error={errors.email?.message}
             {...register("email")}
           />
-          <Input
-            label="Teléfono"
-            placeholder="8095551234"
-            error={errors.phone?.message}
-            {...register("phone")}
+
+          {/* Teléfono con máscara RD: (809) 555-1234 */}
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field }) => (
+              <Input
+                label="Teléfono"
+                placeholder="(809) 555-1234"
+                inputMode="numeric"
+                error={errors.phone?.message}
+                value={formatPhoneMaskRD(field.value)}
+                onBlur={field.onBlur}
+                onChange={(event) =>
+                  field.onChange(normalizePhoneValueRD(event.target.value))
+                }
+                onKeyDown={allowDigits}
+                onPaste={(event) => {
+                  const pasted = event.clipboardData.getData("text/plain");
+                  if (!/^[0-9]+$/.test(pasted)) {
+                    event.preventDefault();
+                  }
+                }}
+              />
+            )}
           />
         </div>
 
@@ -101,14 +155,34 @@ export function SupplierForm({
             gap: "14px",
           }}
         >
-          <Input
-            label="RNC"
-            placeholder="123456789"
-            error={errors.rnc?.message}
-            {...register("rnc")}
+          {/* RNC con máscara RD: X-XX-XXXXX-X (jurídico, 9 dígitos) ó XXX-XXXXXXX-X (físico, 11 dígitos) */}
+          <Controller
+            name="rnc"
+            control={control}
+            render={({ field }) => (
+              <Input
+                label="RNC"
+                placeholder="1-23-45678-9"
+                inputMode="numeric"
+                error={errors.rnc?.message}
+                value={formatRncMaskRD(field.value)}
+                onBlur={field.onBlur}
+                onChange={(event) =>
+                  field.onChange(normalizeRncValueRD(event.target.value))
+                }
+                onKeyDown={allowDigits}
+                onPaste={(event) => {
+                  const pasted = event.clipboardData.getData("text/plain");
+                  if (!/^[0-9]+$/.test(pasted)) {
+                    event.preventDefault();
+                  }
+                }}
+              />
+            )}
           />
           <Input
             label="Dirección"
+            maxLength={250}
             placeholder="Calle, ciudad"
             error={errors.address?.message}
             {...register("address")}
@@ -117,6 +191,7 @@ export function SupplierForm({
 
         <Textarea
           label="Notas"
+          maxLength={500}
           placeholder="Información adicional"
           error={errors.notes?.message}
           {...register("notes")}

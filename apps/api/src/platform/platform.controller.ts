@@ -20,6 +20,7 @@ import { QueryPlatformCompaniesDto } from './dto/query-platform-companies.dto';
 import { QueryPlatformInvitationsDto } from './dto/query-platform-invitations.dto';
 import { QueryPlatformUsersDto } from './dto/query-platform-users.dto';
 import { TransferCompanyOwnershipDto } from './dto/transfer-company-ownership.dto';
+import { UpdatePlatformCompanyDto } from './dto/update-platform-company.dto';
 import { UpdatePlatformUserDto } from './dto/update-platform-user.dto';
 import { UpdatePlatformUserRoleDto } from './dto/update-platform-user-role.dto';
 import { UpdatePlatformUserStatusDto } from './dto/update-platform-user-status.dto';
@@ -169,6 +170,15 @@ export class PlatformController {
   @Post('companies')
   createCompany(@Body() dto: CreatePlatformCompanyDto) {
     return this.platformService.createCompany(dto);
+  }
+
+  @Patch('companies/:id')
+  updateCompany(
+    @Param('id') id: string,
+    @Body() dto: UpdatePlatformCompanyDto,
+    @Auth() auth: AuthContext,
+  ) {
+    return this.platformService.updateCompany(id, dto, auth);
   }
 
   @Post('companies/:id/transfer-ownership')

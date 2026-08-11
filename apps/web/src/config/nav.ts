@@ -1,13 +1,11 @@
 import {
   Permission,
   type PermissionCode,
-  TenantRole,
   type TenantRoleName,
 } from "@repo/shared";
 import {
   ArrowLeftRight,
   Box,
-  Building2,
   ClipboardEdit,
   History,
   LayoutDashboard,
@@ -215,12 +213,6 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
     icon: UserCog,
     href: "/settings/team",
     access: { type: "permission", permission: Permission.INVITATIONS_READ },
-  },
-  {
-    label: "Empresa",
-    icon: Building2,
-    href: "/companies",
-    access: { type: "role", role: TenantRole.OWNER },
   },
   {
     label: "Sucursales",

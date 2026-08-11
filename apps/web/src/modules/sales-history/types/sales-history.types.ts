@@ -9,6 +9,10 @@ export interface SaleListDto {
   subtotal: number;
   taxAmount: number;
   total: number;
+  /** Suma de las notas de crédito redimidas en la venta. */
+  creditApplied: number;
+  /** `total` menos las notas de crédito aplicadas (mínimo 0). */
+  amountPayable: number;
   createdAt: string;
   branchName: string;
   customerName: string | null;

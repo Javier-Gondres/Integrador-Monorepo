@@ -160,6 +160,7 @@ export function CustomerForm({
         <Input
           label="Nombre"
           required
+          maxLength={100}
           placeholder="Ej. Juan"
           error={errors.firstName?.message}
           inputMode="text"
@@ -176,6 +177,7 @@ export function CustomerForm({
         <Input
           label="Apellido"
           required
+          maxLength={100}
           placeholder="Ej. Pérez"
           error={errors.lastName?.message}
           inputMode="text"
@@ -252,6 +254,7 @@ export function CustomerForm({
 
         <Textarea
           label="Dirección"
+          maxLength={250}
           placeholder="Ej. Calle 123, Santo Domingo"
           error={errors.address?.message}
           {...register("address")}

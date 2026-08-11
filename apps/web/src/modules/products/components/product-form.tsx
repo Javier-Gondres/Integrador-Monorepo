@@ -23,6 +23,7 @@ interface ProductFormProps {
     value: string[];
     onChange: (ids: string[]) => void;
   }) => React.ReactNode;
+  renderExtraFields?: () => React.ReactNode;
   renderAuxiliaryModal?: () => React.ReactNode;
 }
 
@@ -33,6 +34,7 @@ export function ProductForm({
   onSubmit,
   onClose,
   renderCategoryCombobox,
+  renderExtraFields,
   renderAuxiliaryModal,
 }: ProductFormProps) {
   const {
@@ -68,6 +70,7 @@ export function ProductForm({
         <Input
           label="Código (SKU)"
           required
+          maxLength={30}
           placeholder="Ej. MOUSE-M185"
           error={errors.code?.message}
           {...register("code")}
@@ -76,6 +79,7 @@ export function ProductForm({
         <Input
           label="Nombre"
           required
+          maxLength={100}
           placeholder="Ej. Mouse Logitech M185"
           error={errors.name?.message}
           {...register("name")}
@@ -83,6 +87,7 @@ export function ProductForm({
 
         <Textarea
           label="Descripción"
+          maxLength={500}
           placeholder="Breve descripción del producto..."
           error={errors.description?.message}
           {...register("description")}
@@ -118,6 +123,8 @@ export function ProductForm({
             )}
           />
         </div>
+
+        {renderExtraFields?.()}
 
         <div
           style={{

@@ -126,6 +126,11 @@ export type UpdatePlatformUserRoleData = {
   actorId: string;
 };
 
+export type UpdatePlatformCompanyData = {
+  name?: string;
+  rnc?: string | null;
+};
+
 const platformUserMembershipSelect = {
   id: true,
   companyId: true,
@@ -394,6 +399,42 @@ export class PlatformRepository {
     return prisma.user.findFirst({
       where: { email },
       select: { id: true },
+    });
+  }
+
+  findDuplicateRnc(rnc: string, excludeId: string) {
+    return prisma.company.findFirst({
+      where: {
+        id: { not: excludeId },
+        rnc,
+      },
+      select: { id: true },
+    });
+  }
+
+  updateCompany(id: string, data: UpdatePlatformCompanyData, actorId: string) {
+    return prisma.$transaction(async (tx) => {
+      const previous = await tx.company.findUnique({
+        where: { id },
+        select: { name: true, rnc: true },
+      });
+
+      const company = await tx.company.update({
+        where: { id },
+        data,
+        select: companyWithBranchesSelect,
+      });
+
+      await this.createAuditLog(tx, {
+        actorId,
+        action: 'PLATFORM_COMPANY_UPDATED',
+        entity: 'Company',
+        entityId: id,
+        companyId: id,
+        metadata: { previous, next: data },
+      });
+
+      return company;
     });
   }
 

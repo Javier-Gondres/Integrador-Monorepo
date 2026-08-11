@@ -1,6 +1,9 @@
-import { Search } from "lucide-react";
+import { Permission } from "@repo/shared";
+import { Plus, Search } from "lucide-react";
 
 import type { Supplier } from "@/modules/suppliers/types/supplier.types";
+import { Button } from "@/shared/ui/button";
+import { Can } from "@/shared/ui/can";
 
 import {
   supplierAvatarColor,
@@ -15,6 +18,7 @@ interface SupplierRailProps {
   loading: boolean;
   onSearchChange: (value: string) => void;
   onSelect: (supplier: Supplier) => void;
+  onCreateSupplier: () => void;
 }
 
 export function SupplierRail({
@@ -24,6 +28,7 @@ export function SupplierRail({
   loading,
   onSearchChange,
   onSelect,
+  onCreateSupplier,
 }: SupplierRailProps) {
   return (
     <div className={styles.rail}>
@@ -37,6 +42,17 @@ export function SupplierRail({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
+
+        <Can permission={Permission.SUPPLIERS_CREATE}>
+          <Button
+            variant="secondary"
+            onClick={onCreateSupplier}
+            style={{ width: "100%" }}
+          >
+            <Plus style={{ width: "16px", height: "16px" }} />
+            Nuevo proveedor
+          </Button>
+        </Can>
       </div>
 
       <div className={styles.railList}>

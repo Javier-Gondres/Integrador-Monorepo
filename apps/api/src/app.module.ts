@@ -9,6 +9,7 @@ import { CashRegistersModule } from './cash-registers/cash-registers.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CompanyModule } from './company/company.module';
 import { CustomersModule } from './customers/customers.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { DiscountsModule } from './discounts/discounts.module';
 import { EmployeesModule } from './employees/employees.module';
 import { InventoryModule } from './inventory/inventory.module';
@@ -59,6 +60,7 @@ const envFilePath =
     ReturnsModule,
     SalesModule,
     ReservationsModule,
+    DashboardModule,
     ReceivablesModule,
     PayablesModule,
   ],

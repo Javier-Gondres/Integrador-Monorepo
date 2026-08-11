@@ -9,6 +9,7 @@ import type { Category } from "@/modules/categories/types/category.types";
 import { ProductForm } from "../components/product-form";
 import { useCreateProduct } from "../hooks/use-create-product";
 import { useUpdateProduct } from "../hooks/use-update-product";
+import { mapProductDtoToUi } from "../mappers/product.mapper";
 import {
   mapFormValuesToDto,
   mapProductToFormValues,
@@ -20,11 +21,17 @@ import { CategoryComboboxContainer } from "./category-combobox-container";
 interface ProductFormModalContainerProps {
   product: Product | null;
   onClose: () => void;
+  /** Se ejecuta tras crear el producto y antes de cerrar el modal. */
+  onCreated?: (product: Product) => void | Promise<void>;
+  /** Campos adicionales a renderizar dentro del formulario. */
+  renderExtraFields?: () => React.ReactNode;
 }
 
 export function ProductFormModalContainer({
   product,
   onClose,
+  onCreated,
+  renderExtraFields,
 }: ProductFormModalContainerProps) {
   const isEditing = Boolean(product);
   const { can } = usePermissions();
@@ -32,7 +39,9 @@ export function ProductFormModalContainer({
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
 
-  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const [isFinishing, setIsFinishing] = useState(false);
+  const isSubmitting =
+    createMutation.isPending || updateMutation.isPending || isFinishing;
   const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
   const [newlyCreatedCategory, setNewlyCreatedCategory] =
     useState<Category | null>(null);
@@ -42,7 +51,13 @@ export function ProductFormModalContainer({
     if (isEditing && product) {
       await updateMutation.mutateAsync({ id: product.id, data: dto });
     } else {
-      await createMutation.mutateAsync(dto);
+      const created = await createMutation.mutateAsync(dto);
+      setIsFinishing(true);
+      try {
+        await onCreated?.(mapProductDtoToUi(created));
+      } finally {
+        setIsFinishing(false);
+      }
     }
     onClose();
   };
@@ -64,6 +79,7 @@ export function ProductFormModalContainer({
           newlyCreatedCategory={newlyCreatedCategory}
         />
       )}
+      renderExtraFields={renderExtraFields}
       renderAuxiliaryModal={() =>
         canCreateCategory && createCategoryOpen ? (
           <CategoryFormModalContainer

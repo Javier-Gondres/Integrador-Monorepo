@@ -113,12 +113,14 @@ function EmployeeCreateForm({
           <Input
             label="Nombre"
             required
+            maxLength={100}
             error={errors.firstName?.message}
             {...register("firstName")}
           />
           <Input
             label="Apellido"
             required
+            maxLength={100}
             error={errors.lastName?.message}
             {...register("lastName")}
           />
@@ -150,6 +152,7 @@ function EmployeeCreateForm({
             label="Email"
             type="email"
             required
+            maxLength={100}
             error={errors.email?.message}
             {...register("email")}
           />
@@ -171,6 +174,7 @@ function EmployeeCreateForm({
 
         <Input
           label="Puesto"
+          maxLength={100}
           placeholder="Ej. Cajero"
           error={errors.position?.message}
           {...register("position")}
@@ -185,6 +189,7 @@ function EmployeeCreateForm({
         >
           <Input
             label="Teléfono"
+            maxLength={20}
             error={errors.phone?.message}
             {...register("phone")}
           />
@@ -193,6 +198,7 @@ function EmployeeCreateForm({
             type="number"
             step="0.01"
             min={0}
+            max={99999999.99}
             error={errors.salary?.message}
             {...register("salary")}
           />
@@ -265,12 +271,14 @@ function EmployeeEditForm({
           <Input
             label="Nombre"
             required
+            maxLength={100}
             error={errors.firstName?.message}
             {...register("firstName")}
           />
           <Input
             label="Apellido"
             required
+            maxLength={100}
             error={errors.lastName?.message}
             {...register("lastName")}
           />
@@ -322,6 +330,7 @@ function EmployeeEditForm({
 
             <Input
               label="Puesto"
+              maxLength={100}
               error={errors.position?.message}
               {...register("position")}
             />
@@ -335,6 +344,7 @@ function EmployeeEditForm({
             >
               <Input
                 label="Teléfono"
+                maxLength={20}
                 error={errors.phone?.message}
                 {...register("phone")}
               />
@@ -343,6 +353,7 @@ function EmployeeEditForm({
                 type="number"
                 step="0.01"
                 min={0}
+                max={99999999.99}
                 error={errors.salary?.message}
                 {...register("salary")}
               />

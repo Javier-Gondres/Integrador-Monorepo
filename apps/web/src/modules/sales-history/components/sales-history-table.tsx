@@ -115,16 +115,36 @@ export function getSalesHistoryColumns(
       id: "total",
       header: "Total",
       align: "right",
-      cell: (sale) => (
-        <div>
-          <div className="font-bold tabular-nums text-body">
-            {money(sale.total)}
+      cell: (sale) => {
+        const hasCredit = sale.creditApplied > 0;
+        return (
+          <div>
+            <div
+              className={
+                hasCredit
+                  ? "text-xs tabular-nums text-muted line-through"
+                  : "font-bold tabular-nums text-body"
+              }
+            >
+              {money(sale.total)}
+            </div>
+            {hasCredit && (
+              <>
+                <div className="text-xs tabular-nums text-green-text">
+                  −{money(sale.creditApplied)} NC
+                </div>
+                <div className="font-bold tabular-nums text-body">
+                  {money(sale.amountPayable)}
+                </div>
+              </>
+            )}
+            <div className="text-xs text-muted">
+              {sale.itemsCount}{" "}
+              {sale.itemsCount === 1 ? "producto" : "productos"}
+            </div>
           </div>
-          <div className="text-xs text-muted">
-            {sale.itemsCount} {sale.itemsCount === 1 ? "producto" : "productos"}
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: "actions",

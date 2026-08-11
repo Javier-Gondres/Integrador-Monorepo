@@ -52,6 +52,18 @@ export class ProductsRepository {
     });
   }
 
+  findByCodeWithDeleted(
+    code: string,
+    companyId: string,
+  ): Promise<ProductRecord | null> {
+    return prisma.withDeleted(() =>
+      prisma.product.findFirst({
+        where: { companyId, code },
+        select: productSelect,
+      }),
+    );
+  }
+
   create(companyId: string, data: CreateProductData): Promise<ProductRecord> {
     return prisma.product.create({
       data: {
