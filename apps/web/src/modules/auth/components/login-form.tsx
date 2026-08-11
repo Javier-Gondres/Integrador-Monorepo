@@ -64,12 +64,6 @@ export function LoginForm({
           })}
         />
 
-        <div className="flex justify-center max-sm:gap-3 pt-2">
-          <a href="#" className="text-sm hover:underline text-center">
-            Contraseña olvidada?
-          </a>
-        </div>
-
         <Button
           type="submit"
           disabled={isDisabled}
