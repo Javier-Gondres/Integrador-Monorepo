@@ -64,6 +64,9 @@ export const saleListSelect = {
   cashShift: {
     select: { cashRegister: { select: { id: true, name: true } } },
   },
+  // El total de la venta se guarda bruto (la nota de crédito es un documento
+  // fiscal aparte); se traen los montos redimidos para poder mostrar el neto.
+  redeemedCreditNotes: { select: { amount: true } },
   _count: { select: { items: true } },
 } as const satisfies Prisma.SaleSelect;
 

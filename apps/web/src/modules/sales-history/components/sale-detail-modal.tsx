@@ -118,6 +118,27 @@ export function SaleDetailModal({
               <span className="font-semibold text-body">Total</span>
               <b className="tabular-nums text-body">{money(sale.total)}</b>
             </div>
+            {sale.creditNotesApplied.map((note) => (
+              <div
+                key={note.id}
+                className="flex items-center justify-between text-green-text"
+              >
+                <span className="truncate">
+                  Nota de crédito {note.ncf ?? ""}
+                </span>
+                <b className="tabular-nums whitespace-nowrap">
+                  −{money(note.amount)}
+                </b>
+              </div>
+            ))}
+            {sale.creditApplied > 0 && (
+              <div className="flex items-center justify-between border-t border-divider pt-2 text-base">
+                <span className="font-semibold text-body">Monto a pagar</span>
+                <b className="tabular-nums text-primary">
+                  {money(sale.amountPayable)}
+                </b>
+              </div>
+            )}
           </div>
         </div>
       )}
