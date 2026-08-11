@@ -13,11 +13,13 @@ const RAIL_PAGE_SIZE = 100;
 interface SupplierRailContainerProps {
   selectedId: string | null;
   onSelect: (supplier: Supplier) => void;
+  onCreateSupplier: () => void;
 }
 
 export function SupplierRailContainer({
   selectedId,
   onSelect,
+  onCreateSupplier,
 }: SupplierRailContainerProps) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 450);
@@ -45,6 +47,7 @@ export function SupplierRailContainer({
       loading={isLoading}
       onSearchChange={setSearch}
       onSelect={onSelect}
+      onCreateSupplier={onCreateSupplier}
     />
   );
 }

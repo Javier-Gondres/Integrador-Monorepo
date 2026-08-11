@@ -23,6 +23,7 @@ interface ProductFormProps {
     value: string[];
     onChange: (ids: string[]) => void;
   }) => React.ReactNode;
+  renderExtraFields?: () => React.ReactNode;
   renderAuxiliaryModal?: () => React.ReactNode;
 }
 
@@ -33,6 +34,7 @@ export function ProductForm({
   onSubmit,
   onClose,
   renderCategoryCombobox,
+  renderExtraFields,
   renderAuxiliaryModal,
 }: ProductFormProps) {
   const {
@@ -121,6 +123,8 @@ export function ProductForm({
             )}
           />
         </div>
+
+        {renderExtraFields?.()}
 
         <div
           style={{

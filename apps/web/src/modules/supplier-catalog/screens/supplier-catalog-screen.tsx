@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 
 import { ERP_COLORS as C } from "@/constants/theme";
+import { SupplierFormModalContainer } from "@/modules/suppliers/containers/supplier-form-modal-container";
 import type { Supplier } from "@/modules/suppliers/types/supplier.types";
 
 import styles from "../components/supplier-catalog.module.css";
@@ -11,6 +12,7 @@ import { SupplierRailContainer } from "../containers/supplier-rail-container";
 
 export function SupplierCatalogScreen() {
   const [selected, setSelected] = useState<Supplier | null>(null);
+  const [supplierModalOpen, setSupplierModalOpen] = useState(false);
   const handleSelect = useCallback((supplier: Supplier) => {
     setSelected(supplier);
   }, []);
@@ -40,6 +42,7 @@ export function SupplierCatalogScreen() {
             <SupplierRailContainer
               selectedId={selected?.id ?? null}
               onSelect={handleSelect}
+              onCreateSupplier={() => setSupplierModalOpen(true)}
             />
             {selected ? (
               <SupplierCatalogDetailContainer
@@ -55,6 +58,14 @@ export function SupplierCatalogScreen() {
           </div>
         </div>
       </div>
+
+      {supplierModalOpen && (
+        <SupplierFormModalContainer
+          supplier={null}
+          onClose={() => setSupplierModalOpen(false)}
+          onCreated={handleSelect}
+        />
+      )}
     </div>
   );
 }
