@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@repo/db';
 import {
-  endOfDay,
-  format,
-  startOfDay,
-  subDays,
-  startOfMonth,
-  endOfMonth,
-  parse,
   eachDayOfInterval,
+  endOfDay,
+  endOfMonth,
+  format,
+  parse,
+  startOfDay,
+  startOfMonth,
+  subDays,
 } from 'date-fns';
 import type { CompanyContext } from 'src/common/company';
 
