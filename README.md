@@ -4,7 +4,7 @@ Usuarios de ejemplo cargados por el seed (`packages/database/prisma/seed.ts`) pa
 
 **Contraseña común (todos los usuarios):** `Password123`
 
-**Empresa demo:** Empresa Demo (`empresa-demo`)
+**Empresa demo:** Empresa Demo (`empresa-demo `)
 
 ## Usuarios
 
