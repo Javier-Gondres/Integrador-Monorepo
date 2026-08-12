@@ -125,12 +125,8 @@ export class InventoryMovementService {
       ...(query.adjustmentReason && {
         adjustmentReason: query.adjustmentReason,
       }),
-      ...(query.dateFrom && {
-        dateFrom: new Date(`${query.dateFrom}T00:00:00.000Z`),
-      }),
-      ...(query.dateTo && {
-        dateTo: new Date(`${query.dateTo}T23:59:59.999Z`),
-      }),
+      ...(query.dateFrom && { dateFrom: new Date(query.dateFrom) }),
+      ...(query.dateTo && { dateTo: new Date(query.dateTo) }),
     };
   }
 
