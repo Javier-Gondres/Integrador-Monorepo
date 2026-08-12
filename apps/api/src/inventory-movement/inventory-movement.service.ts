@@ -1,19 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import { InventoryMovementType } from '@repo/db';
-import { BranchAccessService } from 'src/branch/branch-access.service';
-import type { CompanyContext } from 'src/common/company';
-import { InventoryException } from 'src/common/errors';
-import { normalizeAdjustmentReason } from 'src/common/inventory/normalize-adjustment-reason';
-import { EmployeesService } from 'src/employees/employees.service';
-import { ProductsRepository } from 'src/products/products.repository';
+import { Injectable } from "@nestjs/common";
+import { InventoryMovementType } from "@repo/db";
+import { BranchAccessService } from "src/branch/branch-access.service";
+import type { CompanyContext } from "src/common/company";
+import { InventoryException } from "src/common/errors";
+import { normalizeAdjustmentReason } from "src/common/inventory/normalize-adjustment-reason";
+import { EmployeesService } from "src/employees/employees.service";
+import { ProductsRepository } from "src/products/products.repository";
 
-import { CreateInventoryAdjustmentDto } from './dto/create-inventory-adjustment.dto';
-import { CreateWasteDto } from './dto/create-waste.dto';
+import { CreateInventoryAdjustmentDto } from "./dto/create-inventory-adjustment.dto";
+import { CreateWasteDto } from "./dto/create-waste.dto";
 import {
   NormalizedQueryInventoryMovement,
   QueryInventoryMovementDto,
-} from './dto/query-inventory-movement.dto';
-import { InventoryMovementRepository } from './inventory-movement.repository';
+} from "./dto/query-inventory-movement.dto";
+import { InventoryMovementRepository } from "./inventory-movement.repository";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_TAKE = 10;
@@ -125,12 +125,8 @@ export class InventoryMovementService {
       ...(query.adjustmentReason && {
         adjustmentReason: query.adjustmentReason,
       }),
-      ...(query.dateFrom && {
-        dateFrom: new Date(`${query.dateFrom}T00:00:00.000Z`),
-      }),
-      ...(query.dateTo && {
-        dateTo: new Date(`${query.dateTo}T23:59:59.999Z`),
-      }),
+      ...(query.dateFrom && { dateFrom: new Date(query.dateFrom) }),
+      ...(query.dateTo && { dateTo: new Date(query.dateTo) }),
     };
   }
 
