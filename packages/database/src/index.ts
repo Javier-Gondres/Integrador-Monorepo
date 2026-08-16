@@ -1,6 +1,14 @@
 export { type ExtendedPrismaClient, prisma } from "./client.js";
 export * from "./generated/prisma/client.js";
 export {
+  buildDefaultNcfSequenceRows,
+  DEFAULT_NCF_MAX_NUMBER,
+  DEFAULT_NCF_SEQUENCES,
+  DEFAULT_NCF_VALIDITY_DAYS,
+  defaultNcfExpirationDate,
+  type DefaultNcfSequenceRow,
+} from "./ncf-defaults.js";
+export {
   activateDataForModel,
   type ActivateUpdateData,
   deactivateDataForModel,

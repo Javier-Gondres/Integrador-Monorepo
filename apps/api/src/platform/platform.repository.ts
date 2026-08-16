@@ -8,6 +8,7 @@ import {
 } from '@repo/db';
 
 import { ensureEmployeeForUserRole } from '../common/employees/employee-provisioning';
+import { createDefaultNcfSequences } from '../common/ncf/ncf-provisioning.helper';
 import type { PaginatedResult } from '../common/types/repository.types';
 import { companyWithBranchesSelect } from '../company/company.selects';
 import type { NormalizedQueryPlatformActivations } from './dto/query-platform-activations.dto';
@@ -940,6 +941,8 @@ export class PlatformRepository {
       if (!defaultBranch) {
         throw new Error('Default branch was not created');
       }
+
+      await createDefaultNcfSequences(tx, company.id);
 
       await tx.userCompany.create({
         data: {
