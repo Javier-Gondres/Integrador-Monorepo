@@ -79,4 +79,17 @@ export class SalesException extends BusinessException {
       HttpStatus.BAD_REQUEST,
     );
   }
+
+  /**
+   * La empresa no tiene una secuencia NCF utilizable para el tipo de
+   * comprobante solicitado (inexistente, inactiva, vencida o agotada). Se
+   * aborta la venta en lugar de emitirla sin comprobante fiscal.
+   */
+  static ncfSequenceUnavailable(ncfType: string): SalesException {
+    return new SalesException(
+      ErrorCodes.NCF_SEQUENCE_UNAVAILABLE,
+      `No hay una secuencia de NCF disponible para comprobantes de tipo ${ncfType}. Verifique que la secuencia esté activa, vigente y no agotada`,
+      HttpStatus.CONFLICT,
+    );
+  }
 }

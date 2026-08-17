@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   InventoryMovementType,
   NcfType,
@@ -175,17 +175,24 @@ export class ReturnsRepository {
         data.companyId,
         NcfType.NOTA_DE_CREDITO,
       );
+      // Sin secuencia utilizable se aborta la devolución: una nota de crédito
+      // sin NCF no es un documento fiscal válido y rompe la búsqueda por NCF.
+      if (!generated) {
+        throw new BusinessException(
+          ErrorCodes.NCF_SEQUENCE_UNAVAILABLE,
+          'No hay una secuencia de NCF disponible para notas de crédito. Verifique que la secuencia esté activa, vigente y no agotada',
+          HttpStatus.CONFLICT,
+        );
+      }
 
       await tx.creditNote.create({
         data: {
           returnId: created.id,
           customerId: sale.customerId,
           amount: new Prisma.Decimal(subtotal),
-          ...(generated && {
-            ncf: generated.ncf,
-            ncfType: generated.ncfType,
-            ncfSequenceId: generated.ncfSequenceId,
-          }),
+          ncf: generated.ncf,
+          ncfType: generated.ncfType,
+          ncfSequenceId: generated.ncfSequenceId,
         },
       });
 

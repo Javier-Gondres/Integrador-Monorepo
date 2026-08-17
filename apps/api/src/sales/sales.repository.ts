@@ -176,6 +176,9 @@ export class SalesRepository {
       }
 
       const generated = await generateNcf(tx, data.companyId, data.ncfType);
+      if (!generated) {
+        throw SalesException.ncfSequenceUnavailable(data.ncfType);
+      }
 
       const sale = await tx.sale.create({
         data: {
@@ -192,11 +195,9 @@ export class SalesRepository {
           // liquidar el saldo. Las ventas totalmente al contado quedan COMPLETED.
           status: creditPortion > 0 ? SaleStatus.PENDING : SaleStatus.COMPLETED,
           ...(data.soldAt && { createdAt: data.soldAt }),
-          ...(generated && {
-            ncf: generated.ncf,
-            ncfType: generated.ncfType,
-            ncfSequenceId: generated.ncfSequenceId,
-          }),
+          ncf: generated.ncf,
+          ncfType: generated.ncfType,
+          ncfSequenceId: generated.ncfSequenceId,
           items: {
             create: data.lines.map((line) => ({
               productId: line.productId,

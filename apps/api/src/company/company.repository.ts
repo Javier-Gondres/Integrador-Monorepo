@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { prisma, RoleName } from '@repo/db';
 
 import { ensureEmployeeForUserRole } from '../common/employees/employee-provisioning';
+import { createDefaultNcfSequences } from '../common/ncf/ncf-provisioning.helper';
 import { assertUserEligibleForTenantMembership } from '../common/platform';
 import {
   type CompanyRecord,
@@ -165,6 +166,8 @@ export class CompanyRepository {
       if (!defaultBranch) {
         throw new Error('Default branch was not created');
       }
+
+      await createDefaultNcfSequences(tx, company.id);
 
       await tx.userCompany.create({
         data: {

@@ -31,6 +31,7 @@ import {
   SaleStatus,
   TransferStatus,
 } from "../src/generated/prisma/client.js";
+import { buildDefaultNcfSequenceRows } from "../src/ncf-defaults.js";
 import { runWithSoftDeleteQueryMode } from "../src/soft-delete/context.js";
 
 const DEMO_COMPANY_SLUG = "empresa-demo";
@@ -1070,7 +1071,7 @@ async function ensureDemoNcfSequence(companyId: string) {
     },
   });
 
-  return prisma.ncfSequence.upsert({
+  const consumidorFinal = await prisma.ncfSequence.upsert({
     where: { id: SEED_IDS.ncfB02 },
     create: {
       id: SEED_IDS.ncfB02,
@@ -1087,6 +1088,16 @@ async function ensureDemoNcfSequence(companyId: string) {
       isActive: true,
     },
   });
+
+  // Resto de secuencias por defecto (B01 crédito fiscal) para que la empresa
+  // demo tenga la misma cobertura que cualquier empresa creada por la API.
+  // `skipDuplicates` respeta las dos secuencias con IDs fijos de arriba.
+  await prisma.ncfSequence.createMany({
+    data: buildDefaultNcfSequenceRows(companyId),
+    skipDuplicates: true,
+  });
+
+  return consumidorFinal;
 }
 
 async function ensureDemoDiscounts(

@@ -29,7 +29,10 @@
     "db:seed:dev": "pnpm --filter @repo/shared run build && dotenv -e .env.development -- tsx prisma/seed.ts",
     "db:seed:staging": "pnpm --filter @repo/shared run build && dotenv -e .env.staging -- tsx prisma/seed.ts",
     "db:seed:production": "pnpm --filter @repo/shared run build && dotenv -e .env.production -- tsx prisma/seed.ts",
-    "db:seed:production:bootstrap": "pnpm --filter @repo/shared run build && dotenv -e .env.production -- tsx prisma/seed-bootstrap.ts"
+    "db:seed:production:bootstrap": "pnpm --filter @repo/shared run build && dotenv -e .env.production -- tsx prisma/seed-bootstrap.ts",
+    "db:backfill-ncf:dev": "dotenv -e .env.development -- tsx prisma/backfill-ncf-sequences.ts",
+    "db:backfill-ncf:staging": "dotenv -e .env.staging -- tsx prisma/backfill-ncf-sequences.ts",
+    "db:backfill-ncf:production": "dotenv -e .env.production -- tsx prisma/backfill-ncf-sequences.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
